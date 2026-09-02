@@ -77,7 +77,16 @@ interface CommandRequest<TArgs> {
 
 <<< ../../../template/client/src/sdkSurface.ts#client-messages
 
-`requestId` is yours to generate and yours to correlate. `sentAt` is a wall-clock millisecond timestamp.
+`requestId` is yours to generate and yours to correlate.
+
+`sentAt` is **UT seconds** (KSP universal time), the same base as `Meta.validAt` — not a
+wall-clock timestamp. Send `0`. You have no UT to hand at dispatch that the server would not
+know better, and the server stamps the response's `Meta.deliveredAt` off its own clock, so
+measure a round trip against your own view time rather than reading this back.
+
+The value is carried onto the response's `Meta.validAt`. Putting a millisecond epoch here
+therefore makes that field read as a UT roughly 1.7 trillion seconds in the future, and
+`Meta.validAt` is the field you are told to show rather than the arrival time.
 
 The server also accepts a `set-vantage` message, which this union does not include and this documentation does not specify. Nothing published describes its shape.
 

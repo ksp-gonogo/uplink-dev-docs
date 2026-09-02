@@ -59,7 +59,7 @@ export const outbound: ClientMessage[] = [
     requestId: "req-0",
     command: "example.setMode",
     args: { mode: 1 },
-    sentAt: Date.now(),
+    sentAt: 0,
   } satisfies CommandRequest<{ mode: number }>,
 ];
 // #endregion client-messages

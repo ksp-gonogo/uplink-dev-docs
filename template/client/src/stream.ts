@@ -82,7 +82,7 @@ export class SitrepStream {
         requestId,
         command,
         args,
-        sentAt: Date.now(),
+        sentAt: 0,
       });
     });
   }
