@@ -1,0 +1,51 @@
+# The plugin class
+
+A plugin is one class that implements `ISitrepUplink` and carries a `[SitrepUplink]` attribute.
+
+<<< ../../template/mod/ExampleUplink/ExampleUplink.cs#declaration{cs}
+
+The attribute is how Gonogo finds you: at load it scans every assembly that references `Sitrep.Contract` for types carrying it. Its argument is your Uplink's id, unique across every Uplink installed. **Your class needs a public parameterless constructor**: Gonogo instantiates it directly.
+
+The interface is three members:
+
+```csharp
+UplinkManifest Manifest { get; }
+void Register(IUplinkHost host);
+UplinkHealth Health();
+```
+
+## The manifest
+
+`Manifest` declares everything you publish and everything you accept, before any of it runs. Gonogo validates the declarations at startup and refuses handlers for commands you did not declare.
+
+<<< ../../template/mod/ExampleUplink/ExampleUplink.cs#manifest{cs}
+
+`Id` must match the attribute. `Channels` and `Commands` are covered on the next two pages.
+
+## Register
+
+`Register` is called once, on the main thread, at load. Wire your sources and handlers here and return.
+
+<<< ../../template/mod/ExampleUplink/ExampleUplink.cs#register{cs}
+
+If the mod you integrate is not installed, say so and return. `SetAvailability` marks the Uplink unavailable with a reason the operator can read; it does not stop the rest of Gonogo loading.
+
+An exception thrown out of `Register` takes down your Uplink and nothing else.
+
+## Health
+
+`Health` is polled. Return one of three states, with an optional detail string.
+
+<<< ../../template/mod/ExampleUplink/ExampleUplink.cs#health{cs}
+
+`UplinkHealth.Healthy` is the floor for an Uplink with nothing to report.
+
+## Reaching the mod you integrate
+
+Reflection, not a reference:
+
+<<< ../../template/mod/ExampleUplink/ExampleModAccess.cs#reflection{cs}
+
+Referencing the other mod's assembly is possible, and sometimes unavoidable. It costs you two things: your plugin fails to load when that mod is absent, rather than reporting itself unavailable, and its licence terms reach your combined work.
+
+Next: [Publishing a Topic](/guide/topics).

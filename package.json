@@ -1,0 +1,24 @@
+{
+  "name": "uplink-dev-docs",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vitepress dev docs",
+    "build": "npm run check && vitepress build docs",
+    "preview": "vitepress preview docs",
+    "check": "node scripts/check-snippets.mjs"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "typescript": "^5.9.3",
+    "vitepress": "^1.6.4"
+  },
+  "dependencies": {
+    "@ksp-gonogo/sitrep-sdk": "^0.0.1",
+    "@ksp-gonogo/ui-kit": "^0.1.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "styled-components": "^6.1.13"
+  }
+}

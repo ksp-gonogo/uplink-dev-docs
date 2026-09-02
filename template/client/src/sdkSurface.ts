@@ -1,0 +1,89 @@
+/**
+ * Touches every SDK export the reference documents, so the signatures there are
+ * compiled rather than transcribed. Nothing imports this file.
+ */
+// #region messages
+import {
+  CommandErrorCode,
+  Quality,
+  SDK_VERSION,
+  Staleness,
+  TOPIC_IDS,
+  isTopicId,
+  parseServerMessage,
+  type ClientMessage,
+  type CommandRequest,
+  type CommandResponse,
+  type ErrorMsg,
+  type EventMsg,
+  type Meta,
+  type ServerMessage,
+  type StreamData,
+  type Subscribe,
+  type TopicId,
+  type TopicPayload,
+  type TopicPayloadMap,
+  type Unsubscribe,
+} from "@ksp-gonogo/sitrep-sdk";
+
+export function describe(raw: string): string {
+  const message: ServerMessage = parseServerMessage(raw);
+  switch (message.type) {
+    case "stream-data": {
+      const frame: StreamData<unknown> = message;
+      const meta: Meta = frame.meta;
+      return `${frame.topic} valid at ${meta.validAt}`;
+    }
+    case "command-response": {
+      const response: CommandResponse<unknown> = message;
+      return `answer to ${response.requestId}`;
+    }
+    case "error": {
+      const failure: ErrorMsg = message;
+      return `${failure.code}: ${failure.message}`;
+    }
+    case "event": {
+      const event: EventMsg = message;
+      return `${event.topic} ${event.name}`;
+    }
+  }
+}
+// #endregion messages
+
+// #region client-messages
+export const outbound: ClientMessage[] = [
+  { type: "subscribe", topic: "vessel.orbit" } satisfies Subscribe,
+  { type: "unsubscribe", topic: "vessel.orbit" } satisfies Unsubscribe,
+  {
+    type: "command-request",
+    requestId: "req-0",
+    command: "example.setMode",
+    args: { mode: 1 },
+    sentAt: Date.now(),
+  } satisfies CommandRequest<{ mode: number }>,
+];
+// #endregion client-messages
+
+// #region topics
+export const topicCount: number = TOPIC_IDS.length;
+
+export function isKnown(topic: string): topic is TopicId {
+  return isTopicId(topic);
+}
+
+/** The payload of a Topic, keyed by the Topic's own name. */
+export type OrbitPayload = TopicPayload<"vessel.orbit">;
+export type EveryPayload = TopicPayloadMap;
+// #endregion topics
+
+// #region enums
+export const enums = {
+  fresh: Staleness.Fresh,
+  heldStale: Staleness.HeldStale,
+  lastBeforeBlackout: Staleness.LastBeforeBlackout,
+  loaded: Quality.Loaded,
+  onRails: Quality.OnRails,
+  outOfRange: CommandErrorCode.Range,
+  version: SDK_VERSION,
+};
+// #endregion enums

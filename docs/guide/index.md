@@ -1,0 +1,30 @@
+# What an Uplink is
+
+An Uplink connects one KSP mod to Gonogo. It has two halves:
+
+- **A plugin**, a .NET assembly that runs inside KSP next to the Gonogo mod. It reads the mod you are integrating and publishes data onto named **Topics**, and accepts **commands** sent back from the ground
+- **A client**, browser code that subscribes to those Topics and renders them
+
+The two halves never call each other. They meet at a WebSocket the Gonogo mod serves, carrying JSON messages whose shapes are typed in `@ksp-gonogo/sitrep-sdk`.
+
+## What you can build today
+
+The published packages cover the plugin half completely, and cover a standalone browser client that speaks the stream directly.
+
+They do not yet cover mounting your client as a widget inside the Gonogo dashboard: the registration API is not on the registry. [Known limits](/guide/limits) states exactly what is missing.
+
+## Vocabulary
+
+| Term | Meaning |
+| --- | --- |
+| **Topic** | A named stream of one payload shape, e.g. `vessel.orbit`. Clients subscribe by name. |
+| **Command** | A named request a client sends to the plugin, with typed arguments and a typed result. |
+| **UT** | Universal Time, the game's clock in seconds. Every published value is stamped with the UT it was true at. |
+| **Courier thread** | The background thread that packs and sends frames. It must never touch the game. |
+| **Vantage** | The command centre a message entered from. Relevant only if you gate on origin. |
+
+## The example in this guide
+
+Every page builds one Uplink, `example`, integrating a fictional Example Mod. It publishes an `example.status` Topic and accepts an `example.setMode` command. Every snippet is compiled from the [template](/guide/project-layout) in this documentation's repository.
+
+Next: [Prerequisites](/guide/prerequisites).
