@@ -1,0 +1,55 @@
+/*
+ * Gonogo's own palette, so the docs look like the thing they document rather
+ * than like default VitePress. Values are lifted from packages/theme/src/tokens.css
+ * in the gonogo repo: near-black surfaces, a low-contrast grey for body text, and
+ * the one accent (#00ff88) used sparingly the way the dashboard uses it.
+ *
+ * Dark only, deliberately. The app has no light mode and a docs site that offers
+ * one would be describing a product that does not exist.
+ */
+:root {
+  --vp-c-bg: #050505;
+  --vp-c-bg-alt: #0d0d0d;
+  --vp-c-bg-soft: #0d0d0d;
+  --vp-c-bg-elv: #0d0d0d;
+
+  --vp-c-divider: #2a2a2a;
+  --vp-c-border: #333;
+  --vp-c-gutter: #2a2a2a;
+
+  /*
+   * Raised from the dashboard's own #ccc/#8a8a8a/#5a5a5a. Those are tuned for
+   * glanceable readouts on a dark screen, not for reading paragraphs: #5a5a5a
+   * on #050505 is 2.96:1 and fails WCAG AA outright. These are 16.3:1, 7.8:1
+   * and 4.7:1 respectively, so every tier passes AA for body text.
+   */
+  --vp-c-text-1: #e6e6e6;
+  --vp-c-text-2: #a0a0a0;
+  --vp-c-text-3: #7a7a7a;
+
+  --vp-c-brand-1: #00ff88;
+  --vp-c-brand-2: #00cc6d;
+  --vp-c-brand-3: #00a557;
+  --vp-c-brand-soft: rgba(0, 255, 136, 0.14);
+
+  --vp-button-brand-bg: #00a557;
+  --vp-button-brand-hover-bg: #00cc6d;
+  --vp-button-brand-text: #050505;
+
+  --vp-code-block-bg: #0d0d0d;
+  --vp-custom-block-tip-border: #00a557;
+}
+
+/* The hero name is the only place the accent earns full brightness. */
+.VPHero .name {
+  color: var(--vp-c-brand-1);
+}
+
+/* Monospace headings: this is an instrument's documentation, not a brochure. */
+.VPDoc h1,
+.VPDoc h2,
+.VPHero .name,
+.VPHero .text {
+  font-family: var(--vp-font-family-mono);
+  letter-spacing: -0.01em;
+}

@@ -1,9 +1,8 @@
 ---
 layout: home
 hero:
-  name: Gonogo Uplink
-  text: Integrate a KSP mod with mission control
-  tagline: Publish telemetry from your mod, accept commands, and render it on screen.
+  name: Gonogo Uplink Docs
+  text: Documentation for creating your own Uplink
   actions:
     - theme: brand
       text: Start the guide
@@ -12,10 +11,10 @@ hero:
       text: Reference
       link: /reference/
 features:
-  - title: One assembly to compile against
-    details: The plugin half implements one interface from Sitrep.Contract.dll, which the Gonogo mod installs alongside itself.
-  - title: A typed wire contract
-    details: '@ksp-gonogo/sitrep-sdk types every message and every built-in Topic payload, so the browser half is checked at compile time.'
-  - title: A design system that matches
-    details: '@ksp-gonogo/ui-kit is the same set of primitives the built-in screens use.'
+  - title: The mod side
+    details: One class implementing ISitrepUplink, compiled against Sitrep.Contract.dll.
+  - title: The client side
+    details: A React bundle declaring the widgets that draw what your plugin publishes.
+  - title: What you compile against
+    details: '@ksp-gonogo/sitrep-sdk for the wire types, @ksp-gonogo/ui-kit for the primitives.'
 ---

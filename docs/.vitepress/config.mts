@@ -24,8 +24,8 @@ const primitives = [
 ];
 
 export default defineConfig({
-  title: "Gonogo Uplink",
-  description: "Build an Uplink: a KSP mod integration for Gonogo mission control",
+  title: "Gonogo Uplink Docs",
+  description: "Documentation for creating your own Gonogo Uplink",
   base: "/uplink-dev-docs/",
   cleanUrls: true,
   lastUpdated: true,
