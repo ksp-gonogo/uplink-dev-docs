@@ -53,3 +53,19 @@
   font-family: var(--vp-font-family-mono);
   letter-spacing: -0.01em;
 }
+
+/*
+ * The home hero's subtitle defaults to near-headline size, which gives one
+ * sentence of orientation the same weight as the product name above it.
+ */
+.VPHero .text {
+  font-size: 1.6rem;
+  line-height: 1.35;
+  max-width: 34ch;
+}
+
+@media (min-width: 960px) {
+  .VPHero .text {
+    font-size: 1.9rem;
+  }
+}

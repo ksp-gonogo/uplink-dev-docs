@@ -62,6 +62,11 @@ export default defineConfig({
   title: "Gonogo Uplink Docs",
   description: "Documentation for creating your own Gonogo Uplink",
   base: "/uplink-dev-docs/",
+
+  // The palette is dark-only on purpose (see theme/custom.css), so offering a
+  // toggle would hand the reader a half-styled light page built from tokens that
+  // were never defined for it.
+  appearance: "force-dark",
   cleanUrls: true,
   lastUpdated: true,
   themeConfig: {
