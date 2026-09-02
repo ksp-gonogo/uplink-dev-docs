@@ -107,6 +107,93 @@ namespace ExampleUplink
             kernel.Query<T>(capability);
         // #endregion kernel
 
+        // #region declarations
+        /// <summary>Every field of every declaration type, so none can drift unseen.</summary>
+        public static UplinkManifest FullManifest() => new UplinkManifest
+        {
+            Id = "example",
+            Version = "0.1.0",
+            Name = "Example Uplink",
+            Author = "you",
+            Repo = "https://github.com/you/example-uplink",
+            ExpectedClientHash = "sha256-0000",
+            ClientSource = new UplinkClientSource
+            {
+                Url = "https://example.invalid/uplink.js",
+                DevPath = "client/dist/uplink.js",
+            },
+            Channels = new List<ChannelDeclaration>
+            {
+                new ChannelDeclaration
+                {
+                    Topic = "example.status",
+                    Delivery = Delivery.ReliableOrdered,
+                    Delay = DelayRole.TrueNow,
+                    AbsenceIsData = true,
+                    PerVesselNode = true,
+                    IsKeyframe = payload => payload != null,
+                    Emission = new EmissionPolicy(
+                        keyframeIntervalUt: 30,
+                        quantum: EmissionQuantum.PercentOfRange(0.01, 0, 100),
+                        minSampleIntervalUt: 0.5,
+                        maxRateIntervalUt: 1.0),
+                },
+            },
+            Commands = new List<CommandDeclaration>
+            {
+                new CommandDeclaration
+                {
+                    Command = "example.setMode",
+                    Delayed = false,
+                    Requires = new[]
+                    {
+                        new CommandRequirement
+                        {
+                            Kind = "example.gate",
+                            Facility = "example.facility",
+                            Quantity = "mode",
+                            Needs = new[] { "example.status" },
+                        },
+                    },
+                },
+            },
+        };
+
+        public static UplinkHealth Degraded() => new UplinkHealth(
+            UplinkHealthState.Degraded,
+            "reading a stale value",
+            new[] { new UplinkHealthFact("samples", "12") });
+
+        public static GateVerdict Breached() => GateVerdict.Fail(
+            CommandErrorCode.LimitReached,
+            new LimitBreach
+            {
+                Facility = "example.facility",
+                FacilityName = "Example Facility",
+                FacilityLevel = 1,
+                Quantity = "mode",
+                Limit = 2,
+                Actual = 3,
+                Unit = "mode",
+            });
+
+        public static CapabilityDescriptor Capability() => new CapabilityDescriptor
+        {
+            Id = "example.reliability",
+            Exclusive = true,
+            SpineCritical = false,
+            Vanilla = _ => new object(),
+        };
+
+        public static IEnumerable<string> NoticeKinds(Kernel kernel)
+        {
+            foreach (ResolutionNotice notice in kernel.LastNotices)
+            {
+                yield return notice.Capability + " " + notice.Kind + " " + notice.Detail;
+            }
+        }
+        // #endregion declarations
+
         // #region availability
         public static void Unavailable(IUplinkHost host, string reason) =>
             host.SetAvailability(Availability.Unavailable(reason));

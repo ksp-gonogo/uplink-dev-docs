@@ -40,7 +40,7 @@ Three failures appear nowhere you can see. Discovery writes them to standard err
 - The assembly could not be scanned
 - The type could not be instantiated
 
-Calling `SetAvailability(Availability.Unavailable(...))` yourself is also not logged. It is reported on the `system.uplinks` Topic instead.
+Calling `SetAvailability(Availability.Unavailable(...))` yourself is also not logged. It is reported on a `system.uplinks` Topic, which the SDK's typed Topic map does not include, so reading it means subscribing by string and typing the payload yourself.
 
 **So confirm your Uplink loaded by looking for its data, not for a log line.**
 

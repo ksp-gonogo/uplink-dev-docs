@@ -21,7 +21,8 @@ They do not yet cover mounting your client as a widget inside the Gonogo dashboa
 | **Command** | A named request a client sends to the plugin, with typed arguments and a typed result. |
 | **UT** | Universal Time, the game's clock in seconds. Every published value is stamped with the UT it was true at. |
 | **Courier thread** | The background thread that packs and sends frames. It must never touch the game. |
-| **Vantage** | The command centre a message entered from. Relevant only if you gate on origin. |
+| **Command centre** | A control position an operator works from. A mission can have several, at different distances from the vessel. |
+| **Vantage** | Which command centre a message entered from, and whose delay it is subject to. Relevant only if you care where a command came from. |
 
 ## The example in this guide
 

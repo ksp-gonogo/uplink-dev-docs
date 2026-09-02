@@ -44,6 +44,9 @@ The third exists because VitePress renders a missing include as an error block
 inside the page instead of failing the build, so a broken include would ship
 looking like content.
 
+`vitepress build` adds a fourth: it fails on a dead internal link. It does **not**
+check heading anchors, so a wrong `#fragment` still builds. Check those by hand.
+
 The mod gate needs `Sitrep.Contract.dll`, which is distributed in a KSP install
 rather than on a package registry, so it is skipped unless you point at one:
 
@@ -63,6 +66,15 @@ It is therefore skipped in CI. Run it locally before changing anything under
   `template/client/src/sdkSurface.ts` exist to close that gap: they call every
   member the reference documents, so a signature that has drifted fails the
   build rather than reading correctly and being wrong.
+
+## Publishing
+
+`docs/.vitepress/config.mts` sets `base: "/uplink-dev-docs/"`, which must match the
+GitHub Pages path. Change it if the repository is named anything else, or set it
+to `"/"` for a user or custom-domain site. Every internal link is root-relative,
+so the base is the only place the path appears.
+
+Pages must be set to deploy from GitHub Actions in the repository settings.
 
 ## Layout
 

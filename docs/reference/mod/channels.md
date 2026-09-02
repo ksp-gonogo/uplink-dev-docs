@@ -106,6 +106,10 @@ Without it, a sub-topic about a vessel you are not flying is delayed by the vess
 
 It is ignored on a static declaration, whose one Topic is not keyed by anything.
 
+## Every field at once
+
+<<< ../../../template/mod/ExampleUplink/HostSurface.cs#declarations{cs}
+
 ## Naming
 
 `<uplinkId>.<thing>`, lower camel after the dot: `example.status`, `example.linkMargin`. The prefix is all that separates you from every other installed Uplink.

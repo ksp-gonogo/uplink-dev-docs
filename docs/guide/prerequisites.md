@@ -3,7 +3,7 @@
 ## For the plugin
 
 - **.NET SDK 8 or later.** The plugin targets `net48`; on macOS and Linux the template pulls in `Microsoft.NETFramework.ReferenceAssemblies` so no Mono install is needed
-- **`Sitrep.Contract.dll`.** This is the only Gonogo assembly you may reference, and the only one you need. It is not on NuGet. Take it from a KSP install that has the Gonogo mod:
+- **`Sitrep.Contract.dll`.** The Gonogo mod's contract assembly. It is the only Gonogo assembly you may reference, and the only one you need. It is not on NuGet. Take it from a KSP install that has the Gonogo mod:
 
   ```
   KSP/GameData/Gonogo/Plugins/Sitrep.Contract.dll

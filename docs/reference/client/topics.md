@@ -38,6 +38,15 @@ declare function isTopicId(value: string): value is TopicId;
 
 Read `TOPIC_IDS` for the authoritative list at the version you installed.
 
+## Topics the map does not include
+
+Two kinds are missing from `TopicPayloadMap`, and neither is a mistake you can work around by casting `TopicId`:
+
+- Your Uplink's own Topics (below)
+- A `system.uplinks` Topic, which reports each installed Uplink's availability and health
+
+Subscribe to those by string.
+
 ## Topics under a computed prefix
 
 Some namespaces are keyed at runtime: one sub-topic per processor, per body, per vessel. Those names are not fixed, so they have no member in the union and `isTopicId` returns false for them. Subscribe by string and type the payload yourself.
