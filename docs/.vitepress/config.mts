@@ -1,4 +1,39 @@
 import { defineConfig } from "vitepress";
+import { readFileSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const modules = resolve(dirname(fileURLToPath(import.meta.url)), "../../node_modules");
+
+/**
+ * Read straight off disk rather than through `require(pkg + "/package.json")`:
+ * the SDK's `exports` map has one key and does not expose its own manifest, the
+ * same defect `guide/limits` documents. Read it the way a human would.
+ */
+function installedVersion(name: string): string {
+  const manifest = join(modules, ...name.split("/"), "package.json");
+  return JSON.parse(readFileSync(manifest, "utf8")).version;
+}
+
+/**
+ * The versions these pages describe, read from the packages the snippet gate
+ * actually compiled against rather than typed in by hand.
+ *
+ * A reader has no other way to tell. There is one live doc set, built from
+ * whatever is current, and the two package versions have not moved since they
+ * were first published, so "latest" identifies nothing on its own. Sourcing the
+ * number from `node_modules` means the footer cannot disagree with the snippets
+ * above it: bump a dependency and the statement moves with it, or it does not
+ * move because nothing did.
+ *
+ * The contract version (`CONTRACT_MAJOR`/`CONTRACT_MINOR`), which is what an
+ * Uplink's compat gate actually checks, is deliberately absent: the published
+ * SDK does not export it and the mod that would carry it is not released. Once
+ * either ships one, name it here.
+ */
+const documents = ["@ksp-gonogo/sitrep-sdk", "@ksp-gonogo/ui-kit"]
+  .map((name) => `${name}@${installedVersion(name)}`)
+  .join(" &middot; ");
 
 const primitives = [
   "ActionButton",
@@ -108,5 +143,8 @@ export default defineConfig({
       { icon: "github", link: "https://github.com/ksp-gonogo/gonogo" },
     ],
     search: { provider: "local" },
+    footer: {
+      message: `Describes ${documents}`,
+    },
   },
 });
