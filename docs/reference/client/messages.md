@@ -79,13 +79,15 @@ interface CommandRequest<TArgs> {
 
 `requestId` is yours to generate and yours to correlate. `sentAt` is a wall-clock millisecond timestamp.
 
-The server also accepts a `set-vantage` message that this union does not include.
+The server also accepts a `set-vantage` message, which this union does not include and this documentation does not specify. Nothing published describes its shape.
 
 ## parseServerMessage
 
 ```ts
 function parseServerMessage(raw: string): ServerMessage;
 ```
+
+`ErrorMsg.code` is an open string. No set of values is published, so treat it as a label to log and show `message` to the operator.
 
 Parses the JSON and checks the `type` tag against the four the server sends, throwing on anything else. That check is what lets the `switch` above narrow exhaustively.
 

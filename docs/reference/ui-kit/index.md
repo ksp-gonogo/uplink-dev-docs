@@ -26,7 +26,7 @@ No primitive reads telemetry, dispatches a command, or holds anything but its ow
 
 **Containers**: [Panel](/reference/ui-kit/Panel), [Card](/reference/ui-kit/Card), [WidgetHeader](/reference/ui-kit/WidgetHeader)
 
-**Readouts**: [Value](/reference/ui-kit/Value), [Readout](/reference/ui-kit/Readout), [ProgressBar](/reference/ui-kit/ProgressBar), [Truncate](/reference/ui-kit/Truncate)
+**Readouts**: [Value](/reference/ui-kit/Value), [Readout](/reference/ui-kit/Readout) (with `BigReadout`, `ReadoutCaption` and `StatusPill`), [ProgressBar](/reference/ui-kit/ProgressBar), [Truncate](/reference/ui-kit/Truncate)
 
 **State**: [Badge](/reference/ui-kit/Badge), [StatusIndicator](/reference/ui-kit/StatusIndicator), [Spinner](/reference/ui-kit/Spinner), [EmptyState](/reference/ui-kit/EmptyState)
 
@@ -40,8 +40,16 @@ No primitive reads telemetry, dispatches a command, or holds anything but its ow
 
 Two scales run through the whole kit.
 
-**Space**: `xs` `sm` `md` `lg` `xl`, taken by every `gap` and every `pad`. Snapping to it is what makes separate widgets line up.
+**Space**: the `SpaceToken` union, `xs` `sm` `md` `lg` `xl`, taken by every `gap` and every `pad` in the kit. It is exported from the root and declared on [Stack](/reference/ui-kit/Stack). Snapping to it is what makes separate widgets line up.
 
 **Tone**: the colour of state, never a colour you choose. `go` and `nogo` for binary readiness, `warn` for attention, `info` for neutral emphasis, `neutral` for none. `Readout` and `StatusPill` use a narrower set: `default`, `go`, `warning`, `alert`.
 
-Some primitives take tone as `$tone` rather than `tone`. Those are styled-components, and the `$` prefix is what keeps the prop out of the DOM.
+| Prop | Type | On |
+| --- | --- | --- |
+| `tone` | `ActionButtonTone` | `ActionButton` |
+| `tone` | `BadgeTone` | `Badge` |
+| `tone` | `StatusTone` | `StatusIndicator` |
+| `tone` | `ValueTone` | `Value` |
+| `$tone` | `ReadoutTone` | `BigReadout`, `Readout`, `StatusPill` |
+
+The `$` marks a styled-component transient prop, which is what keeps it off the DOM element. Everything else takes a plain `tone`.

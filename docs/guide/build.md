@@ -7,7 +7,9 @@ dotnet build mod/ExampleUplink/ExampleUplink.csproj -c Release \
   -p:SitrepContractDll="/path/to/GameData/Gonogo/Plugins/Sitrep.Contract.dll"
 ```
 
-The output is one file, `ExampleUplink.dll`. If `Sitrep.Contract.dll` also appears in your output directory, `Private="false"` is missing from the reference. Fix it before installing: the duplicate shadows the assembly Gonogo loaded, and the two copies are not the same types.
+The output lands in `bin/Release/`, without a target-framework subdirectory, because the project sets `AppendTargetFrameworkToOutputPath=false`. You want `ExampleUplink.dll` from there; the `.pdb` beside it is debug symbols and does not need to ship.
+
+**Nothing else should be in that directory.** If `Sitrep.Contract.dll` appears, `Private="false"` is missing from the reference. Fix it before installing: the duplicate shadows the assembly Gonogo loaded, and the two copies are not the same types.
 
 ## Install
 
@@ -46,10 +48,12 @@ Calling `SetAvailability(Availability.Unavailable(...))` yourself is also not lo
 
 ## Verify the Topic
 
-The mod serves a plain WebSocket on port 8090, with no path, no sub-protocol, and no handshake. Any client can check the plugin without the browser half:
+The mod serves a plain WebSocket on port 8090, with no path, no sub-protocol, and no handshake. It binds every interface, so a browser on another machine on the same network reaches it at the game machine's address. The port is fixed and there is no setting for it.
+
+Any client can check the plugin without the browser half:
 
 ```
-ws://localhost:8090
+ws://<the machine running KSP>:8090
 ```
 
 Send a subscribe frame:
@@ -61,9 +65,9 @@ Send a subscribe frame:
 A successful subscribe is acknowledged with an event frame:
 
 ```json
-{ "type": "event", "topic": "example.status", "name": "subscribed", "meta": {} }
+{ "type": "event", "topic": "example.status", "name": "subscribed", "meta": { ... } }
 ```
 
-**A Topic the mod does not know is answered with silence.** No error, no acknowledgement. If nothing comes back, either the name is wrong or your Uplink did not load, and the protocol will not tell you which.
+**A Topic the mod does not know is answered with silence.** No error, and no acknowledgement either, which is the one thing you can act on: an acknowledgement means the Topic exists and your Uplink loaded, and its absence means one of the two is wrong.
 
 Next: [Connecting](/guide/client-stream).

@@ -59,7 +59,17 @@ public sealed class UplinkManifest
 }
 ```
 
+```csharp
+public sealed class UplinkClientSource
+{
+    public string Url { get; set; }
+    public string? DevPath { get; set; }
+}
+```
+
 `Id` must equal the attribute's id. `Channels` and `Commands` are validated at startup: a command handler with no matching declaration throws.
+
+`ClientSource` and `ExpectedClientHash` describe where a client bundle is fetched from and what it should hash to. Leave both unset: [the API a fetched bundle would register itself through is not published](/guide/limits), so a bundle named here has no supported way to appear on screen.
 
 <<< ../../../template/mod/ExampleUplink/ExampleUplink.cs#manifest{cs}
 

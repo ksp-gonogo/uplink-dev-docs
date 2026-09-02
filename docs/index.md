@@ -13,7 +13,7 @@ hero:
       link: /reference/
 features:
   - title: One assembly to compile against
-    details: The plugin half implements one interface from Sitrep.Contract.dll, which the Gonogo mod already installs.
+    details: The plugin half implements one interface from Sitrep.Contract.dll, which the Gonogo mod installs alongside itself.
   - title: A typed wire contract
     details: '@ksp-gonogo/sitrep-sdk types every message and every built-in Topic payload, so the browser half is checked at compile time.'
   - title: A design system that matches

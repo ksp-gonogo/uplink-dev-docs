@@ -3,7 +3,11 @@
 ## For the plugin
 
 - **.NET SDK 8 or later.** The plugin targets `net48`; on macOS and Linux the template pulls in `Microsoft.NETFramework.ReferenceAssemblies` so no Mono install is needed
-- **`Sitrep.Contract.dll`.** The Gonogo mod's contract assembly. It is the only Gonogo assembly you may reference, and the only one you need. It is not on NuGet. Take it from a KSP install that has the Gonogo mod:
+- **`Sitrep.Contract.dll`.** The Gonogo mod's contract assembly. It is the only Gonogo assembly you may reference, and the only one you need
+
+  It is not on NuGet, and **the Gonogo mod itself is not released yet**: it is on neither CKAN nor SpaceDock, and there is no download. Until it ships, the assembly comes from building the mod from source, from [its repository](https://github.com/ksp-gonogo/gonogo).
+
+  Once installed it is at:
 
   ```
   KSP/GameData/Gonogo/Plugins/Sitrep.Contract.dll
@@ -21,8 +25,12 @@
 - **React 18.** `@ksp-gonogo/ui-kit@0.1.0` declares a peer dependency on `react@^18`. Installing it alongside React 19 fails outright on npm
 
 ```bash
-npm install @ksp-gonogo/sitrep-sdk @ksp-gonogo/ui-kit react@18 styled-components
+npm install @ksp-gonogo/sitrep-sdk @ksp-gonogo/ui-kit \
+  react@18 react-dom@18 styled-components
+npm install -D typescript @types/react @types/react-dom vite @vitejs/plugin-react
 ```
+
+The template's `client/package.json` has the same list, pinned.
 
 Those two, plus `react`, `styled-components` and anything from the wider registry, are the whole of what an Uplink may import. No other `@ksp-gonogo/*` package is published.
 

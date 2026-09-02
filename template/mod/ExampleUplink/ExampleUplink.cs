@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using Sitrep.Contract;
 
@@ -17,7 +16,6 @@ namespace ExampleUplink
 
         private readonly ExampleModAccess _mod = new ExampleModAccess();
         private IChannelPublisher? _status;
-        private int _requestedMode = -1;
 
         // #region manifest
         public UplinkManifest Manifest { get; } = new UplinkManifest
@@ -66,24 +64,11 @@ namespace ExampleUplink
         /// Runs on the Unity main thread. Read the game and the mod here, and
         /// return plain data, never a live game object.
         /// </summary>
-        private object? CaptureOnMainThread(KspSnapshot? snapshot)
+        private object? CaptureOnMainThread(KspSnapshot? snapshot) => new Capture
         {
-            if (_requestedMode >= 0)
-            {
-                _mod.ApplyMode(_requestedMode);
-                _requestedMode = -1;
-            }
-
-            return new Capture
-            {
-                Ut = snapshot?.Ut ?? 0.0,
-                Status = new ExampleStatus
-                {
-                    Mode = _mod.ReadMode(),
-                    Enabled = _mod.ReadEnabled(),
-                },
-            };
-        }
+            Ut = snapshot?.Ut ?? 0.0,
+            Status = ExampleStatus.Build(_mod.ReadMode(), _mod.ReadEnabled()),
+        };
 
         /// <summary>
         /// Runs off the main thread with exactly what the capture returned.
@@ -100,8 +85,8 @@ namespace ExampleUplink
 
         // #region command
         /// <summary>
-        /// Command handlers do not run on the main thread. Record the request
-        /// and let the next capture apply it.
+        /// The shipped mod marshals command handlers onto the Unity main thread
+        /// before running them, so this may call the game directly.
         /// </summary>
         private CommandResult SetMode(SetModeArgs args)
         {
@@ -110,7 +95,7 @@ namespace ExampleUplink
                 return CommandResult.Fail(CommandErrorCode.Range, "Mode must be 0, 1 or 2");
             }
 
-            _requestedMode = args.Mode;
+            _mod.ApplyMode(args.Mode);
             return CommandResult.Ok();
         }
         // #endregion command
@@ -128,7 +113,7 @@ namespace ExampleUplink
         private sealed class Capture
         {
             public double Ut;
-            public ExampleStatus Status = new ExampleStatus();
+            public Dictionary<string, object?> Status = new Dictionary<string, object?>();
         }
     }
 }

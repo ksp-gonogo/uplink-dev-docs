@@ -80,6 +80,10 @@ public readonly struct EmissionQuantum
 
 `Absolute(0)` emits on any change. `PercentOfRange(0.01, 0, 100)` emits when a percentage moves by one point.
 
+`Emission` has no default. Set it on every declaration.
+
+Every interval here is in UT, and time warp compresses UT into wall-clock time, so a policy that is comfortable at 1x emits at the warp multiple. There is no wall-clock clamp: `MaxRateIntervalUt` is UT like the rest.
+
 A quantum is the main lever you have on bandwidth. Set it to the smallest change an operator could act on, not to the smallest change your source can report.
 
 ## AbsenceIsData

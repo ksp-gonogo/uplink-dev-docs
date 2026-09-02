@@ -28,7 +28,7 @@ void AddVantageCommandHandler<TArgs, TResult>(string command, Func<TArgs, string
 
 The vantage variant's extra `string` is the id of the command centre the request entered from, resolved at the boundary. Do not take an origin from the payload; a client can put anything there.
 
-**Handlers do not run on the main thread**, and there is no way to get onto it. A handler that must call the game records the request for the next main-thread capture to apply.
+The shipped mod marshals a handler onto the Unity main thread and blocks the calling thread until it returns, so a handler may call the game directly and must return promptly. `Sitrep.Contract` does not promise that, and a host built the other way runs handlers on the courier thread.
 
 ## Argument binding
 
@@ -73,20 +73,35 @@ public class CommandResult<T> : CommandResult
 
 <<< ../../../template/mod/ExampleUplink/ExampleUplink.cs#command{cs}
 
-## CommandErrorCode
+On the wire, `result` is:
 
-```csharp
-public enum CommandErrorCode
-{
-    None, Unknown, NoVessel, ModeUnavailable, Range, NotFound, Timeout,
-    PlanNotOwned, LimitReached, AlreadyAtMaximum, InsufficientFunds,
-    InsufficientScience, CareerModeRequired, WrongScene, WrongState,
-    NotClearToProceed, CapabilityMismatch, NoConnection, NotUnlocked,
-    SiteOccupied, /* reserved */ , NotReady,
-}
+```json
+{ "success": true, "errorCode": 0, "detail": "...", "payload": ... }
 ```
 
+`detail` appears only when non-empty, `breach` only when set, and `payload` only for `CommandResult<T>`. The payload goes through the Topic serialiser, so it is a dictionary, a list, or a primitive.
+
+## CommandErrorCode
+
+| Value | Code | Value | Code |
+| --- | --- | --- | --- |
+| 0 | `None` | 11 | `InsufficientScience` |
+| 1 | `Unknown` | 12 | `CareerModeRequired` |
+| 2 | `NoVessel` | 13 | `WrongScene` |
+| 3 | `ModeUnavailable` | 14 | `WrongState` |
+| 4 | `Range` | 15 | `NotClearToProceed` |
+| 5 | `NotFound` | 16 | `CapabilityMismatch` |
+| 6 | `Timeout` | 17 | `NoConnection` |
+| 7 | `PlanNotOwned` | 18 | `NotUnlocked` |
+| 8 | `LimitReached` | 19 | `SiteOccupied` |
+| 9 | `AlreadyAtMaximum` | 20 | reserved |
+| 10 | `InsufficientFunds` | 21 | `NotReady` |
+
 Pick the specific code. The client shows it, and `Unknown` tells the operator nothing they can act on.
+
+The numbers matter because the value, not the name, is what crosses the wire.
+
+**The published SDK knows only the first seven**, `None` through `Timeout`. Anything from `PlanNotOwned` up arrives on the client as a number its `CommandErrorCode` enum cannot name, so a reverse lookup gives `undefined`. Handle an unrecognised code, and put anything the operator needs to read into `Detail`.
 
 ## Gates
 

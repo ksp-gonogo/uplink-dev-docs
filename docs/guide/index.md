@@ -11,7 +11,7 @@ The two halves never call each other. They meet at a WebSocket the Gonogo mod se
 
 The published packages cover the plugin half completely, and cover a standalone browser client that speaks the stream directly.
 
-They do not yet cover mounting your client as a widget inside the Gonogo dashboard: the registration API is not on the registry. [Known limits](/guide/limits) states exactly what is missing.
+They do not yet cover mounting your client as a widget inside the Gonogo dashboard: the API that registers one is not published to npm. [Known limits](/guide/limits) states exactly what is missing.
 
 ## Vocabulary
 

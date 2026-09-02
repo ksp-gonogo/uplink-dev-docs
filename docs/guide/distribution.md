@@ -29,7 +29,9 @@ Free, no approval queue, and CKAN can index from it directly.
 
 ## CKAN
 
-Indexing requires a `.netkan` file in the CKAN metadata repository. Declare a dependency on the Gonogo mod so a player cannot install your Uplink without the assembly it needs, and declare the mod you integrate as a dependency or a recommendation depending on whether your Uplink is useful without it.
+Indexing requires a `.netkan` file in the CKAN metadata repository. Declare the mod you integrate as a dependency, or a recommendation if your Uplink is useful without it.
+
+You will also want to depend on the Gonogo mod, so a player cannot install your Uplink without the assembly it needs. **That is not possible yet**: the Gonogo mod is not indexed on CKAN, so there is no identifier to depend on. Until it is, say so in your description.
 
 - [CKAN mod-author guide](https://github.com/KSP-CKAN/CKAN/wiki/Adding-a-mod-to-the-CKAN)
 - [netkan specification](https://github.com/KSP-CKAN/CKAN/blob/master/Spec.md)

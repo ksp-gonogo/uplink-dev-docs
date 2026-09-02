@@ -29,6 +29,18 @@ Four things there are worth copying:
 
 The [ui-kit reference](/reference/ui-kit/) has a page per primitive.
 
+## Running it
+
+<<< ../../template/client/src/main.tsx#main
+
+```bash
+cd client
+npm install
+npm run dev
+```
+
+With KSP running and your plugin loaded, the widget fills in as frames arrive. If it stays on its empty state, check the Topic name against [what the plugin declared](/guide/topics): an unknown Topic is answered with silence.
+
 ## Accessibility
 
 The primitives carry their own semantics: `ProgressBar` renders `role="progressbar"`, `StatusIndicator` can be a live region, `Spinner` honours `prefers-reduced-motion`. What is on you:

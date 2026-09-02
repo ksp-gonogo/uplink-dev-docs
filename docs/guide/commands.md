@@ -24,13 +24,17 @@ Arguments arrive as generic JSON and are bound onto this class by property name,
 
 <<< ../../template/mod/ExampleUplink/ExampleUplink.cs#command{cs}
 
-Return `CommandResult.Ok()`, or `CommandResult.Fail(code, detail)` with a code from `CommandErrorCode`. Use `CommandResult<T>.Ok(payload)` to return data.
+Return `CommandResult.Ok()`, or `CommandResult.Fail(code, detail)` with a code from `CommandErrorCode`.
 
-**A handler does not run on the main thread.** `Sitrep.Contract` offers no way to marshal onto it, so a handler that must call the game records the request and lets the next main-thread capture apply it:
+**The shipped mod marshals a handler onto the Unity main thread before running it**, so a handler may call the game directly. The calling thread blocks until it does, which is why a handler must return promptly rather than waiting on anything itself.
 
-<<< ../../template/mod/ExampleUplink/ExampleUplink.cs#sampling{cs}
+`Sitrep.Contract` does not promise that marshalling; it is how the shipped host is built. If you want to be safe against a host that does not, record the request in a field and apply it from your main-thread capture, reading and writing that field with `Interlocked`.
 
-The cost is latency of up to one sample interval, and the operator sees the effect on the next frame either way.
+## Returning data
+
+`CommandResult<T>.Ok(payload)` puts `T` under a `payload` key beside `success` and `errorCode`, so the client reads `result.payload`. A non-generic `CommandResult` sends no `payload` key at all.
+
+`T` goes through the same serialiser as a Topic payload, so it is a dictionary, a list, or a primitive. Not a class of your own.
 
 ## Validate in the handler
 

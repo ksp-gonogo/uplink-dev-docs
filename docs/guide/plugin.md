@@ -1,6 +1,10 @@
 # The plugin class
 
-A plugin is one class that implements `ISitrepUplink` and carries a `[SitrepUplink]` attribute.
+A plugin is one class that implements `ISitrepUplink` and carries a `[SitrepUplink]` attribute. Complete, this is the whole of it:
+
+<<< ../../template/mod/ExampleUplink/MinimalUplink.cs#minimal{cs}
+
+That compiles, loads, and publishes the game clock once a second. The rest of this page turns it into the example Uplink, whose pieces are shown one at a time; [the whole file](#the-whole-file) is at the bottom.
 
 <<< ../../template/mod/ExampleUplink/ExampleUplink.cs#declaration{cs}
 
@@ -47,5 +51,11 @@ Reflection, not a reference:
 <<< ../../template/mod/ExampleUplink/ExampleModAccess.cs#reflection{cs}
 
 Referencing the other mod's assembly is possible, and sometimes unavoidable. It costs you two things: your plugin fails to load when that mod is absent, rather than reporting itself unavailable, and its licence terms reach your combined work.
+
+## The whole file
+
+::: details ExampleUplink.cs
+<<< ../../template/mod/ExampleUplink/ExampleUplink.cs{cs}
+:::
 
 Next: [Publishing a Topic](/guide/topics).

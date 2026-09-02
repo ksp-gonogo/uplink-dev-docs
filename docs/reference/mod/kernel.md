@@ -39,7 +39,24 @@ public sealed class ProviderRegistration
 }
 ```
 
-`Factory` is called once, at resolution, and its return value is what callers get. `CanServe` lets you decline at resolution time: return false when the mod you depend on turned out to be absent. `Priority` decides between competing providers for an exclusive capability, highest first.
+```csharp
+public sealed class ProviderContext
+{
+    public string KernelVersion { get; }
+
+    public T Query<T>(string capability);
+    public T Vanilla<T>(string capability);
+}
+
+public sealed class ProviderVersions
+{
+    public string Self { get; set; }
+    public string? MinKernelVersion { get; set; }
+    public VersionRange? TargetModVersionRange { get; set; }
+}
+```
+
+`Factory` is called once, at resolution, and its return value is what callers get. Its `ProviderContext` lets a provider reach other capabilities as it is built, and `Vanilla<T>` reaches the fallback rather than the winning provider. `CanServe` lets you decline at resolution time: return false when the mod you depend on turned out to be absent. `Priority` decides between competing providers for an exclusive capability, highest first.
 
 ## Declaring a capability
 
@@ -65,6 +82,22 @@ Registering a provider for a capability nobody declared throws.
 public T Query<T>(string capability);
 public IReadOnlyList<object?> Active(string capability);
 ```
+
+```csharp
+public sealed class ResolveOptions
+{
+    public string KernelVersion { get; set; }
+    public string? ModVersion { get; set; }
+    public IReadOnlyDictionary<string, string>? Preferences { get; set; }
+}
+
+public sealed class ResolveResult
+{
+    public IReadOnlyList<ResolutionNotice> Notices { get; set; }
+}
+```
+
+`Resolve` is the host's to call, not yours. An Uplink registers and queries.
 
 **Nothing resolves until every Uplink has registered.** That ordering is what allows an Uplink to provide at all, so you cannot query during your own `Register`. Capture `host.Kernel` there and query at each use.
 

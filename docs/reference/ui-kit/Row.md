@@ -8,8 +8,11 @@ interface RowProps extends HTMLAttributes<HTMLElement> {
   children?: ReactNode;
 }
 
+declare function Row(props: RowProps): JSX.Element;
 declare const RowName: StyledComponent<"span">;
-declare const Row: typeof RowBase & { Name: typeof RowName };
+declare namespace Row {
+  const Name: typeof RowName;
+}
 ```
 
 | Prop | Default | Meaning |

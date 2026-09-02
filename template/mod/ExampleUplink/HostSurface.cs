@@ -20,10 +20,12 @@ namespace ExampleUplink
         {
             host.AddSampler(new CountingSampler());
 
-            host.AddChannelSource("example.available", _ => true);
+            // The Topic must already be in the registering Uplink's manifest.
+            // Publishing to an undeclared one throws out of Register.
+            host.AddChannelSource("example.status", _ => true);
 
             IChannelPublisher publisher = host.Publisher("example.status");
-            publisher.Publish(new ExampleStatus(), host.NowUt());
+            publisher.Publish(ExampleStatus.Build(0, false), host.NowUt());
 
             host.AddSampledSource(
                 captureOnMainThread: snapshot => snapshot?.Ut,

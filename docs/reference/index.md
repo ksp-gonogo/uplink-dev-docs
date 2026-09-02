@@ -16,4 +16,4 @@ Three surfaces, and nothing else is available to an Uplink.
 
 ---
 
-Signatures on these pages are exercised by compiled files in the template, so a signature that has drifted fails the build rather than reading correctly and being wrong.
+Signature blocks on these pages are transcribed declarations. What is compiled is every example: `template/mod/ExampleUplink/HostSurface.cs` calls every `IUplinkHost` member and fills every field of every declaration type, and `template/client/src/sdkSurface.ts` touches every SDK export the client pages document. A signature those files reach cannot drift without failing the build. The ui-kit prop interfaces are covered only where an example uses the prop.

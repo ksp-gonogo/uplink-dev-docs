@@ -1,11 +1,23 @@
+using System.Collections.Generic;
+
 namespace ExampleUplink
 {
     // #region payload
-    /// <summary>Payload of the <c>example.status</c> Topic.</summary>
-    public sealed class ExampleStatus
+    /// <summary>
+    /// The payload of the <c>example.status</c> Topic.
+    ///
+    /// A dictionary, not a class. The serialiser accepts dictionaries, arrays
+    /// and primitives; a plain object of your own is not a shape it can write,
+    /// and a frame carrying one is dropped with nothing on the wire.
+    /// </summary>
+    public static class ExampleStatus
     {
-        public int Mode { get; set; }
-        public bool Enabled { get; set; }
+        public static Dictionary<string, object?> Build(int mode, bool enabled) =>
+            new Dictionary<string, object?>
+            {
+                ["mode"] = mode,
+                ["enabled"] = enabled,
+            };
     }
     // #endregion payload
 

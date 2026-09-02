@@ -41,6 +41,10 @@ void ResetChannelBirth(IEnumerable<string> topics);
 | `Publisher(...).Publish` | Main | Publishing from your own event |
 | `AddSampledSource` | Both | Anything that reads the game on a cadence |
 
+**Every Topic you publish to must already be in the registering Uplink's `Manifest.Channels`.** `AddChannelSource`, `Publisher` and `ForceKeyframe` all throw `InvalidOperationException` on an undeclared Topic, and a throw out of `Register` takes your whole Uplink unavailable.
+
+A payload is a `Dictionary<string, object?>`, a list, or a primitive. The serialiser cannot write an object of your own, and a frame carrying one is dropped silently.
+
 <<< ../../../template/mod/ExampleUplink/HostSurface.cs#publishing{cs}
 
 `captureOnMainThread` must return plain data. `handleOnCourier` receives that object off the main thread; a live `Vessel` or `Part` reaching it crashes KSP.
@@ -60,7 +64,9 @@ public interface ISnapshotSampler
 }
 ```
 
-Runs on the main thread once per snapshot, before any mapper. Use it to gather state that several of your Topics share.
+Runs on the **courier thread** once per snapshot, before any mapper, so it must not touch the game. Use it to derive state that several of your Topics share from a snapshot you already have.
+
+To read the game, use `AddSampledSource`, whose capture half is the only main-thread seam on this interface.
 
 <<< ../../../template/mod/ExampleUplink/HostSurface.cs#sampler{cs}
 
@@ -74,7 +80,9 @@ public sealed class KspSnapshot
 }
 ```
 
-One instance is shared by every sampler and mapper for that tick. Treat it as immutable once `Sample` returns.
+One instance is shared by every sampler and mapper for that tick, so treat it as read-only after `Sample` returns even though nothing enforces that.
+
+`Ut` is the tick's Universal Time and is what you stamp a publish with. `Values` is a bag core fills for its own Topics; its keys are not part of this contract and are not documented, so do not read from it. Read the game in a main-thread capture instead.
 
 ### IChannelPublisher
 
@@ -127,6 +135,17 @@ void SetAuthorityDelay(string centreId, string vesselId, double oneWaySeconds);
 void SetCentreDelay(string fromCentreId, string toCentreId, double oneWaySeconds);
 void SetVesselConnectivity(string vesselId, bool connected);
 void SetConnectivitySource(Func<KspSnapshot?, bool?> computeOnMainThread);
+```
+
+```csharp
+public enum CommsDelaySource { None = 0, SignalDelay = 1 }
+
+public class CommsDelay
+{
+    public double OneWaySeconds { get; set; }
+    public CommsDelaySource Source { get; set; }
+    public PayloadMeta Meta { get; set; }
+}
 ```
 
 Only for an Uplink integrating a communications mod. These set the delay every other Uplink's `Delayed` Topics and commands are subject to, so setting them wrongly desynchronises the whole dashboard.

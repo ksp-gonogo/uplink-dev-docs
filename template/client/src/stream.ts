@@ -9,8 +9,9 @@ import {
 
 // #region types
 type Listener = (frame: StreamData<unknown>) => void;
+type EventListener = (name: string) => void;
 
-/** Resolves when the mod answers, or rejects if the request errors out. */
+/** Resolves when the mod answers, or rejects if the request cannot be answered. */
 type Pending = {
   resolve: (result: unknown) => void;
   reject: (reason: Error) => void;
@@ -25,14 +26,19 @@ type Pending = {
 export class SitrepStream {
   private readonly socket: WebSocket;
   private readonly listeners = new Map<string, Set<Listener>>();
+  private readonly eventListeners = new Map<string, Set<EventListener>>();
   private readonly pending = new Map<string, Pending>();
+  private readonly backlog: ClientMessage[] = [];
   private nextRequestId = 0;
 
   constructor(url: string) {
     this.socket = new WebSocket(url);
+    this.socket.addEventListener("open", () => this.flush());
     this.socket.addEventListener("message", (event) => {
       this.dispatch(parseServerMessage(event.data as string));
     });
+    this.socket.addEventListener("close", () => this.failPending("stream closed"));
+    this.socket.addEventListener("error", () => this.failPending("stream error"));
   }
 
   /** Subscribes to `topic` and returns an unsubscribe function. */
@@ -52,6 +58,18 @@ export class SitrepStream {
         this.send({ type: "unsubscribe", topic });
       }
     };
+  }
+
+  /**
+   * Named occurrences on a Topic. `subscribed` acknowledges a subscribe, and
+   * is the only way to tell a Topic that has nothing to say from a Topic the
+   * mod does not have.
+   */
+  onEvent(topic: string, listener: EventListener): () => void {
+    const listeners = this.eventListeners.get(topic) ?? new Set<EventListener>();
+    this.eventListeners.set(topic, listeners);
+    listeners.add(listener);
+    return () => listeners.delete(listener);
   }
 
   /** Sends a command and resolves with the mod's result. */
@@ -83,22 +101,57 @@ export class SitrepStream {
         }
         return;
       case "command-response":
-        this.pending.get(message.requestId)?.resolve(message.result);
-        this.pending.delete(message.requestId);
+        this.settle(message.requestId, (p) => p.resolve(message.result));
         return;
       case "error":
         if (message.requestId) {
-          this.pending.get(message.requestId)?.reject(new Error(message.message));
-          this.pending.delete(message.requestId);
+          this.settle(message.requestId, (p) => p.reject(new Error(message.message)));
         }
         return;
       case "event":
+        for (const listener of this.eventListeners.get(message.topic) ?? []) {
+          listener(message.name);
+        }
         return;
     }
   }
   // #endregion dispatch
 
+  // #region send
+  /**
+   * A socket that is still CONNECTING throws on `send`, so anything written
+   * before the handshake completes waits in a backlog.
+   */
   private send(message: ClientMessage): void {
+    if (this.socket.readyState !== WebSocket.OPEN) {
+      this.backlog.push(message);
+      return;
+    }
     this.socket.send(JSON.stringify(message));
   }
+
+  private flush(): void {
+    while (this.backlog.length > 0) {
+      this.socket.send(JSON.stringify(this.backlog.shift()));
+    }
+  }
+  // #endregion send
+
+  // #region settle
+  private settle(requestId: string, act: (pending: Pending) => void): void {
+    const pending = this.pending.get(requestId);
+    if (pending) {
+      this.pending.delete(requestId);
+      act(pending);
+    }
+  }
+
+  /** A command in flight can outlive the socket. Never leave one unsettled. */
+  private failPending(reason: string): void {
+    for (const [requestId, pending] of this.pending) {
+      this.pending.delete(requestId);
+      pending.reject(new Error(reason));
+    }
+  }
+  // #endregion settle
 }

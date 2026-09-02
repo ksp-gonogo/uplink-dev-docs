@@ -8,17 +8,28 @@ example-uplink/
 │   └── ExampleUplink/
 │       ├── ExampleUplink.csproj
 │       ├── ExampleUplink.cs          the plugin
+│       ├── MinimalUplink.cs          the smallest Uplink that compiles
 │       ├── ExampleModAccess.cs       reflection into the mod you integrate
-│       └── Payloads.cs               wire shapes
+│       ├── Payloads.cs               wire shapes
+│       └── HostSurface.cs            reference examples, not part of the plugin
 └── client/
     ├── package.json
     ├── tsconfig.json
+    ├── vite.config.ts
+    ├── index.html
     └── src/
+        ├── main.tsx                  mounts the widget
         ├── stream.ts                 the socket client
         ├── topics.ts                 your Topic and command shapes
         ├── useExampleStatus.ts       a subscription hook
-        └── ExampleWidget.tsx         the UI
+        ├── ExampleWidget.tsx         the UI
+        ├── sendCommand.ts            a typed command call
+        ├── sdkSurface.ts             reference examples, not part of the app
+        └── ui/                       one example per ui-kit primitive
+            └── Provider.tsx          the theme wrapper your tree needs
 ```
+
+`HostSurface.cs`, `sdkSurface.ts` and everything under `ui/` except `Provider.tsx` exist to compile the reference pages. Delete them once you have copied the template; nothing imports them.
 
 Two independent builds. Nothing is shared between them but the JSON on the wire, and you keep the two payload declarations in step by hand.
 
