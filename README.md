@@ -32,17 +32,26 @@ Pages never contain hand-copied code that is meant to compile. Every such
 snippet is transcluded from a real source file under `template/`, using
 VitePress's `<<< path#region` include.
 
-`npm run check` runs three gates:
+`npm run check` runs four gates:
 
 | Gate | Checks |
 | --- | --- |
 | `tsc -p template/client/tsconfig.json` | Every client snippet typechecks against the installed published packages |
 | `dotnet build template/mod/ExampleUplink` | Every mod snippet compiles against `Sitrep.Contract.dll` |
 | include scan | Every `<<<` in `docs/` resolves to a real file, and to a real `#region` when one is named |
+| ui-kit page coverage | Every ui-kit COMPONENT has a reference page, every reference page is about something the kit exports, and the sidebar reaches all of them |
 
-The third exists because VitePress renders a missing include as an error block
-inside the page instead of failing the build, so a broken include would ship
-looking like content.
+The include scan exists because VitePress renders a missing include as an error
+block inside the page instead of failing the build, so a broken include would
+ship looking like content.
+
+The page-coverage gate (`scripts/check-ui-kit-pages.mjs`) is not one page per
+export: a component is an export TypeScript will accept in one of the two
+shapes React gives a component, and a page covers the whole MODULE a component
+is exported from, which is why `PanelTitle` and `ScrollArea` live on `Panel`'s
+page. Types, helper functions and the theme object are therefore not asked for
+a page, and may still have one. The script's own header carries the reasoning,
+the two rules that look right and are not, and what each kind of failure means.
 
 `vitepress build` adds a fourth: it fails on a dead internal link. It does **not**
 check heading anchors, so a wrong `#fragment` still builds. Check those by hand.
