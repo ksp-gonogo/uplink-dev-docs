@@ -6,7 +6,8 @@
     "dev": "vitepress dev docs",
     "build": "npm run check && vitepress build docs",
     "preview": "vitepress preview docs",
-    "check": "node scripts/check-snippets.mjs"
+    "check": "node scripts/check-snippets.mjs",
+    "prepare": "git config core.hooksPath .githooks || true"
   },
   "devDependencies": {
     "@types/react": "^18.3.12",
