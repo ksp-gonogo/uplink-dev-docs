@@ -3,7 +3,10 @@ import { readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const modules = resolve(dirname(fileURLToPath(import.meta.url)), "../../node_modules");
+const modules = resolve(
+  dirname(fileURLToPath(import.meta.url)),
+  "../../node_modules",
+);
 
 /**
  * Read straight off disk rather than through `require(pkg + "/package.json")`:
@@ -85,7 +88,7 @@ export default defineConfig({
           ],
         },
         {
-          text: "The plugin",
+          text: "Plugin",
           items: [
             { text: "The plugin class", link: "/guide/plugin" },
             { text: "Publishing a Topic", link: "/guide/topics" },
@@ -94,7 +97,7 @@ export default defineConfig({
           ],
         },
         {
-          text: "The client",
+          text: "Client",
           items: [
             { text: "Connecting", link: "/guide/client-stream" },
             { text: "Reading a Topic", link: "/guide/client-topics" },

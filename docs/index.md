@@ -11,10 +11,10 @@ hero:
       text: Reference
       link: /reference/
 features:
-  - title: The mod side
-    details: One class implementing ISitrepUplink, compiled against Sitrep.Contract.dll.
-  - title: The client side
-    details: A React bundle declaring the widgets that draw what your plugin publishes.
-  - title: What you compile against
-    details: '@ksp-gonogo/sitrep-sdk for the wire types, @ksp-gonogo/ui-kit for the primitives.'
+  - title: Mod side
+    details: Create an Uplink that interfaces with KSP, declares values for widgets, and claims capabilities.
+  - title: Client side
+    details: A React bundle that declares widgets, contributions, and augments that use any API value and render in the Gonogo app.
+  - title: Tooling
+    details: "@ksp-gonogo/sitrep-sdk for the API surface, with an extensive component library in @ksp-gonogo/ui-kit. Uplink structure enforced via Sitrep.Contract.dll."
 ---
