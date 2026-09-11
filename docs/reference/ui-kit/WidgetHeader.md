@@ -20,4 +20,4 @@ interface WidgetHeaderProps extends Omit<HTMLAttributes<HTMLDivElement>, "title"
 
 Pass `title` or `children`, not both.
 
-A widget that spends career funds must show the balance in its body, not only here: the header's right-hand slot collapses at narrow widths and takes the balance with it.
+A widget that spends career funds must show the balance in its body, not only here. `actions` never shrinks, so a balance parked in it squeezes the title away rather than itself, and a cost reads where the control that spends it is.
