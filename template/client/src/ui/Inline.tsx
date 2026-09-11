@@ -5,7 +5,9 @@ export function InstrumentActions({ armed }: { armed: boolean }) {
   return (
     <Cluster justify="end">
       <Inline gap="xs">
-        <Badge tone={armed ? "warn" : "neutral"}>{armed ? "ARMED" : "SAFE"}</Badge>
+        <Badge severity={armed ? "caution" : "nominal"}>
+          {armed ? "ARMED" : "SAFE"}
+        </Badge>
       </Inline>
       <Inline gap="xs" inset>
         <ActionButton>Transmit</ActionButton>

@@ -1,5 +1,5 @@
 // #region example
-import { Row, Section, SectionTitle, Value } from "@ksp-gonogo/ui-kit";
+import { Row, Section, SectionTitle, Text } from "@ksp-gonogo/ui-kit";
 
 export function Resources({ units }: { units: [string, string][] }) {
   return (
@@ -8,7 +8,7 @@ export function Resources({ units }: { units: [string, string][] }) {
       {units.map(([name, amount]) => (
         <Row key={name} as="div">
           <Row.Name>{name}</Row.Name>
-          <Value size="sm">{amount}</Value>
+          <Text size="sm">{amount}</Text>
         </Row>
       ))}
     </Section>

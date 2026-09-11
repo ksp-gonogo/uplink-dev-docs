@@ -7,7 +7,7 @@ import {
   Panel,
   Row,
   Section,
-  Value,
+  Text,
 } from "@ksp-gonogo/ui-kit";
 import type { SitrepStream } from "./stream";
 import { EXAMPLE_SET_MODE_COMMAND, type SetModeArgs } from "./topics";
@@ -33,11 +33,11 @@ export function ExampleWidget({ stream }: { stream: SitrepStream }) {
           <Section>
             <Row as="div">
               <Row.Name>Mode</Row.Name>
-              <Value>{MODE_NAMES[status.mode] ?? "Unknown"}</Value>
+              <Text>{MODE_NAMES[status.mode] ?? "Unknown"}</Text>
             </Row>
             <Row as="div">
               <Row.Name>Power</Row.Name>
-              <Badge tone={status.enabled ? "go" : "nogo"}>
+              <Badge severity={status.enabled ? "nominal" : "info"}>
                 {status.enabled ? "ON" : "OFF"}
               </Badge>
             </Row>

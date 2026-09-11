@@ -10,11 +10,17 @@ React 18 only: the package declares `react@^18` as a peer dependency, and instal
 
 ## Setup
 
-Every primitive reads the theme through styled-components, so the tree needs a `ThemeProvider`. `GonogoTokens` injects the custom properties the theme's values refer to.
+Every primitive reads the theme through styled-components, so the tree needs a theme provider. `DefaultThemeProvider` is the built-in one.
 
 <<< ../../../template/client/src/ui/Provider.tsx#provider
 
-If your build imports CSS, `@ksp-gonogo/ui-kit/tokens.css` is the same block as a stylesheet and replaces `<GonogoTokens />`.
+The theme's values are custom properties, and the sheet that defines them goes in your entry point:
+
+```ts
+import "@ksp-gonogo/ui-kit/tokens.css";
+```
+
+Without it every themed size resolves to nothing. See [Theme](/reference/ui-kit/theme).
 
 ## It is presentational only
 
@@ -26,30 +32,31 @@ No primitive reads telemetry, dispatches a command, or holds anything but its ow
 
 **Containers**: [Panel](/reference/ui-kit/Panel), [Card](/reference/ui-kit/Card)
 
-**Readouts**: [Value](/reference/ui-kit/Value), [Readout](/reference/ui-kit/Readout) (with `BigReadout`, `ReadoutCaption` and `StatusPill`), [ProgressBar](/reference/ui-kit/ProgressBar), [Truncate](/reference/ui-kit/Truncate)
+**Readouts**: [Unit](/reference/ui-kit/Unit), [Text](/reference/ui-kit/Text), [Readout](/reference/ui-kit/Readout) (with `BigReadout`, `ReadoutCaption` and `StatusPill`), [ProgressBar](/reference/ui-kit/ProgressBar), [Truncate](/reference/ui-kit/Truncate)
 
 **State**: [Badge](/reference/ui-kit/Badge), [StatusIndicator](/reference/ui-kit/StatusIndicator), [Spinner](/reference/ui-kit/Spinner), [EmptyState](/reference/ui-kit/EmptyState)
 
-**Rows**: [Row](/reference/ui-kit/Row), [ScienceExperimentRow](/reference/ui-kit/ScienceExperimentRow)
+**Rows**: [Row](/reference/ui-kit/Row)
 
 **Controls**: [ActionButton](/reference/ui-kit/ActionButton)
 
-**Non-component**: [Theme](/reference/ui-kit/theme), [formatNumber](/reference/ui-kit/formatNumber)
+**Non-component**: [Theme](/reference/ui-kit/theme)
 
 ## Shared vocabulary
 
-Two scales run through the whole kit.
+Three scales run through the whole kit.
 
 **Space**: the `SpaceToken` union, `xs` `sm` `md` `lg` `xl`, taken by every `gap` and every `pad` in the kit. It is exported from the root and declared on [Stack](/reference/ui-kit/Stack). Snapping to it is what makes separate widgets line up.
 
-**Tone**: the colour of state, never a colour you choose. `go` and `nogo` for binary readiness, `warn` for attention, `info` for neutral emphasis, `neutral` for none. `Readout` and `StatusPill` use a narrower set: `default`, `go`, `warning`, `alert`.
+**Severity**: what a chip is claiming about state, on one six-step scale from `nominal` to `offline`. [Badge](/reference/ui-kit/Badge) takes it, and a [Panel](/reference/ui-kit/Panel) merges the chips under it into a single worst-case summary, so the scale is what lets separate chips add up to a panel state.
+
+**Tone**: colour, on the components that are not claiming state. Each names its own small union, and none of them is a free colour choice.
 
 | Prop | Type | On |
 | --- | --- | --- |
 | `tone` | `ActionButtonTone` | `ActionButton` |
-| `tone` | `BadgeTone` | `Badge` |
 | `tone` | `StatusTone` | `StatusIndicator` |
-| `tone` | `ValueTone` | `Value` |
+| `tone` | `TextTone` | `Text` |
 | `$tone` | `ReadoutTone` | `BigReadout`, `Readout`, `StatusPill` |
 
 The `$` marks a styled-component transient prop, which is what keeps it off the DOM element. Everything else takes a plain `tone`.

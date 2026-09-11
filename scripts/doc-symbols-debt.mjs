@@ -11,11 +11,19 @@
  *
  * WHERE THE TRUTH COMES FROM. Not `node_modules`. The `@ksp-gonogo/ui-kit@0.1.0`
  * tarball this repo installs predates a large part of the kit these pages
- * describe, and it still exports all four of the names below, so an installed
- * copy cannot see any of this and `tsc` over `template/` passes on every one of
- * them. The truth is `packages/ui-kit/src/index.ts` in a gonogo checkout, read
- * through the TypeScript checker so `export *` chains are followed rather than
- * guessed. See `ui-kit-exports.json` for how that reaches CI.
+ * describe, and it still exports every name the pages were caught claiming, so
+ * an installed copy cannot see any of this and `tsc` over `template/` passes on
+ * all of them. The truth is `packages/ui-kit/src/index.ts` in a gonogo checkout,
+ * read through the TypeScript checker so `export *` chains are followed rather
+ * than guessed. See `ui-kit-exports.json` for how that reaches CI.
+ *
+ * BOTH DEBT LISTS ARE EMPTY, and the pages are held to zero. They were seeded
+ * on 2026-09-11 with 28 claims over 17 files and three pages with no subject
+ * left, and cleared the same day: `Value` became `Text`, `formatNumber` and
+ * `GonogoTokens` were withdrawn with no replacement to name, `BadgeTone` never
+ * existed (a badge takes a `Severity`), and `ScienceExperimentRow` left the kit
+ * for a package an Uplink cannot install. Keep them empty. This file stays
+ * regardless: the other two exports below are configuration, not debt.
  */
 
 /**
@@ -65,57 +73,17 @@ export const EXTERNAL_IDENTIFIERS = [
  * and tells you to lower the count when one leaves it. Do not add a page to
  * make a failure go away, the failure IS the finding.
  */
-export const STALE_PAGE_DEBT = {
-  // `Value` left the kit when `<Unit>` became the only way to show a quantity.
-  // The page still documents `ValueTone`, `ValueSize` and `ValueProps`, and ten
-  // template files still import it, so six other pages' examples have to be
-  // rewritten before this one can go.
-  "docs/reference/ui-kit/Value.md": 1,
-  // `formatNumber` left with every other bare string formatter for the same
-  // reason: `<Unit>` renders a quantity, and a formatter one import away is how
-  // eleven widgets each grew their own ladder.
-  "docs/reference/ui-kit/formatNumber.md": 1,
-  // `ScienceExperimentRow` was deleted outright. This is the page that started
-  // all of this.
-  "docs/reference/ui-kit/ScienceExperimentRow.md": 1,
-};
+export const STALE_PAGE_DEBT = {};
 
 /**
  * Claimed-but-absent symbols per file, counted per occurrence.
  *
- * Same ceiling rule. The three stale pages account for most of it; the rest is
- * the reach those pages have into files that are otherwise correct, which is
- * the part that would never have been found by opening the page.
+ * Same ceiling rule. Note what this catches that reading a page does not: most
+ * of the seeded entries were the reach a stale page had into files that were
+ * otherwise correct, `Value` in six other primitives' snippet sources among
+ * them.
  */
-export const MISSING_SYMBOL_DEBT = {
-  // The stale pages themselves.
-  "docs/reference/ui-kit/Value.md": 3,
-  "docs/reference/ui-kit/formatNumber.md": 2,
-  "docs/reference/ui-kit/ScienceExperimentRow.md": 3,
-  // `BadgeTone` never existed under that name; `Badge` takes `BadgeProps["tone"]`.
-  "docs/reference/ui-kit/Badge.md": 1,
-  // `GonogoTokens` was withdrawn on purpose: a second route to the tokens means
-  // a hand-typed copy of the values that nothing checks, and the one that
-  // existed fell 39 properties behind. `@ksp-gonogo/ui-kit/tokens.css` is the
-  // only route now, and both of these pages still offer the component.
-  "docs/reference/ui-kit/theme.md": 1,
-  // `GonogoTokens` twice in Setup, then `Value`, `ValueTone` and `BadgeTone` in
-  // the primitives list and the tone table.
-  "docs/reference/ui-kit/index.md": 5,
-  // Snippet sources, and therefore doc content: these are `<<<`-included into
-  // the pages above. `tsc` compiles them green against the stale tarball.
-  "template/client/src/ui/ScienceExperimentRow.tsx": 2,
-  "template/client/src/ui/Value.tsx": 2,
-  "template/client/src/ExampleWidget.tsx": 1,
-  "template/client/src/ui/Box.tsx": 1,
-  "template/client/src/ui/Card.tsx": 1,
-  "template/client/src/ui/Grid.tsx": 1,
-  "template/client/src/ui/ProgressBar.tsx": 1,
-  "template/client/src/ui/Provider.tsx": 1,
-  "template/client/src/ui/Section.tsx": 1,
-  "template/client/src/ui/Stack.tsx": 1,
-  "template/client/src/ui/Truncate.tsx": 1,
-};
+export const MISSING_SYMBOL_DEBT = {};
 
 /**
  * Floors on what the scan walked, asserted before any finding is reported.

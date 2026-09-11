@@ -6,11 +6,15 @@ The kit is presentational only. No primitive reads telemetry or dispatches a com
 
 ## Wrap the tree once
 
-Every primitive reads the theme through styled-components, so a `ThemeProvider` is required. `GonogoTokens` injects the custom properties the theme's values refer to.
+Every primitive reads the theme through styled-components, so a theme provider is required. `DefaultThemeProvider` is the built-in one.
 
 <<< ../../template/client/src/ui/Provider.tsx#provider
 
-If your build imports CSS files, `@ksp-gonogo/ui-kit/tokens.css` is the same block as a stylesheet and you can drop `<GonogoTokens />`.
+The theme's values are CSS custom properties, and the sheet that defines them is imported once, from your entry point:
+
+```ts
+import "@ksp-gonogo/ui-kit/tokens.css";
+```
 
 ## A widget
 
@@ -20,8 +24,8 @@ Four things there are worth copying:
 
 - **`Panel` takes its title and its body as props**, `panelTitle` and `sections`. That is what gives the widget the padded frame every other widget has, and what lets the body reflow when an operator makes the tile wider
 - **`EmptyState` for a missing value**, never a zero. Until the first frame lands you do not know the mode; showing `Idle` claims you do
-- **`Value` for numbers**, which sets tabular figures so digits stop jittering as they update
-- **`Badge` tone carries the state**, `go` and `nogo` rather than a colour you picked
+- **`Text` for a string you have already made**, which sets tabular figures so digits stop jittering as they update. A number with a unit goes through `Unit` instead, which formats it and draws its symbol
+- **`Badge` severity carries the state**, `nominal` and `info` rather than a colour you picked
 
 ## Layout primitives
 

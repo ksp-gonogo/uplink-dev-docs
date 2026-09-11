@@ -1,11 +1,11 @@
 // #region example
-import { Stack, Value } from "@ksp-gonogo/ui-kit";
+import { Stack, Text } from "@ksp-gonogo/ui-kit";
 
 export function Readings({ readings }: { readings: string[] }) {
   return (
     <Stack gap="md">
       {readings.map((reading) => (
-        <Value key={reading}>{reading}</Value>
+        <Text key={reading}>{reading}</Text>
       ))}
     </Stack>
   );

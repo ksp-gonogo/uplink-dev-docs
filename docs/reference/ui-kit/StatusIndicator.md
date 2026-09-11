@@ -14,7 +14,7 @@ interface StatusIndicatorProps extends Omit<HTMLAttributes<HTMLDivElement>, "chi
 
 | Prop | Default | Meaning |
 | --- | --- | --- |
-| `tone` | required | Same palette as [Badge](/reference/ui-kit/Badge) |
+| `tone` | required | Its own five-name union, above. A sentence is not a chip, so it does not take a [Badge](/reference/ui-kit/Badge) severity |
 | `live` | `false` | Makes the indicator a polite live region |
 
 <<< ../../../template/client/src/ui/StatusIndicator.tsx#example

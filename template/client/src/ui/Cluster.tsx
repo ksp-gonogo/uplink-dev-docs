@@ -5,7 +5,7 @@ export function TitleRow({ title, state }: { title: string; state: string }) {
   return (
     <Cluster justify="between" gap="sm">
       <Truncate>{title}</Truncate>
-      <Badge tone="neutral">{state}</Badge>
+      <Badge>{state}</Badge>
     </Cluster>
   );
 }

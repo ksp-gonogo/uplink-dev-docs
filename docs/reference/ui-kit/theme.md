@@ -12,7 +12,7 @@ interface UiKitTheme {
 
 The kit augments styled-components' `DefaultTheme` with this interface, so `theme.colors.text.muted` is typed inside any `styled` template you write.
 
-`defaultDarkTheme` is the built-in theme. Pass it to `ThemeProvider`.
+`defaultDarkTheme` is the built-in theme, and `DefaultThemeProvider` is styled-components' `ThemeProvider` with that theme already in it.
 
 <<< ../../../template/client/src/ui/Provider.tsx#provider
 
@@ -51,16 +51,18 @@ interface ThemeBorders { subtle; strong }
 
 Sizes and spacing resolve to CSS custom-property strings such as `var(--font-size-base)`, not to fixed lengths. That is what lets the responsive overrides in the token sheet (coarse-pointer bumps, reduced motion) keep working when you read from the theme.
 
-## GonogoTokens
+## The token sheet
+
+The strings above refer to custom properties, and something has to define them. That is the stylesheet, imported once from your entry point:
 
 ```ts
-declare const GonogoTokens: NamedExoticComponent;
+import "@ksp-gonogo/ui-kit/tokens.css";
 ```
 
-A styled-components global sheet carrying the custom properties the theme's strings refer to. Render it once near the root. Without it, or without `@ksp-gonogo/ui-kit/tokens.css`, every themed size resolves to nothing.
+Without it every themed size resolves to nothing. It is not mounted for you, because injecting a stylesheet is a side effect and the kit stays side-effect-free so it tree-shakes.
 
-It is not mounted for you: injecting a stylesheet is a side effect, and the kit stays side-effect-free so it tree-shakes.
+The sheet is the only route to the tokens. A component that wrote the same properties out in JS shipped alongside it for a while, which meant a hand-typed second copy of every value that nothing compared against the first; it drifted 39 properties behind before it was withdrawn.
 
 ## A custom theme
 
-Build a `UiKitTheme` of your own if you want, but you will be the only widget on the dashboard wearing it. Prefer `defaultDarkTheme`.
+Build a `UiKitTheme` of your own if you want, and pass it to styled-components' `ThemeProvider` in place of `DefaultThemeProvider`. You will be the only widget on the dashboard wearing it, so prefer `defaultDarkTheme`.

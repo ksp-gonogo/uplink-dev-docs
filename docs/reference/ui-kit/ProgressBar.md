@@ -18,4 +18,4 @@ interface ProgressBarProps extends Omit<HTMLAttributes<HTMLDivElement>, "childre
 
 Always pass `ariaLabel`. A screen reader announces the percentage and nothing else, so without it the operator hears a number with no subject.
 
-The bar shows the fraction; it does not show the number. Pair it with a [Value](/reference/ui-kit/Value) when the exact figure matters.
+The bar shows the fraction; it does not show the number. Pair it with a [Unit](/reference/ui-kit/Unit) when the exact figure matters.

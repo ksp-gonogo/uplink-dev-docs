@@ -7,7 +7,7 @@ export function CrewList({ crew }: { crew: string[] }) {
       {crew.map((name) => (
         <Row key={name}>
           <Row.Name>{name}</Row.Name>
-          <Badge tone="go">ABOARD</Badge>
+          <Badge severity="nominal">ABOARD</Badge>
         </Row>
       ))}
     </ul>

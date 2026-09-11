@@ -51,13 +51,13 @@ const primitives = [
   "ProgressBar",
   "Readout",
   "Row",
-  "ScienceExperimentRow",
   "Section",
   "Spinner",
   "Stack",
   "StatusIndicator",
+  "Text",
   "Truncate",
-  "Value",
+  "Unit",
 ];
 
 export default defineConfig({
@@ -141,7 +141,6 @@ export default defineConfig({
               link: `/reference/ui-kit/${name}`,
             })),
             { text: "Theme", link: "/reference/ui-kit/theme" },
-            { text: "formatNumber", link: "/reference/ui-kit/formatNumber" },
           ],
         },
       ],
