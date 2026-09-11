@@ -7,7 +7,9 @@
     "build": "npm run check && vitepress build docs",
     "preview": "vitepress preview docs",
     "check": "node scripts/check-snippets.mjs",
-    "prepare": "git config core.hooksPath .githooks || true"
+    "prepare": "git config core.hooksPath .githooks || true",
+    "check:symbols": "node scripts/check-doc-symbols.mjs",
+    "sync:ui-kit-exports": "node scripts/check-doc-symbols.mjs --sync"
   },
   "devDependencies": {
     "@types/react": "^18.3.12",

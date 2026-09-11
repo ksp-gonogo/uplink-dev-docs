@@ -1,9 +1,16 @@
 /**
- * Compiles every snippet the documentation includes.
+ * Compiles every snippet the documentation includes, resolves every include,
+ * and checks that every symbol the pages name is one the kit exports.
  *
  * The client half always runs. The mod half needs `Sitrep.Contract.dll`, which
  * ships in a KSP install rather than on a package registry, so it runs only
  * when SITREP_CONTRACT_DLL points at one.
+ *
+ * Every section runs whatever the ones before it did, and the verdict at the
+ * bottom names each one that failed. A compile error in the template must not
+ * take the symbol check offline with it: they go stale independently, and the
+ * symbol check is the only one that can see a page describing something the
+ * kit deleted.
  */
 import { spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
@@ -82,6 +89,10 @@ for (const page of markdownFiles(resolve(root, "docs"))) {
   }
 }
 process.stdout.write(`${includeCount} includes resolved.\n`);
+
+process.stdout.write("\n== documented symbols ==\n");
+const { checkDocSymbols } = await import("./check-doc-symbols.mjs");
+failures.push(...(await checkDocSymbols()));
 
 if (failures.length > 0) {
   process.stdout.write(`\nFAILED: ${failures.join(", ")}\n`);

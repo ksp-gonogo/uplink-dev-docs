@@ -32,17 +32,43 @@ Pages never contain hand-copied code that is meant to compile. Every such
 snippet is transcluded from a real source file under `template/`, using
 VitePress's `<<< path#region` include.
 
-`npm run check` runs three gates:
+`npm run check` runs four gates. Every one of them runs whatever the ones before
+it did, and the verdict line at the end names each that failed: they go stale
+independently, so a red compile must not take the others offline with it.
 
 | Gate | Checks |
 | --- | --- |
-| `tsc -p template/client/tsconfig.json` | Every client snippet typechecks against the installed published packages |
+| `tsc -p template/client/tsconfig.json` | Every client snippet typechecks against the **installed** published packages |
 | `dotnet build template/mod/ExampleUplink` | Every mod snippet compiles against `Sitrep.Contract.dll` |
 | include scan | Every `<<<` in `docs/` resolves to a real file, and to a real `#region` when one is named |
+| documented symbols | Every reference page has a live subject, every symbol it names is one the kit exports, and every internal link lands |
 
 The third exists because VitePress renders a missing include as an error block
 inside the page instead of failing the build, so a broken include would ship
 looking like content.
+
+The fourth exists because nothing else can see a page for a component that has
+been deleted. Markdown compiles against nothing, and `tsc` cannot stand in for
+it: the emphasis on **installed** above is the whole problem, since the
+`@ksp-gonogo/ui-kit` tarball on npm is a long way behind the kit these pages
+describe and still exports names the kit dropped. That check therefore reads
+its truth from `packages/ui-kit/src/index.ts` in a gonogo checkout, through the
+TypeScript checker so `export *` chains are followed rather than guessed.
+
+CI has no such checkout, so the export list is committed as
+`scripts/ui-kit-exports.json` and the pages are graded against that. A run that
+CAN reach a checkout also verifies the snapshot against source in the same pass,
+which is what stops the committed copy from quietly agreeing with itself:
+
+```bash
+npm run check:symbols                 # this gate alone
+npm run sync:ui-kit-exports           # regenerate the snapshot; never hand-edit it
+GONOGO_REPO=/path/to/gonogo npm run check:symbols   # a checkout that is not a sibling
+GONOGO_REPO=off npm run check:symbols               # exercise the CI path
+```
+
+Known staleness lives in `scripts/doc-symbols-debt.mjs` as two ceilings. They
+shrink, never grow: a page added to one is a bug written down instead of fixed.
 
 `vitepress build` adds a fourth: it fails on a dead internal link. It does **not**
 check heading anchors, so a wrong `#fragment` still builds. Check those by hand.
@@ -81,5 +107,5 @@ Pages must be set to deploy from GitHub Actions in the repository settings.
 ```
 docs/          the site
 template/      the starter an author copies, and the source of every snippet
-scripts/       the snippet gate
+scripts/       the doc gates, and the generated ui-kit export list they read
 ```
