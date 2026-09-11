@@ -25,6 +25,14 @@ Vite, webpack, esbuild and Rollup are unaffected. A Node-based test runner needs
 
 Under a strict package manager, ui-kit also cannot typecheck alone: one of its declaration files imports a type from `@ksp-gonogo/sitrep-sdk`, which it lists only as a dev dependency. Install both packages, which you want anyway.
 
+## `Panel` is a box, not the frame the built-in widgets use
+
+`@ksp-gonogo/ui-kit@0.1.0` publishes `Panel` as a styled `div`: a bordered, padded, scrolling surface and nothing more. You title it by rendering `PanelTitle` or [WidgetHeader](/reference/ui-kit/WidgetHeader) inside it and you fill it with children, which is what every example here does and the only shape the package supports.
+
+The built-in screens use a different `Panel`. Theirs is a compound component that takes its title, its body sections, its header aside, its toolbar and its sidebar as props, and decides from the tile's own width whether those sections run down one column or across two. None of that is on npm. `panelTitle` and `sections` are type errors against the published package, so your widget will not reflow when an operator makes its tile wider.
+
+Expect the title line to move when that half is published: it drops the bare `PanelTitle` and `PanelSubtitle` exports these pages use in favour of reaching the title through `Panel` itself.
+
 ## You cannot publish a type of your own
 
 The mod's serialiser writes dictionaries, arrays, strings, numbers, booleans, and the payload types the mod itself declares. There is no reflection over an arbitrary object, and no extension point for one.
