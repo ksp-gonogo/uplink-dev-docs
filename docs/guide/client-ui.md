@@ -1,6 +1,6 @@
 # Building the UI
 
-`@ksp-gonogo/ui-kit` is the design system the built-in screens are made of. Use it and your Uplink looks native; hand-roll CSS and it does not.
+`@ksp-gonogo/ui-kit` is the design system the built-in screens are made of. Use it to make your Uplink fit in with Gonogo.
 
 The kit is presentational only. No primitive reads telemetry or dispatches a command; data comes in as props and interaction goes out as callbacks.
 
@@ -18,7 +18,7 @@ If your build imports CSS files, `@ksp-gonogo/ui-kit/tokens.css` is the same blo
 
 Four things there are worth copying:
 
-- **`Panel` and `WidgetHeader`** give the widget the frame every other widget has
+- **`Panel` takes its title and its body as props**, `panelTitle` and `sections`. That is what gives the widget the padded frame every other widget has, and what lets the body reflow when an operator makes the tile wider
 - **`EmptyState` for a missing value**, never a zero. Until the first frame lands you do not know the mode; showing `Idle` claims you do
 - **`Value` for numbers**, which sets tabular figures so digits stop jittering as they update
 - **`Badge` tone carries the state**, `go` and `nogo` rather than a colour you picked

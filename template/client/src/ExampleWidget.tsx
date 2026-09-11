@@ -6,9 +6,8 @@ import {
   EmptyState,
   Panel,
   Row,
-  Stack,
+  Section,
   Value,
-  WidgetHeader,
 } from "@ksp-gonogo/ui-kit";
 import type { SitrepStream } from "./stream";
 import { EXAMPLE_SET_MODE_COMMAND, type SetModeArgs } from "./topics";
@@ -23,36 +22,40 @@ export function ExampleWidget({ stream }: { stream: SitrepStream }) {
     void stream.command<SetModeArgs>(EXAMPLE_SET_MODE_COMMAND, { mode });
 
   return (
-    <Panel>
-      <WidgetHeader title="Example" />
-      {status === undefined ? (
-        <EmptyState layout="fill">Waiting for telemetry</EmptyState>
-      ) : (
-        <Stack gap="sm">
-          <Row as="div">
-            <Row.Name>Mode</Row.Name>
-            <Value>{MODE_NAMES[status.mode] ?? "Unknown"}</Value>
-          </Row>
-          <Row as="div">
-            <Row.Name>Power</Row.Name>
-            <Badge tone={status.enabled ? "go" : "nogo"}>
-              {status.enabled ? "ON" : "OFF"}
-            </Badge>
-          </Row>
-          <Cluster justify="end" gap="xs">
-            {MODE_NAMES.map((name, mode) => (
-              <ActionButton
-                key={name}
-                tone={mode === status.mode ? "go" : "ghost"}
-                onClick={() => setMode(mode)}
-              >
-                {name}
-              </ActionButton>
-            ))}
-          </Cluster>
-        </Stack>
-      )}
-    </Panel>
+    <Panel
+      panelTitle="Example"
+      sections={
+        status === undefined ? (
+          <Section>
+            <EmptyState layout="fill">Waiting for telemetry</EmptyState>
+          </Section>
+        ) : (
+          <Section>
+            <Row as="div">
+              <Row.Name>Mode</Row.Name>
+              <Value>{MODE_NAMES[status.mode] ?? "Unknown"}</Value>
+            </Row>
+            <Row as="div">
+              <Row.Name>Power</Row.Name>
+              <Badge tone={status.enabled ? "go" : "nogo"}>
+                {status.enabled ? "ON" : "OFF"}
+              </Badge>
+            </Row>
+            <Cluster justify="end" gap="xs">
+              {MODE_NAMES.map((name, mode) => (
+                <ActionButton
+                  key={name}
+                  tone={mode === status.mode ? "go" : "ghost"}
+                  onClick={() => setMode(mode)}
+                >
+                  {name}
+                </ActionButton>
+              ))}
+            </Cluster>
+          </Section>
+        )
+      }
+    />
   );
 }
 // #endregion widget

@@ -1,17 +1,25 @@
 // #region example
-import { Panel, PanelSubtitle, PanelTitle, ScrollArea } from "@ksp-gonogo/ui-kit";
+import { Panel, Section, Text } from "@ksp-gonogo/ui-kit";
 
 export function LogPanel({ lines }: { lines: string[] }) {
   return (
-    <Panel>
-      <PanelTitle>Flight log</PanelTitle>
-      <PanelSubtitle>{lines.length} entries</PanelSubtitle>
-      <ScrollArea>
-        {lines.map((line) => (
-          <div key={line}>{line}</div>
-        ))}
-      </ScrollArea>
-    </Panel>
+    <Panel
+      panelTitle="Flight log"
+      panelAside={
+        <Text size="xs" tone="muted">
+          {lines.length} entries
+        </Text>
+      }
+      sections={
+        <Section fill>
+          {lines.map((line) => (
+            <Text key={line} size="xs">
+              {line}
+            </Text>
+          ))}
+        </Section>
+      }
+    />
   );
 }
 // #endregion example

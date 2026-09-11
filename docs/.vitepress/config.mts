@@ -58,7 +58,6 @@ const primitives = [
   "StatusIndicator",
   "Truncate",
   "Value",
-  "WidgetHeader",
 ];
 
 export default defineConfig({

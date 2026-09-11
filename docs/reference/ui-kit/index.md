@@ -24,7 +24,7 @@ No primitive reads telemetry, dispatches a command, or holds anything but its ow
 
 **Layout**: [Stack](/reference/ui-kit/Stack), [Cluster](/reference/ui-kit/Cluster), [Inline](/reference/ui-kit/Inline), [Grid](/reference/ui-kit/Grid), [Box](/reference/ui-kit/Box), [Section](/reference/ui-kit/Section)
 
-**Containers**: [Panel](/reference/ui-kit/Panel), [Card](/reference/ui-kit/Card), [WidgetHeader](/reference/ui-kit/WidgetHeader)
+**Containers**: [Panel](/reference/ui-kit/Panel), [Card](/reference/ui-kit/Card)
 
 **Readouts**: [Value](/reference/ui-kit/Value), [Readout](/reference/ui-kit/Readout) (with `BigReadout`, `ReadoutCaption` and `StatusPill`), [ProgressBar](/reference/ui-kit/ProgressBar), [Truncate](/reference/ui-kit/Truncate)
 
