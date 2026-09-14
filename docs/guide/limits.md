@@ -33,6 +33,12 @@ These pages describe the `@ksp-gonogo/ui-kit` the built-in screens are made of, 
 
 Write the shape these pages document. The older one still renders, but it gets the unpadded passthrough and a body that never reflows, so a widget written to it has to be rewritten rather than merely rebuilt. The fix for the gap is a republish.
 
+## You cannot declare a unit of your own
+
+In the SDK these pages document, an Uplink declares a unit by merging an entry into the SDK's `UnitDeclarations` interface, giving the unit's kind, dimension, ratio and optional ladder, and registers it once with `registerUnit`. The kit reads those declarations for every unit check it makes, so a declared unit is held to the same rules as a built-in one.
+
+`@ksp-gonogo/sitrep-sdk@0.0.1` and `@ksp-gonogo/ui-kit@0.1.0` on npm predate it, and neither carries a unit declaration or a registration. Until a republish there is no way to teach the client a unit of your own.
+
 ## You cannot publish a type of your own
 
 The mod's serialiser writes dictionaries, arrays, strings, numbers, booleans, and the payload types the mod itself declares. There is no reflection over an arbitrary object, and no extension point for one.

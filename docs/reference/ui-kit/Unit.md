@@ -26,7 +26,15 @@ Every quantity-bearing field the mod publishes is typed with its unit, so a fiel
 value("m", 1234); // { magnitude: 1234, unit: "m" }
 ```
 
-Quantities refuse to cross dimensions, so a length will not add to a speed. Your own unit token is accepted even though the SDK has never heard of it: it becomes its own dimension and combines with nothing, which is wrong loudly rather than quietly converted.
+Quantities refuse to cross dimensions, so a length will not add to a speed.
+
+## Your own units
+
+A unit your Uplink introduces is declared to the client exactly as every built-in unit is: one entry merged into the SDK's unit declarations, stating its kind, its dimension, its ratio onto that dimension's base and, if it climbs one, the name of its ladder. It is then registered once, with the SDK's `registerUnit`, whose argument is typed from that declaration. There is no second registration on the kit side.
+
+From then on it gets the same checks a metre does. `format` and `as` accept exactly the units of its kind, a shared-format pin addresses its ladder by name or, for a unit on no ladder, the unit itself, and a value in it adds only to values of its dimension. A token nothing declares still draws, bare and unscaled, but `format` accepts nothing for it, because there is no kind to check the request against.
+
+The published SDK does not carry the declaration yet: see [Known limits](/guide/limits).
 
 ## What it draws
 
