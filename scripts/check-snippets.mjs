@@ -28,11 +28,14 @@ function run(label, command, args) {
   }
 }
 
-run("client snippets (tsc)", "node", [
-  "node_modules/typescript/bin/tsc",
-  "-p",
-  "template/client/tsconfig.json",
-]);
+const {
+  checkTemplateAgainstSource,
+  checkTemplateAgainstPublished,
+} = await import("./check-template-types.mjs");
+process.stdout.write("\n== client snippets against source (tsc) ==\n");
+failures.push(...(await checkTemplateAgainstSource()));
+process.stdout.write("\n== client snippets against published packages (tsc) ==\n");
+failures.push(...(await checkTemplateAgainstPublished()));
 
 const contractDll = process.env.SITREP_CONTRACT_DLL;
 if (!contractDll) {
@@ -98,4 +101,4 @@ if (failures.length > 0) {
   process.stdout.write(`\nFAILED: ${failures.join(", ")}\n`);
   process.exit(1);
 }
-process.stdout.write("\nAll snippets compiled.\n");
+process.stdout.write("\nEvery gate passed.\n");

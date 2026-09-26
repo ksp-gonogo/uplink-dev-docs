@@ -32,24 +32,35 @@ Pages never contain hand-copied code that is meant to compile. Every such
 snippet is transcluded from a real source file under `template/`, using
 VitePress's `<<< path#region` include.
 
-`npm run check` runs four gates. Every one of them runs whatever the ones before
+`npm run check` runs five gates. Every one of them runs whatever the ones before
 it did, and the verdict line at the end names each that failed: they go stale
 independently, so a red compile must not take the others offline with it.
 
 | Gate | Checks |
 | --- | --- |
-| `tsc -p template/client/tsconfig.json` | Every client snippet typechecks against the **installed** published packages |
+| client snippets against source | Every client snippet typechecks against the ui-kit and SDK **source** in a gonogo checkout, the shape the pages describe. Held to zero |
+| client snippets against published packages | Every client snippet typechecks against the **installed** npm packages, bar the ones listed in `scripts/template-types-debt.mjs` |
 | `dotnet build template/mod/ExampleUplink` | Every mod snippet compiles against `Sitrep.Contract.dll` |
 | include scan | Every `<<<` in `docs/` resolves to a real file, and to a real `#region` when one is named |
 | documented symbols | Every reference page has a live subject, every symbol it names is one the kit exports, and every internal link lands |
 
-The third exists because VitePress renders a missing include as an error block
+The two client passes grade against different truths, because the npm tarballs
+are behind the source the pages describe. The source pass needs a gonogo
+checkout, found the same way as the symbol check's below, and is skipped
+without one. The published pass lists every snippet that cannot compile against
+npm in `NEEDS_REPUBLISH` with its exact error count, and prints what each is
+missing, so the gap between the pages and what an author can install reads
+straight off the log. The list is exact in both directions: a snippet that
+starts compiling against npm fails until it leaves the list. Each pass compiles
+a planted snippet that must fail, and reports BLIND if it does not.
+
+The include scan exists because VitePress renders a missing include as an error block
 inside the page instead of failing the build, so a broken include would ship
 looking like content.
 
-The fourth exists because nothing else can see a page for a component that has
-been deleted. Markdown compiles against nothing, and `tsc` cannot stand in for
-it: the emphasis on **installed** above is the whole problem, since the
+The symbol check exists because nothing else can see a page for a component that has
+been deleted. Markdown compiles against nothing, and neither client pass can
+stand in for it: they compile the template, not the names in the prose, and the
 `@ksp-gonogo/ui-kit` tarball on npm is a long way behind the kit these pages
 describe and still exports names the kit dropped. That check therefore reads
 its truth from `packages/ui-kit/src/index.ts` in a gonogo checkout, through the
@@ -65,12 +76,13 @@ npm run check:symbols                 # this gate alone
 npm run sync:ui-kit-exports           # regenerate the snapshot; never hand-edit it
 GONOGO_REPO=/path/to/gonogo npm run check:symbols   # a checkout that is not a sibling
 GONOGO_REPO=off npm run check:symbols               # exercise the CI path
+GONOGO_REPO=off npm run check                       # the whole CI run, source pass skipped
 ```
 
 Known staleness lives in `scripts/doc-symbols-debt.mjs` as two ceilings. They
 shrink, never grow: a page added to one is a bug written down instead of fixed.
 
-`vitepress build` adds a fourth: it fails on a dead internal link. It does **not**
+`vitepress build` adds one more: it fails on a dead internal link. It does **not**
 check heading anchors, so a wrong `#fragment` still builds. Check those by hand.
 
 The mod gate needs `Sitrep.Contract.dll`, which is distributed in a KSP install

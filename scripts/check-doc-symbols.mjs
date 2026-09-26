@@ -50,7 +50,7 @@ const EXTERNAL = new Set(EXTERNAL_IDENTIFIERS);
  * asked about. `GONOGO_REPO=off` is the spelling for "pretend there is none",
  * which is how the CI path gets exercised on a machine that has both.
  */
-function gonogoRoot() {
+export function gonogoRoot() {
   const named = process.env.GONOGO_REPO;
   if (named === "off") return null;
   if (named) {
