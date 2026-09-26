@@ -3,11 +3,11 @@
 A horizontal row: items centred, content spread apart, and a `min-width: 0` so a truncating child truncates instead of overflowing.
 
 ```ts
-type ClusterJustify = "between" | "start" | "end";
+type ClusterJustify = "between" | "start" | "center" | "end";
 
 interface ClusterProps extends HTMLAttributes<HTMLDivElement> {
   justify?: ClusterJustify;
-  gap?: SpaceToken;
+  gap?: StackProps["gap"];
   children?: ReactNode;
 }
 ```
@@ -15,7 +15,7 @@ interface ClusterProps extends HTMLAttributes<HTMLDivElement> {
 | Prop | Default |
 | --- | --- |
 | `justify` | `between` |
-| `gap` | `md` |
+| `gap` | inherited `related` |
 
 <<< ../../../template/client/src/ui/Cluster.tsx#example
 

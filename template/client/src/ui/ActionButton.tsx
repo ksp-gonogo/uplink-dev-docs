@@ -3,7 +3,7 @@ import { ActionButton, Inline } from "@ksp-gonogo/ui-kit";
 
 export function DeployControls({ onDeploy }: { onDeploy: () => void }) {
   return (
-    <Inline gap="xs">
+    <Inline gap="related-compact">
       <ActionButton onClick={onDeploy}>Deploy</ActionButton>
       <ActionButton tone="go" onClick={onDeploy}>
         Confirm

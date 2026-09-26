@@ -3,7 +3,7 @@ import { Box, Text } from "@ksp-gonogo/ui-kit";
 
 export function ReadoutTile({ label, value }: { label: string; value: string }) {
   return (
-    <Box surface="sunken" pad={["sm", "md"]} radius="sm" bordered>
+    <Box surface="sunken" pad="surface" radius="regular" bordered>
       {label} <Text spaced>{value}</Text>
     </Box>
   );

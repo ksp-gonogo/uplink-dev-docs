@@ -4,7 +4,7 @@ A compact horizontal group that never yields space (`flex-shrink: 0`)
 
 ```ts
 interface InlineProps extends HTMLAttributes<HTMLSpanElement> {
-  gap?: SpaceToken;
+  gap?: StackProps["gap"];
   inset?: boolean;
   children?: ReactNode;
 }
@@ -12,7 +12,7 @@ interface InlineProps extends HTMLAttributes<HTMLSpanElement> {
 
 | Prop | Default | Meaning |
 | --- | --- | --- |
-| `gap` | `sm` | |
+| `gap` | inherited `related` | See [Stack](/reference/ui-kit/Stack) |
 | `inset` | `false` | Adds a left margin so this group sits apart from a preceding one |
 
 <<< ../../../template/client/src/ui/Inline.tsx#example

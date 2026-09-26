@@ -3,7 +3,7 @@ import { Badge, Inline } from "@ksp-gonogo/ui-kit";
 
 export function LinkBadges({ connected }: { connected: boolean }) {
   return (
-    <Inline gap="xs">
+    <Inline gap="related-compact">
       <Badge severity={connected ? "nominal" : "offline"} live>
         {connected ? "LINKED" : "NO LINK"}
       </Badge>

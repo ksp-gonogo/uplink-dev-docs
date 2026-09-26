@@ -4,8 +4,15 @@ The generic surface: background, border, padding, radius.
 
 ```ts
 type BoxSurface = "app" | "panel" | "raised" | "sunken";
-type BoxRadius = "xs" | "sm" | "md" | "pill";
-type BoxPad = SpaceToken | [SpaceToken, SpaceToken];
+type BoxRadius = "regular" | "floating" | "pill";
+type BoxPad =
+  | "chip"
+  | "chip-roomy"
+  | "chip-readout"
+  | "pill"
+  | "surface"
+  | "surface-standalone"
+  | "popover";
 
 interface BoxProps extends HTMLAttributes<HTMLDivElement> {
   surface?: BoxSurface;
@@ -19,9 +26,9 @@ interface BoxProps extends HTMLAttributes<HTMLDivElement> {
 | Prop | Default | Meaning |
 | --- | --- | --- |
 | `surface` | none | Background tier. Omit for transparent. |
-| `pad` | none | All sides, or `[vertical, horizontal]` |
+| `pad` | none | A named inset: the padding of a chip, a pill, a surface or a popover |
 | `bordered` | `false` | Adds a 1px subtle border |
-| `radius` | none | Omit for square corners |
+| `radius` | none | `regular` for ordinary corners, `floating` for something above the app, `pill` for fully rounded. Omit for square corners |
 
 <<< ../../../template/client/src/ui/Box.tsx#example
 

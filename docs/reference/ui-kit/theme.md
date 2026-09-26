@@ -4,8 +4,6 @@
 interface UiKitTheme {
   colors: ThemeColors;
   typography: ThemeTypography;
-  space: ThemeSpace;
-  radii: ThemeRadii;
   borders: ThemeBorders;
 }
 ```
@@ -44,12 +42,12 @@ interface ThemeTypography {
   letterSpacing: { tight; label; wide; body };
 }
 
-interface ThemeSpace { xs; sm; md; lg; xl }
-interface ThemeRadii { xs; sm; md; pill }
 interface ThemeBorders { subtle; strong }
 ```
 
-Sizes and spacing resolve to CSS custom-property strings such as `var(--font-size-base)`, not to fixed lengths. That is what lets the responsive overrides in the token sheet (coarse-pointer bumps, reduced motion) keep working when you read from the theme.
+Sizes resolve to CSS custom-property strings such as `var(--font-size-base)`, not to fixed lengths. That is what lets the responsive overrides in the token sheet (coarse-pointer bumps, reduced motion) keep working when you read from the theme.
+
+Spacing and corners are not in the theme. The layout components read them from the token sheet by job name, so a theme supplies colour, type and borders, and the kit brings its own geometry.
 
 ## The token sheet
 

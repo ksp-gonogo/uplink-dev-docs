@@ -41,7 +41,7 @@ export function ExampleWidget({ stream }: { stream: SitrepStream }) {
                 {status.enabled ? "ON" : "OFF"}
               </Badge>
             </Row>
-            <Cluster justify="end" gap="xs">
+            <Cluster justify="end" gap="related-compact">
               {MODE_NAMES.map((name, mode) => (
                 <ActionButton
                   key={name}

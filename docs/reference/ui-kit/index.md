@@ -46,7 +46,7 @@ No primitive reads telemetry, dispatches a command, or holds anything but its ow
 
 Three scales run through the whole kit.
 
-**Space**: the `SpaceToken` union, `xs` `sm` `md` `lg` `xl`, taken by every `gap` and every `pad` in the kit. It is exported from the root and declared on [Stack](/reference/ui-kit/Stack). Snapping to it is what makes separate widgets line up.
+**Space**: every `gap` takes a spacing job, `related` between things that belong together and `section` between groups, with fixed-density tiers and a few named single jobs beside them. The union is declared on [Stack](/reference/ui-kit/Stack). A [Box](/reference/ui-kit/Box) `pad` takes a named inset instead. Naming the job rather than a size is what makes separate widgets line up.
 
 **Severity**: what a chip is claiming about state, on one six-step scale from `nominal` to `offline`. [Badge](/reference/ui-kit/Badge) takes it, and a [Panel](/reference/ui-kit/Panel) merges the chips under it into a single worst-case summary, so the scale is what lets separate chips add up to a panel state.
 
