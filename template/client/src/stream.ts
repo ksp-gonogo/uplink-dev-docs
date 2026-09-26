@@ -93,6 +93,8 @@ export class SitrepStream {
         type: "command-request",
         requestId,
         command,
+        label: "",
+        topic: "",
         args,
         sentAt: 0,
       });

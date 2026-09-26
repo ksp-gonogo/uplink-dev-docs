@@ -12,12 +12,15 @@ import {
   isTopicId,
   parseServerMessage,
   type ClientMessage,
+  type CommandAccepted,
   type CommandRequest,
   type CommandResponse,
   type ErrorMsg,
   type EventMsg,
   type Meta,
   type ServerMessage,
+  type SetVantage,
+  type StreamBinaryMessage,
   type StreamData,
   type Subscribe,
   type TopicId,
@@ -33,6 +36,14 @@ export function describe(raw: string): string {
       const frame: StreamData<unknown> = message;
       const meta: Meta = frame.meta;
       return `${frame.topic} valid at ${meta.validAt}`;
+    }
+    case "stream-binary": {
+      const frame: StreamBinaryMessage = message;
+      return `${frame.topic}: ${frame.segments.length} segments`;
+    }
+    case "command-accepted": {
+      const accepted: CommandAccepted = message;
+      return `${accepted.requestId} arrives in ${accepted.oneWaySeconds}s`;
     }
     case "command-response": {
       const response: CommandResponse<unknown> = message;
@@ -54,10 +65,13 @@ export function describe(raw: string): string {
 export const outbound: ClientMessage[] = [
   { type: "subscribe", topic: "vessel.orbit" } satisfies Subscribe,
   { type: "unsubscribe", topic: "vessel.orbit" } satisfies Unsubscribe,
+  { type: "set-vantage", centreId: "ground:Kerbal Space Center" } satisfies SetVantage,
   {
     type: "command-request",
     requestId: "req-0",
     command: "example.setMode",
+    label: "",
+    topic: "",
     args: { mode: 1 },
     sentAt: 0,
   } satisfies CommandRequest<{ mode: number }>,

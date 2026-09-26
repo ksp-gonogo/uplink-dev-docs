@@ -11,7 +11,9 @@ type ServerMessage =
   | StreamData<unknown>
   | EventMsg
   | CommandResponse<unknown>
-  | ErrorMsg;
+  | CommandAccepted
+  | ErrorMsg
+  | StreamBinaryMessage;
 ```
 
 ```ts
@@ -36,6 +38,12 @@ interface CommandResponse<TResult> {
   meta: Meta;
 }
 
+interface CommandAccepted {
+  type: "command-accepted";
+  requestId: string;
+  oneWaySeconds: number;
+}
+
 interface ErrorMsg {
   type: "error";
   requestId?: string;
@@ -49,10 +57,14 @@ interface ErrorMsg {
 
 `EventMsg` carries no payload. The one you will meet is `name: "subscribed"`, acknowledging a subscribe.
 
+`CommandAccepted` arrives the moment a command sets off on the light-time delay, carrying the one-way delay it will travel to the vessel it is addressed to, fixed at dispatch. It means the command is on its way and when to expect an answer, never that anything ran. It is absent for a command that does not ride the delay or whose delay is zero, and for a refusal, which sends an `ErrorMsg` instead, so treat "not accepted yet" as ordinary. Size a timeout from `oneWaySeconds` rather than from the delay you can see: the command's delay depends on the vessel it addresses, not the one you are flying.
+
+`StreamBinaryMessage` never arrives as text. It is a [binary frame](/reference/client/binary-frames) already decoded, in the union so an exhaustive switch has to handle it.
+
 ## Client messages
 
 ```ts
-type ClientMessage = Subscribe | Unsubscribe | CommandRequest<unknown>;
+type ClientMessage = Subscribe | Unsubscribe | SetVantage | CommandRequest<unknown>;
 ```
 
 ```ts
@@ -66,10 +78,18 @@ interface Unsubscribe {
   topic: string;
 }
 
+interface SetVantage {
+  type: "set-vantage";
+  centreId: string;
+}
+
 interface CommandRequest<TArgs> {
   type: "command-request";
   requestId: string;
   command: string;
+  label: string;
+  topic: string;
+  vantage?: string;
   args: TArgs;
   sentAt: number;
 }
@@ -78,6 +98,10 @@ interface CommandRequest<TArgs> {
 <<< ../../../template/client/src/sdkSurface.ts#client-messages
 
 `requestId` is yours to generate and yours to correlate.
+
+`label` and `topic` are carried verbatim onto the command's entry on `system.uplink.pending`, and never read by the mod. `label` is what that entry shows, falling back to the command name when empty; `topic` is what the command is about. Send `""` for either when you have nothing to say.
+
+`vantage` sends this one command from a different command centre than the connection's own. Omit it to use the connection's.
 
 `sentAt` is **UT seconds** (KSP universal time), the same base as `Meta.validAt` — not a
 wall-clock timestamp. Send `0`. You have no UT to hand at dispatch that the server would not
@@ -88,7 +112,7 @@ The value is carried onto the response's `Meta.validAt`. Putting a millisecond e
 therefore makes that field read as a UT roughly 1.7 trillion seconds in the future, and
 `Meta.validAt` is the field you are told to show rather than the arrival time.
 
-The server also accepts a `set-vantage` message, which this union does not include and this documentation does not specify. Nothing published describes its shape.
+`set-vantage` picks the command centre this connection observes and commands from, which decides the delay on everything it receives and sends. `centreId` must name an active command centre, or the server answers with an `unknown-vantage` error and keeps the vantage it had. A connection that never sends one uses the home command centre and follows it if home moves. Every frame's `meta.vantage` says which is in force.
 
 ## parseServerMessage
 

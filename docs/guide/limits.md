@@ -59,9 +59,9 @@ They are published on different schedules and are not in step. `CommandErrorCode
 
 Treat the SDK's generated types as a floor rather than a description of the mod you are talking to, and handle a value you do not recognise.
 
-## The client message union is incomplete
+## The published client message union is incomplete
 
-`ClientMessage` covers `subscribe`, `unsubscribe` and `command-request`. The server also accepts `set-vantage`, which the union does not include, so sending it means stepping outside the SDK's type.
+In `@ksp-gonogo/sitrep-sdk@0.0.1`, `ClientMessage` covers `subscribe`, `unsubscribe` and `command-request`, and `ServerMessage` has no `command-accepted` or `stream-binary`. The server sends and accepts all of them, and the SDK these pages document declares them, but against 0.0.1 sending `set-vantage` means stepping outside the SDK's type, and `command-request` has no `label` or `topic`.
 
 ## Command results are untyped end to end
 
