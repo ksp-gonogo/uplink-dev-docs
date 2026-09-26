@@ -9,7 +9,7 @@
  */
 export const NEEDS_REPUBLISH = {
   "template/client/src/ExampleWidget.tsx": 4,
-  "template/client/src/sdkSurface.ts": 6,
+  "template/client/src/sdkSurface.ts": 9,
   "template/client/src/stream.ts": 1,
   "template/client/src/ui/ActionButton.tsx": 1,
   "template/client/src/ui/Badge.tsx": 2,

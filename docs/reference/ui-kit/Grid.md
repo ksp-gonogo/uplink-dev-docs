@@ -3,7 +3,10 @@
 CSS grid for the two shapes widgets need: a fixed-column row, and a responsive card gallery.
 
 ```ts
+type GridAlign = "center" | "start" | "baseline";
+
 interface GridProps extends HTMLAttributes<HTMLDivElement> {
+  align?: GridAlign;
   cols?: string;
   minColWidth?: string;
   gap?: StackProps["gap"];
@@ -14,6 +17,7 @@ interface GridProps extends HTMLAttributes<HTMLDivElement> {
 
 | Prop | Default | Meaning |
 | --- | --- | --- |
+| `align` | `center` | `align-items`. `baseline` suits a label/value grid, so a caption and a larger value share a text baseline |
 | `cols` | none | A `grid-template-columns` value, e.g. `"120px 1fr 60px"`. Wins over `minColWidth`. |
 | `minColWidth` | none | Auto-fill: `repeat(auto-fill, minmax(minColWidth, 1fr))` |
 | `gap` | `related-dense` | See [Stack](/reference/ui-kit/Stack) |

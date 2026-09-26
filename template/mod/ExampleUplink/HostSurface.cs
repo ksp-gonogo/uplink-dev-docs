@@ -132,9 +132,13 @@ namespace ExampleUplink
                     Delivery = Delivery.ReliableOrdered,
                     Delay = DelayRole.TrueNow,
                     AbsenceIsData = true,
+                    NullIsUnreadable = false,
                     PerVesselNode = true,
+                    VesselIdForKey = key => null,
                     OpaquePayload = false,
                     IsKeyframe = payload => payload != null,
+                    Recordable = false,
+                    HeldAtHome = false,
                     Emission = new EmissionPolicy(
                         keyframeIntervalUt: 30,
                         quantum: EmissionQuantum.PercentOfRange(0.01, 0, 100),

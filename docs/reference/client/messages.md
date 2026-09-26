@@ -122,7 +122,7 @@ function parseServerMessage(raw: string): ServerMessage;
 
 `ErrorMsg.code` is an open string. No set of values is published, so treat it as a label to log and show `message` to the operator.
 
-Parses the JSON and checks the `type` tag against the four the server sends, throwing on anything else. That check is what lets the `switch` above narrow exhaustively.
+Parses the JSON and checks the `type` tag against the five the server sends as text, throwing on anything else, including `stream-binary`, which only ever arrives on the binary lane. That check is what lets the `switch` above narrow exhaustively.
 
 ## Meta
 
@@ -137,7 +137,7 @@ interface Meta {
   active: boolean;
   staleness: Staleness;
   timelineEpoch: number;
-  confidence?: number;
+  gapSinceUt?: number;
 }
 ```
 
@@ -145,16 +145,18 @@ interface Meta {
 | --- | --- |
 | `validAt` | UT the value was true at. Show this, not the arrival time. |
 | `deliveredAt` | UT it reached the client. Differs from `validAt` by the light-time delay. |
-| `staleness` | `Fresh`, `HeldStale`, or `LastBeforeBlackout` |
+| `staleness` | `Fresh`, `HeldStale`, `LastBeforeBlackout`, or `Recorded` |
 | `quality` | `Loaded` when the vessel is physically simulated, `OnRails` otherwise |
 | `active` | Whether the source is currently producing |
 | `seq` | Per-Topic sequence number. A gap means frames were dropped, which `LossyLatest` does deliberately. |
 | `vantage` | The command centre the frame was delayed for |
 | `timelineEpoch` | Changes when the game's timeline is rewound. Compare it against your last-seen value and discard cached history when it differs. |
 | `source` | Which producer emitted the frame |
-| `confidence` | Optional, present only where the producer estimates one |
+| `gapSinceUt` | Set only on the first sample after a known break in the record: the `validAt` of the last sample before it. Draw a break there rather than joining across it |
 
 `LastBeforeBlackout` is the last thing you heard before the link dropped. It is not current and must not be shown as though it were.
+
+`Recorded` is exact as of its `validAt`, but it did not travel when it was taken: the vessel held it through a loss of signal and replayed it on reacquisition, so it arrives long after the moment it describes and `deliveredAt` is the real arrival. It is never the state of the vessel now.
 
 Detect a rewind from `timelineEpoch`, not from `validAt` going backwards. Deliveries can be reordered or coalesced, which hides the backward jump; the epoch changes atomically.
 
@@ -162,7 +164,7 @@ Detect a rewind from `timelineEpoch`, not from `validAt` going backwards. Delive
 
 ```ts
 enum Quality { OnRails = 0, Loaded = 1 }
-enum Staleness { Fresh = 0, HeldStale = 1, LastBeforeBlackout = 2 }
+enum Staleness { Fresh = 0, HeldStale = 1, LastBeforeBlackout = 2, Recorded = 3 }
 ```
 
 <<< ../../../template/client/src/sdkSurface.ts#enums

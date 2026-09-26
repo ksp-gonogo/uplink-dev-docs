@@ -35,7 +35,8 @@ export function describe(raw: string): string {
     case "stream-data": {
       const frame: StreamData<unknown> = message;
       const meta: Meta = frame.meta;
-      return `${frame.topic} valid at ${meta.validAt}`;
+      const gap = meta.gapSinceUt == null ? "" : `, nothing since ${meta.gapSinceUt}`;
+      return `${frame.topic} valid at ${meta.validAt}${gap}`;
     }
     case "stream-binary": {
       const frame: StreamBinaryMessage = message;
@@ -95,6 +96,7 @@ export const enums = {
   fresh: Staleness.Fresh,
   heldStale: Staleness.HeldStale,
   lastBeforeBlackout: Staleness.LastBeforeBlackout,
+  recorded: Staleness.Recorded,
   loaded: Quality.Loaded,
   onRails: Quality.OnRails,
   outOfRange: CommandErrorCode.Range,
