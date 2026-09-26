@@ -68,6 +68,20 @@ A successful subscribe is acknowledged with an event frame:
 { "type": "event", "topic": "example.status", "name": "subscribed", "meta": { ... } }
 ```
 
-**A Topic the mod does not know is answered with silence.** No error, and no acknowledgement either, which is the one thing you can act on: an acknowledgement means the Topic exists and your Uplink loaded, and its absence means one of the two is wrong.
+A Topic the mod does not know is answered with an error frame instead:
+
+```json
+{ "type": "error", "topic": "example.status", "code": "unknown-topic", "message": "..." }
+```
+
+The message tells the two causes apart: it says whether an Uplink with id `example` is registered at all. If it is, the Topic name is wrong. If it is not, your Uplink did not load.
+
+The mod writes every frame as a binary WebSocket message, JSON included, so a tool that only prints text messages shows nothing. Use one that decodes binary messages as UTF-8.
+
+## Testing without the game
+
+`IUplinkHost` is declared in `Sitrep.Contract`, so you can implement it in a test project and call your `Register` with no KSP running. A recording double is about a hundred lines: lists of what was registered, and a default for everything else. Give it a real `new Kernel()` rather than a recorder, so a test sees what the election resolves as well as what you registered into it. A double of a shipped interface stops compiling when the interface grows, so it cannot drift quietly.
+
+To drive the logic without KSP's assemblies, make your Uplink class `partial`, keep the members that name a KSP or Harmony type in their own file, and have the test project compile your sources with `<Compile Include>` minus that file.
 
 Next: [Connecting](/guide/client-stream).

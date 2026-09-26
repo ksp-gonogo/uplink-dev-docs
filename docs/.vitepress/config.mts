@@ -130,6 +130,7 @@ export default defineConfig({
             { text: "Package contents", link: "/reference/client/" },
             { text: "Messages", link: "/reference/client/messages" },
             { text: "Topics", link: "/reference/client/topics" },
+            { text: "Binary frames", link: "/reference/client/binary-frames" },
           ],
         },
         {

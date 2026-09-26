@@ -12,7 +12,7 @@ declare const TOPIC_IDS: readonly TopicId[];
 declare function isTopicId(value: string): value is TopicId;
 ```
 
-`TopicPayload<"vessel.orbit">` is the payload interface for that Topic. Misspell the name and it is a compile error, which matters here more than usual: **subscribing to an unknown Topic produces silence, not an error.** A typo looks exactly like a Topic that has not published yet.
+`TopicPayload<"vessel.orbit">` is the payload interface for that Topic. Misspell the name and it is a compile error, which matters here more than usual: **an unknown Topic is only refused at runtime**, with an `unknown-topic` error frame.
 
 ## The Topics
 

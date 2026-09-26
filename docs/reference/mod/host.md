@@ -43,7 +43,7 @@ void ResetChannelBirth(IEnumerable<string> topics);
 
 **Every Topic you publish to must already be in the registering Uplink's `Manifest.Channels`.** `AddChannelSource`, `Publisher` and `ForceKeyframe` all throw `InvalidOperationException` on an undeclared Topic, and a throw out of `Register` takes your whole Uplink unavailable.
 
-A payload is a `Dictionary<string, object?>`, a list, or a primitive. The serialiser cannot write an object of your own, and a frame carrying one is dropped silently.
+A payload is a `Dictionary<string, object?>`, a list, or a primitive. The serialiser cannot write an object of your own, and the first frame carrying one marks your Uplink unavailable.
 
 <<< ../../../template/mod/ExampleUplink/HostSurface.cs#publishing{cs}
 

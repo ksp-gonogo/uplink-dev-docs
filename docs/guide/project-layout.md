@@ -20,6 +20,7 @@ example-uplink/
     └── src/
         ├── main.tsx                  mounts the widget
         ├── stream.ts                 the socket client
+        ├── binaryFrame.ts            sorts each message by lane
         ├── topics.ts                 your Topic and command shapes
         ├── useExampleStatus.ts       a subscription hook
         ├── ExampleWidget.tsx         the UI

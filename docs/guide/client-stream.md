@@ -18,13 +18,16 @@ Two types it carries:
 
 Subscribing sends a `subscribe` frame the first time a Topic gets a listener, and an `unsubscribe` frame when the last one goes.
 
-The server acknowledges a successful subscribe with an `event` frame named `subscribed`, and answers a Topic it does not know with nothing at all. `onEvent` is how you see that acknowledgement, and it is the only way to tell "no data yet" from "wrong Topic name":
+The server acknowledges a successful subscribe with an `event` frame named `subscribed`, and answers a Topic it does not know with an `error` frame, code `unknown-topic`, whose message says whether the Uplink behind it is loaded at all. `onEvent` and `onError` are how you see each:
 
 ```ts
 stream.onEvent("example.status", (name) => {
   if (name === "subscribed") markTopicReal();
 });
+stream.onError("example.status", (code, message) => showProblem(code, message));
 ```
+
+The mod sends every frame as a binary WebSocket message, JSON included, which is why the constructor sets `binaryType` and hands each message to `readFrame` before parsing. [Binary frames](/reference/client/binary-frames) covers the other lane.
 
 If the Topic already has a value, it is delivered immediately on subscribe rather than at the next emission.
 
@@ -38,7 +41,7 @@ Four message types arrive:
 | --- | --- |
 | `stream-data` | A payload on a Topic, plus `meta` |
 | `command-response` | The result for a `requestId` you sent |
-| `error` | A failure, with `code` and `message`, and `requestId` when it answers a command |
+| `error` | A failure, with `code` and `message`, plus `requestId` when it answers a command or `topic` when it concerns a Topic |
 | `event` | A named occurrence on a Topic, with no payload. `subscribed` is one. |
 
 `requestId` is yours to choose and yours to correlate. Nothing else in the protocol pairs a request with its answer.

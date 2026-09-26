@@ -43,9 +43,9 @@ In the SDK these pages document, an Uplink declares a unit by merging an entry i
 
 The mod's serialiser writes dictionaries, arrays, strings, numbers, booleans, and the payload types the mod itself declares. There is no reflection over an arbitrary object, and no extension point for one.
 
-So your payloads are `Dictionary<string, object?>`, built by hand, with enums cast to their integer values. The compiler cannot help, because `IChannelPublisher.Publish` takes `object?`.
+So your payloads are `Dictionary<string, object?>`, built by hand. The compiler cannot help, because `IChannelPublisher.Publish` takes `object?`.
 
-**The failure is silent.** A frame the serialiser cannot write is dropped. The client's subscribe is acknowledged and then nothing ever arrives, which is indistinguishable from a Topic that has not changed.
+**The failure comes at runtime.** The first frame the serialiser cannot write marks your Uplink unavailable, and each subscriber gets an `error` frame with code `payload-serialization-error` naming the type it could not write.
 
 ## No generated types for your own Topics
 
@@ -72,6 +72,10 @@ Treat the SDK's generated types as a floor rather than a description of the mod 
 Not on CKAN, not on SpaceDock, no download. The only way to get it, and therefore the only way to get `Sitrep.Contract.dll`, is to build it from source.
 
 That has two knock-on effects. There is no CKAN identifier your Uplink can declare a dependency on, so nothing stops a player installing your Uplink without the assembly it needs. And the copy you compile against is whatever your build produced, with no way to pin a contract version in your project file or state which one your Uplink needs. Record what you built against in your README.
+
+## Binary frames are not in the SDK
+
+`@ksp-gonogo/sitrep-sdk@0.0.1` has no decoder for [binary frames](/reference/client/binary-frames), and `ServerMessage` has no `stream-binary` member. Decode them yourself; the format is short.
 
 ## Command handlers do not run on the main thread
 

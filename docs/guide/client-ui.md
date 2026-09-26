@@ -43,7 +43,7 @@ npm install
 npm run dev
 ```
 
-With KSP running and your plugin loaded, the widget fills in as frames arrive. If it stays on its empty state, check the Topic name against [what the plugin declared](/guide/topics): an unknown Topic is answered with silence.
+With KSP running and your plugin loaded, the widget fills in as frames arrive. If it stays on its empty state, check the Topic name against [what the plugin declared](/guide/topics): an unknown Topic is answered with an `unknown-topic` error, which the template's stream client hands to `onError`.
 
 ## Accessibility
 

@@ -14,6 +14,7 @@ public sealed class ChannelDeclaration
     public bool AbsenceIsData { get; set; } = false;
     public Func<object?, bool>? IsKeyframe { get; set; }
     public bool PerVesselNode { get; set; } = false;
+    public bool OpaquePayload { get; set; } = false;
 }
 ```
 
@@ -109,6 +110,12 @@ Only meaningful on the template of a [dynamic namespace](/reference/mod/host#dyn
 Without it, a sub-topic about a vessel you are not flying is delayed by the vessel you are flying, which is usually less. Nothing errors and nothing goes missing; the value simply turns up early carrying the wrong craft's light-time.
 
 It is ignored on a static declaration, whose one Topic is not keyed by anything.
+
+## OpaquePayload
+
+Default `false`. Set it `true` to carry the payload as raw byte segments on the [binary lane](/reference/client/binary-frames) instead of as JSON. The Topic must then publish a `byte[]` or an ordered collection of them, and anything else, null included, marks your Uplink unavailable.
+
+It is never inferred. A `byte[]` on a channel without the flag goes out as a JSON number array.
 
 ## Every field at once
 

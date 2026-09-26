@@ -8,7 +8,7 @@ The SDK ships a map from every Topic the Gonogo mod declares to the payload it c
 
 `TopicId` is a union of every built-in Topic name. `TopicPayload<T>` is the payload for one of them. A misspelled name is a compile error, not an empty widget.
 
-`isTopicId` is the runtime half, for narrowing a string that came from outside your code. Use it: subscribing to a Topic the mod does not declare produces no error, only silence, so a typo is indistinguishable from a Topic that has not published yet.
+`isTopicId` is the runtime half, for narrowing a string that came from outside your code. Use it: a Topic the mod does not declare is only refused at runtime, with an `unknown-topic` error, so a typo costs a round trip to find.
 
 Topics under a computed prefix are deliberately absent from both. A per-processor or per-body sub-topic has no fixed name, so it has no member in the union.
 

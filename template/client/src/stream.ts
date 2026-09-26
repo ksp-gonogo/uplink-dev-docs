@@ -5,11 +5,13 @@ import {
   type ServerMessage,
   type StreamData,
 } from "@ksp-gonogo/sitrep-sdk";
+import { readFrame } from "./binaryFrame";
 // #endregion imports
 
 // #region types
 type Listener = (frame: StreamData<unknown>) => void;
 type EventListener = (name: string) => void;
+type ErrorListener = (code: string, message: string) => void;
 
 /** Resolves when the mod answers, or rejects if the request cannot be answered. */
 type Pending = {
@@ -27,15 +29,18 @@ export class SitrepStream {
   private readonly socket: WebSocket;
   private readonly listeners = new Map<string, Set<Listener>>();
   private readonly eventListeners = new Map<string, Set<EventListener>>();
+  private readonly errorListeners = new Map<string, Set<ErrorListener>>();
   private readonly pending = new Map<string, Pending>();
   private readonly backlog: ClientMessage[] = [];
   private nextRequestId = 0;
 
   constructor(url: string) {
     this.socket = new WebSocket(url);
+    this.socket.binaryType = "arraybuffer";
     this.socket.addEventListener("open", () => this.flush());
     this.socket.addEventListener("message", (event) => {
-      this.dispatch(parseServerMessage(event.data as string));
+      const frame = readFrame(event.data as ArrayBuffer | string);
+      if (frame.lane === "json") this.dispatch(parseServerMessage(frame.text));
     });
     this.socket.addEventListener("close", () => this.failPending("stream closed"));
     this.socket.addEventListener("error", () => this.failPending("stream error"));
@@ -60,14 +65,21 @@ export class SitrepStream {
     };
   }
 
-  /**
-   * Named occurrences on a Topic. `subscribed` acknowledges a subscribe, and
-   * is the only way to tell a Topic that has nothing to say from a Topic the
-   * mod does not have.
-   */
+  /** Named occurrences on a Topic. `subscribed` acknowledges a subscribe. */
   onEvent(topic: string, listener: EventListener): () => void {
     const listeners = this.eventListeners.get(topic) ?? new Set<EventListener>();
     this.eventListeners.set(topic, listeners);
+    listeners.add(listener);
+    return () => listeners.delete(listener);
+  }
+
+  /**
+   * Refusals on a Topic: `unknown-topic` for a name the mod does not declare,
+   * `payload-serialization-error` for a frame it could not write.
+   */
+  onError(topic: string, listener: ErrorListener): () => void {
+    const listeners = this.errorListeners.get(topic) ?? new Set<ErrorListener>();
+    this.errorListeners.set(topic, listeners);
     listeners.add(listener);
     return () => listeners.delete(listener);
   }
@@ -106,6 +118,10 @@ export class SitrepStream {
       case "error":
         if (message.requestId) {
           this.settle(message.requestId, (p) => p.reject(new Error(message.message)));
+        } else if (message.topic) {
+          for (const listener of this.errorListeners.get(message.topic) ?? []) {
+            listener(message.code, message.message);
+          }
         }
         return;
       case "event":

@@ -133,6 +133,7 @@ namespace ExampleUplink
                     Delay = DelayRole.TrueNow,
                     AbsenceIsData = true,
                     PerVesselNode = true,
+                    OpaquePayload = false,
                     IsKeyframe = payload => payload != null,
                     Emission = new EmissionPolicy(
                         keyframeIntervalUt: 30,
@@ -195,6 +196,21 @@ namespace ExampleUplink
             }
         }
         // #endregion declarations
+
+        // #region opaque
+        public static ChannelDeclaration OpaqueChannel() => new ChannelDeclaration
+        {
+            Topic = "example.audio",
+            Delivery = Delivery.ReliableOrdered,
+            Delay = DelayRole.Delayed,
+            OpaquePayload = true,
+            Emission = new EmissionPolicy(keyframeIntervalUt: 30, quantum: EmissionQuantum.Absolute(0)),
+        };
+
+        /// <summary>A batch: every chunk captured since the last publish, in order.</summary>
+        public static void PublishBatch(IUplinkHost host, List<byte[]> chunks, double capturedAtUt) =>
+            host.Publisher("example.audio").Publish(chunks, capturedAtUt);
+        // #endregion opaque
 
         // #region availability
         public static void Unavailable(IUplinkHost host, string reason) =>

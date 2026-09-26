@@ -21,14 +21,14 @@ Emission cadence is denominated in UT, and time warp compresses UT into wall-clo
 
 ## The payload
 
-**A dictionary, not a class of your own.** The mod's serialiser writes dictionaries, arrays, strings, numbers and booleans, plus the payload types the mod itself declares. It has no reflection over your properties, and a frame carrying a shape it cannot write is dropped: no error, no log line, and the client sees the subscribe acknowledgement and then nothing.
+**A dictionary, not a class of your own.** The mod's serialiser writes dictionaries, arrays, strings, numbers and booleans, plus the payload types the mod itself declares. It has no reflection over your properties. The first frame carrying a shape it cannot write marks your Uplink unavailable, and the subscriber gets a `payload-serialization-error` naming the type.
 
 <<< ../../template/mod/ExampleUplink/Payloads.cs#payload{cs}
 
 Three rules follow:
 
 - **Keys are written exactly as you supply them**, so use camelCase and match your client
-- **Cast an enum to its integer value** before putting it in. A boxed enum is one of the shapes that gets dropped
+- **An enum goes out as its integer value**, not its name, so declare the client side as a number
 - **Nest with more dictionaries and lists**, not with objects
 
 Nothing generates a TypeScript type from this. You declare the matching interface in your client by hand, and keeping them in step is your job.
