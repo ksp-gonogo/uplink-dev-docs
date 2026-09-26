@@ -56,7 +56,7 @@ public sealed class ProviderVersions
 }
 ```
 
-`Factory` is called once, at resolution, and its return value is what callers get. Its `ProviderContext` lets a provider reach other capabilities as it is built, and `Vanilla<T>` reaches the fallback rather than the winning provider. `CanServe` lets you decline at resolution time: return false when the mod you depend on turned out to be absent. `Priority` decides between competing providers for an exclusive capability, highest first.
+`Factory` is called once, at resolution, and its return value is what callers get. Its `ProviderContext` lets a provider reach other capabilities as it is built, and `Vanilla<T>` reaches the fallback rather than the winning provider. `CanServe` lets you decline at resolution time: return false when the mod you depend on turned out to be absent. Decline there and not in `Factory`: `CanServe` is asked before a winner is picked, so the runner-up still gets its chance, while a factory that gives up runs after the election is over. `Priority` decides between competing providers for an exclusive capability, highest first.
 
 ## Declaring a capability
 
@@ -98,6 +98,8 @@ public sealed class ResolveResult
 ```
 
 `Resolve` is the host's to call, not yours. An Uplink registers and queries.
+
+`Query<T>` throws `InvalidOperationException` unless exactly one provider is active, so a capability nobody provides, or that has not resolved yet, is an exception rather than a null. Catch it where absence is a normal state.
 
 **Nothing resolves until every Uplink has registered.** That ordering is what allows an Uplink to provide at all, so you cannot query during your own `Register`. Capture `host.Kernel` there and query at each use.
 

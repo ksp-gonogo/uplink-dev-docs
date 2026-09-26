@@ -36,6 +36,8 @@ If the mod you integrate is not installed, say so and return. `SetAvailability` 
 
 An exception thrown out of `Register` takes down your Uplink and nothing else.
 
+There is no matching teardown. An Uplink lives as long as the game session, so anything you install in `Register`, a Harmony patch included, stays installed. Write it to be safe to leave in place.
+
 ## Health
 
 `Health` is polled. Return one of three states, with an optional detail string.
@@ -51,6 +53,24 @@ Reflection, not a reference:
 <<< ../../template/mod/ExampleUplink/ExampleModAccess.cs#reflection{cs}
 
 Referencing the other mod's assembly is possible, and sometimes unavoidable. It costs you two things: your plugin fails to load when that mod is absent, rather than reporting itself unavailable, and its licence terms reach your combined work.
+
+### Reading a field is safe. Calling a method is safe once you have read its body
+
+A parameterless getter looks harmless, and is not necessarily. Mods reach fatal-log helpers that abort the process from the default branch of an ordinary switch, and nothing in the signature says so. Before you invoke anything on another mod's object, decompile it and check what it can reach. If you cannot, derive the value from fields: a label you format yourself is safer than the mod's own formatter.
+
+### A field you can read is not necessarily true
+
+Ask what writes it:
+
+| The field is | Read it |
+| --- | --- |
+| Operator state, or restored from the save | Whenever you like |
+| Recomputed by the mod's UI on each repaint | Only from a hook on that repaint, stamped with the UT you saw it at |
+| Written only while one of its windows is open | The same, and treat "never seen" as a state of its own |
+
+The last two are the trap. An unwritten field is not empty, it holds whatever its constructor set, which usually looks like a plausible value. For those, patch the render with a Harmony postfix, latch the value with `Planetarium.GetUniversalTime()` beside it, and publish it at that UT.
+
+Never publish absence from a source that cannot tell "none" from "not looked yet". Publish nothing, and the client shows the Topic as still waiting rather than empty.
 
 ## The whole file
 

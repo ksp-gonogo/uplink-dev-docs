@@ -42,6 +42,8 @@ Discovery scans loaded assemblies that reference `Sitrep.Contract` for classes c
 
 The two version arguments default to the constants in the `Sitrep.Contract` you compiled against, and are inlined into your assembly at build time. Leave them alone; they are how Gonogo knows which contract your build assumed.
 
+An Uplink whose contract major differs from the running mod's is refused: `Register` is never called, and the Uplink is marked unavailable with both versions in the reason. A minor difference in either direction loads, because minor versions only add.
+
 ## UplinkManifest
 
 ```csharp
