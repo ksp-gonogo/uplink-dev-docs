@@ -24,10 +24,31 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
-      # Compiles every snippet, and fails on an include that does not resolve.
-      # The mod half is skipped here: Sitrep.Contract.dll ships in a KSP install,
-      # not on a package registry, so CI has no copy to compile against.
+      # The pages describe gonogo's source, so the check compiles the template
+      # against it and verifies the ui-kit export snapshot against it. A change
+      # to the kit on staging that a page contradicts turns this job red.
+      - uses: actions/checkout@v4
+        with:
+          repository: ksp-gonogo/gonogo
+          ref: staging
+          path: gonogo
+          sparse-checkout: |
+            packages/ui-kit
+            packages/theme
+            mod/sitrep-sdk
+            mod/Sitrep.Contract
+            mod/Directory.Build.props
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      # Sitrep.Contract references no KSP assembly, so it builds here, and the
+      # mod snippets compile against the same contract the mod ships.
+      - run: dotnet build gonogo/mod/Sitrep.Contract/Sitrep.Contract.csproj -c Release -f net472 -o "$RUNNER_TEMP/contract" --nologo -v q
       - run: npm run check
+        env:
+          GONOGO_REPO: ${{ github.workspace }}/gonogo
+          SITREP_CONTRACT_DLL: ${{ runner.temp }}/contract/Sitrep.Contract.dll
       - run: npx vitepress build docs
       - uses: actions/upload-pages-artifact@v3
         with:

@@ -17,7 +17,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { gonogoRoot } from "./check-doc-symbols.mjs";
+import { IN_CI, gonogoRoot } from "./check-doc-symbols.mjs";
 import { NEEDS_REPUBLISH } from "./template-types-debt.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -103,6 +103,8 @@ function missing(ts, d) {
   const tag = node ? node.tagName.getText() : undefined;
   const noProp = /Property '(.+?)' does not exist on type/.exec(text);
   if (tag && noProp) return `${tag} has no prop ${noProp[1]}`;
+  const noMember = /^Property '(.+?)' does not exist on type '(?:typeof )?(.+?)'/.exec(text);
+  if (noMember) return `${noMember[2]} has no member ${noMember[1]}`;
   const notAssignable = /^Type '(.+?)' is not assignable to type '(.+?)'/.exec(text);
   if (tag && attribute && notAssignable) {
     return `${tag} ${attribute} does not take ${notAssignable[1]} (takes ${notAssignable[2]})`;
@@ -146,6 +148,13 @@ export async function checkTemplateAgainstSource(write = (s) => process.stdout.w
     root = gonogoRoot();
   } catch (error) {
     write(`${error.message}\n`);
+    return ["template types (source): gonogo checkout"];
+  }
+  if (!root && IN_CI) {
+    write(
+      "CI=true and no gonogo checkout. The workflow checks one out and sets\n" +
+        "GONOGO_REPO; that step is missing or broken.\n",
+    );
     return ["template types (source): gonogo checkout"];
   }
   if (!root) {

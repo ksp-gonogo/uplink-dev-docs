@@ -50,6 +50,13 @@ const EXTERNAL = new Set(EXTERNAL_IDENTIFIERS);
  * asked about. `GONOGO_REPO=off` is the spelling for "pretend there is none",
  * which is how the CI path gets exercised on a machine that has both.
  */
+/**
+ * CI checks out gonogo on purpose, so a missing checkout there is a broken
+ * workflow rather than the normal state of a machine that holds only this repo,
+ * and every gate that needs one fails instead of skipping.
+ */
+export const IN_CI = process.env.CI === "true";
+
 export function gonogoRoot() {
   const named = process.env.GONOGO_REPO;
   if (named === "off") return null;
@@ -459,7 +466,14 @@ export async function checkDocSymbols(write = (s) => process.stdout.write(s)) {
     fail("doc symbols (gonogo checkout)", `\n${error.message}`);
     return failures;
   }
-  if (!root) {
+  if (!root && IN_CI) {
+    fail(
+      "doc symbols (gonogo checkout)",
+      "\nCI=true and no gonogo checkout, so the export snapshot cannot be verified\n" +
+        "against source. The workflow checks one out and sets GONOGO_REPO; that step\n" +
+        "is missing or broken.",
+    );
+  } else if (!root) {
     write(
       "\nNOTE: no gonogo checkout, so the export snapshot could not be verified\n" +
         "against source. The checks above still ran at full strength against it.\n" +

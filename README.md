@@ -66,17 +66,19 @@ describe and still exports names the kit dropped. That check therefore reads
 its truth from `packages/ui-kit/src/index.ts` in a gonogo checkout, through the
 TypeScript checker so `export *` chains are followed rather than guessed.
 
-CI has no such checkout, so the export list is committed as
-`scripts/ui-kit-exports.json` and the pages are graded against that. A run that
-CAN reach a checkout also verifies the snapshot against source in the same pass,
-which is what stops the committed copy from quietly agreeing with itself:
+The export list is committed as `scripts/ui-kit-exports.json` and the pages
+are graded against that, so the check runs without a checkout. A run that CAN
+reach one also verifies the snapshot against source in the same pass, which is
+what stops the committed copy from quietly agreeing with itself. CI always can:
+`pages.yml` sparse-checks-out gonogo's `staging` and sets `GONOGO_REPO`, and
+with `CI=true` a missing checkout fails rather than skipping.
 
 ```bash
 npm run check:symbols                 # this gate alone
 npm run sync:ui-kit-exports           # regenerate the snapshot; never hand-edit it
 GONOGO_REPO=/path/to/gonogo npm run check:symbols   # a checkout that is not a sibling
 GONOGO_REPO=off npm run check:symbols               # exercise the CI path
-GONOGO_REPO=off npm run check                       # the whole CI run, source pass skipped
+GONOGO_REPO=off npm run check                       # a machine with no checkout, source pass skipped
 ```
 
 Known staleness lives in `scripts/doc-symbols-debt.mjs` as two ceilings. They
@@ -86,14 +88,14 @@ shrink, never grow: a page added to one is a bug written down instead of fixed.
 check heading anchors, so a wrong `#fragment` still builds. Check those by hand.
 
 The mod gate needs `Sitrep.Contract.dll`, which is distributed in a KSP install
-rather than on a package registry, so it is skipped unless you point at one:
+rather than on a package registry. Locally it is skipped unless you point at one:
 
 ```bash
 SITREP_CONTRACT_DLL="/path/to/GameData/Gonogo/Plugins/Sitrep.Contract.dll" npm run check
 ```
 
-It is therefore skipped in CI. Run it locally before changing anything under
-`template/mod/`.
+CI builds `Sitrep.Contract` from the same gonogo checkout, since it references
+no KSP assembly, and fails if `SITREP_CONTRACT_DLL` is unset.
 
 ## What is compiled and what is quoted
 

@@ -2,9 +2,10 @@
  * Compiles every snippet the documentation includes, resolves every include,
  * and checks that every symbol the pages name is one the kit exports.
  *
- * The client half always runs. The mod half needs `Sitrep.Contract.dll`, which
- * ships in a KSP install rather than on a package registry, so it runs only
- * when SITREP_CONTRACT_DLL points at one.
+ * The published client pass always runs. The source pass needs a gonogo
+ * checkout, and the mod half needs `Sitrep.Contract.dll` via
+ * SITREP_CONTRACT_DLL. Locally each is skipped without its input; in CI, which
+ * provides both from a checkout of gonogo, a missing one fails.
  *
  * Every section runs whatever the ones before it did, and the verdict at the
  * bottom names each one that failed. A compile error in the template must not
@@ -38,7 +39,14 @@ process.stdout.write("\n== client snippets against published packages (tsc) ==\n
 failures.push(...(await checkTemplateAgainstPublished()));
 
 const contractDll = process.env.SITREP_CONTRACT_DLL;
-if (!contractDll) {
+if (!contractDll && process.env.CI === "true") {
+  failures.push("mod snippets (dotnet)");
+  process.stdout.write(
+    "\n== mod snippets (dotnet) ==\nCI=true and SITREP_CONTRACT_DLL is unset. The " +
+      "workflow builds Sitrep.Contract from the gonogo checkout and sets it; that " +
+      "step is missing or broken.\n",
+  );
+} else if (!contractDll) {
   process.stdout.write(
     "\n== mod snippets (dotnet) ==\nSKIPPED: set SITREP_CONTRACT_DLL to the " +
       "Sitrep.Contract.dll in your KSP install to compile the mod snippets.\n",
