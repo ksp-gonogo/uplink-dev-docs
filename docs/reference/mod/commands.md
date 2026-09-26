@@ -8,14 +8,39 @@
 public sealed class CommandDeclaration
 {
     public string Command { get; set; }
-    public bool Delayed { get; set; } = true;
+    public DelayRole Delay { get; set; } = DelayRole.Delayed;
     public CommandRequirement[] Requires { get; set; }
+    public string Subject { get; set; }
 }
 ```
 
 Every command you handle must be declared in `UplinkManifest.Commands`. Registering a handler for an undeclared command throws at startup.
 
-`Delayed = true` makes the command take effect when the signal would have arrived. Set it `false` only for actions that do not travel.
+## Delay
+
+```csharp
+[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
+public sealed class SitrepCommandAttribute : Attribute
+{
+    public SitrepCommandAttribute(string commandId);
+    public string CommandId { get; }
+    public DelayRole Delay { get; set; } = DelayRole.Delayed;
+    public Type Payload { get; set; }
+    public Type Result { get; set; }
+}
+```
+
+A command's delay is read from the `[SitrepCommand]` tag on its arguments class, found by reflection over every loaded assembly that references `Sitrep.Contract`. It is the same `DelayRole` a channel declares: `Delayed` takes effect when the signal would have arrived, `TrueNow` only for actions that do not travel.
+
+<<< ../../../template/mod/ExampleUplink/Payloads.cs#args{cs}
+
+`CommandDeclaration.Delay` is consulted only for a command id no tag names, so tag the arguments class and leave the declaration's `Delay` alone. One arguments class can carry several tags, one per command it serves.
+
+## Subject
+
+The Topic whose vessel the command addresses, which decides whose light-time it waits for, whose blackout holds it, and which vessel it reaches. It must name a channel, or a [dynamic namespace](/reference/mod/host#dynamic-topics) Topic with an `{args.X}` segment filled from the arguments, that some Uplink declares.
+
+A `Delayed` command with no `Subject`, or one that resolves to nothing, marks your Uplink unavailable once every Uplink has registered. It never falls back to the active vessel. A `TrueNow` command needs none.
 
 ## Handlers
 

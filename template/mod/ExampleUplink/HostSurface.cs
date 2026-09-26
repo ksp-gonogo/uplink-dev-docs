@@ -147,7 +147,8 @@ namespace ExampleUplink
                 new CommandDeclaration
                 {
                     Command = "example.setMode",
-                    Delayed = false,
+                    Delay = DelayRole.Delayed,
+                    Subject = "example.status",
                     Requires = new[]
                     {
                         new CommandRequirement

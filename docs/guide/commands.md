@@ -6,13 +6,15 @@ A command is a named request from a client, with typed arguments and a typed res
 
 <<< ../../template/mod/ExampleUplink/ExampleUplink.cs#manifest{cs}
 
-`Delayed = true` makes the command ride the light-time delay: it takes effect when the signal would have arrived. Set it `false` only for things that do not travel, such as ground-facility actions.
+`Subject` names the Topic whose vessel the command is addressed to, so the command waits for that vessel's light-time. A delayed command without one marks your Uplink unavailable.
 
 Registering a handler for a command you did not declare throws at startup.
 
 ## The arguments class
 
 <<< ../../template/mod/ExampleUplink/Payloads.cs#args{cs}
+
+The `[SitrepCommand]` tag names the command this class carries arguments for, and is where its delay is declared. It defaults to `Delayed`: the command rides the light-time delay and takes effect when the signal would have arrived. Write `[SitrepCommand("example.setMode", Delay = DelayRole.TrueNow)]` only for things that do not travel, such as ground-facility actions.
 
 Arguments arrive as generic JSON and are bound onto this class by property name, case-insensitively:
 

@@ -39,7 +39,7 @@ namespace ExampleUplink
             },
             Commands = new List<CommandDeclaration>
             {
-                new CommandDeclaration { Command = SetModeCommand, Delayed = true },
+                new CommandDeclaration { Command = SetModeCommand, Subject = StatusTopic },
             },
         };
         // #endregion manifest

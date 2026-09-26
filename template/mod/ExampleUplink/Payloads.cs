@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Sitrep.Contract;
 
 namespace ExampleUplink
 {
@@ -23,6 +24,7 @@ namespace ExampleUplink
 
     // #region args
     /// <summary>Arguments of the <c>example.setMode</c> command.</summary>
+    [SitrepCommand("example.setMode")]
     public sealed class SetModeArgs
     {
         public int Mode { get; set; }
