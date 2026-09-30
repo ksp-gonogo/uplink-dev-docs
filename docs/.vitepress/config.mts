@@ -39,9 +39,9 @@ const documents = ["@ksp-gonogo/sitrep-sdk", "@ksp-gonogo/ui-kit"]
   .join(" &middot; ");
 
 const primitives = [
-  "ActionButton",
   "Badge",
   "Box",
+  "Button",
   "Card",
   "Cluster",
   "EmptyState",

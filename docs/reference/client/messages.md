@@ -145,7 +145,7 @@ interface Meta {
 | --- | --- |
 | `validAt` | UT the value was true at. Show this, not the arrival time. |
 | `deliveredAt` | UT it reached the client. Differs from `validAt` by the light-time delay. |
-| `staleness` | `Fresh`, `HeldStale`, `LastBeforeBlackout`, or `Recorded` |
+| `staleness` | `Fresh`, `Held`, `LastBeforeBlackout`, or `Recorded` |
 | `quality` | `Loaded` when the vessel is physically simulated, `OnRails` otherwise |
 | `active` | Whether the source is currently producing |
 | `seq` | Per-Topic sequence number. A gap means frames were dropped, which `LossyLatest` does deliberately. |
@@ -164,7 +164,7 @@ Detect a rewind from `timelineEpoch`, not from `validAt` going backwards. Delive
 
 ```ts
 enum Quality { OnRails = 0, Loaded = 1 }
-enum Staleness { Fresh = 0, HeldStale = 1, LastBeforeBlackout = 2, Recorded = 3 }
+enum Staleness { Fresh = 0, Held = 1, LastBeforeBlackout = 2, Recorded = 3 }
 ```
 
 <<< ../../../template/client/src/sdkSurface.ts#enums

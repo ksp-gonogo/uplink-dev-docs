@@ -3,10 +3,8 @@
 The hero element of a widget reduced to one dominant value.
 
 ```ts
-type ReadoutTone = "default" | "go" | "warning" | "alert";
-
-declare const BigReadout: StyledComponent<"div", { $tone?: ReadoutTone }>;
-declare const Readout: StyledComponent<"div", { $tone?: ReadoutTone }>;
+declare const BigReadout: StyledComponent<"div", { $tone?: Tone }>;
+declare const Readout: StyledComponent<"div", { $tone?: Tone }>;
 declare const ReadoutCaption: StyledComponent<"span">;
 ```
 

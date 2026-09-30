@@ -6,7 +6,7 @@ export function LogPanel({ lines }: { lines: string[] }) {
     <Panel
       panelTitle="Flight log"
       panelAside={
-        <Text size="xs" tone="muted">
+        <Text size="xs" level="muted">
           {lines.length} entries
         </Text>
       }

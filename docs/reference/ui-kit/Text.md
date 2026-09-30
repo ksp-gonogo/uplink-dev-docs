@@ -3,20 +3,13 @@
 Inline text: colour, size and weight, with tabular figures baked in.
 
 ```ts
-type TextTone =
-  | "accent"
-  | "default"
-  | "muted"
-  | "faint"
-  | "go"
-  | "warn"
-  | "nogo"
-  | "info";
+type TextLevel = "muted" | "faint";
 type TextSize = "xs" | "sm" | "base" | "lg";
 type TextWeight = "regular" | "semibold";
 
 interface TextProps extends HTMLAttributes<HTMLSpanElement> {
-  tone?: TextTone;
+  tone?: Tone;
+  level?: TextLevel;
   spaced?: boolean;
   size?: TextSize;
   weight?: TextWeight;
@@ -26,7 +19,8 @@ interface TextProps extends HTMLAttributes<HTMLSpanElement> {
 
 | Prop | Default | Meaning |
 | --- | --- | --- |
-| `tone` | `accent` | |
+| `tone` | `neutral` | The state the text shows, on the kit's one [tone scale](/reference/ui-kit/#shared-vocabulary). `neutral` is the primary text colour |
+| `level` | none | Recedes neutral text: `muted` for secondary text, `faint` for the quietest tier. Text with a state keeps its tone's colour, so `tone={alarm ? "nogo" : undefined} level="faint"` reads faint until the alarm |
 | `spaced` | `false` | Small left margin, to sit apart from a preceding label |
 | `size` | inherits | Set it in dense rows; omit to take the ambient size |
 | `weight` | inherits | `semibold` to lift one figure out of several |

@@ -55,7 +55,7 @@ Keep them in one file each, next to each other in the repository, and change the
 
 ## The SDK and the contract assembly have drifted apart
 
-They are published on different schedules and are not in step. `CommandErrorCode` is the measurable case: the contract assembly declares 22 members, the published SDK declares the first 7. A plugin returning `InsufficientFunds` sends a number the client's enum cannot name.
+They are published on different schedules and are not in step. `CommandErrorCode` is the measurable case: the contract sends a refusal as a string id such as `"insufficientFunds"`, while the published SDK still declares an integer enum of seven members, so no value a plugin sends matches one of its members.
 
 Treat the SDK's generated types as a floor rather than a description of the mod you are talking to, and handle a value you do not recognise.
 

@@ -94,7 +94,7 @@ export type EveryPayload = TopicPayloadMap;
 // #region enums
 export const enums = {
   fresh: Staleness.Fresh,
-  heldStale: Staleness.HeldStale,
+  held: Staleness.Held,
   lastBeforeBlackout: Staleness.LastBeforeBlackout,
   recorded: Staleness.Recorded,
   loaded: Quality.Loaded,

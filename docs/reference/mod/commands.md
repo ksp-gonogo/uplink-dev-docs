@@ -75,14 +75,15 @@ A command with no arguments still needs a class of its own to bind onto.
 public class CommandResult
 {
     public bool Success { get; set; } = true;
-    public CommandErrorCode ErrorCode { get; set; } = CommandErrorCode.None;
+    public RefusalCode? ErrorCode { get; set; }
+    public string? Reason { get; }
     public LimitBreach? Breach { get; set; }
     public string? Detail { get; set; }
 
     public static CommandResult Ok();
-    public static CommandResult Fail(CommandErrorCode errorCode);
-    public static CommandResult Fail(CommandErrorCode errorCode, string? detail);
-    public static CommandResult Fail(CommandErrorCode errorCode, LimitBreach breach);
+    public static CommandResult Fail(RefusalCode errorCode);
+    public static CommandResult Fail(RefusalCode errorCode, string? detail);
+    public static CommandResult Fail(RefusalCode errorCode, LimitBreach breach);
 }
 
 public class CommandResult<T> : CommandResult
@@ -90,9 +91,9 @@ public class CommandResult<T> : CommandResult
     public T? Payload { get; set; }
 
     public static CommandResult<T> Ok(T payload);
-    public static new CommandResult<T> Fail(CommandErrorCode errorCode);
-    public static new CommandResult<T> Fail(CommandErrorCode errorCode, string? detail);
-    public static new CommandResult<T> Fail(CommandErrorCode errorCode, LimitBreach breach);
+    public static new CommandResult<T> Fail(RefusalCode errorCode);
+    public static new CommandResult<T> Fail(RefusalCode errorCode, string? detail);
+    public static new CommandResult<T> Fail(RefusalCode errorCode, LimitBreach breach);
 }
 ```
 
@@ -101,32 +102,47 @@ public class CommandResult<T> : CommandResult
 On the wire, `result` is:
 
 ```json
-{ "success": true, "errorCode": 0, "detail": "...", "payload": ... }
+{ "success": false, "errorCode": "range", "detail": "...", "payload": ... }
 ```
 
-`detail` appears only when non-empty, `breach` only when set, and `payload` only for `CommandResult<T>`. The payload goes through the Topic serialiser, so it is a dictionary, a list, or a primitive.
+`errorCode` and `reason` appear only on a failure, `detail` only when non-empty, `breach` only when set, and `payload` only for `CommandResult<T>`. The payload goes through the Topic serialiser, so it is a dictionary, a list, or a primitive.
 
-## CommandErrorCode
+## Refusal codes
 
-| Value | Code | Value | Code |
+```csharp
+public sealed class RefusalCode : IEquatable<RefusalCode>
+{
+    public string Id { get; }
+    public RefusalCode? Refines { get; }
+    public string Sentence { get; }
+    public RefusalCode Root { get; }
+    public bool IsRoot { get; }
+
+    public RefusalCode Refine(string id, string sentence);
+}
+```
+
+`CommandErrorCode` holds the root refusals as `RefusalCode` fields. The id, not the field name, is what crosses the wire.
+
+| Field | Id | Field | Id |
 | --- | --- | --- | --- |
-| 0 | `None` | 11 | `InsufficientScience` |
-| 1 | `Unknown` | 12 | `CareerModeRequired` |
-| 2 | `NoVessel` | 13 | `WrongScene` |
-| 3 | `ModeUnavailable` | 14 | `WrongState` |
-| 4 | `Range` | 15 | `NotClearToProceed` |
-| 5 | `NotFound` | 16 | `CapabilityMismatch` |
-| 6 | `Timeout` | 17 | `NoConnection` |
-| 7 | `PlanNotOwned` | 18 | `NotUnlocked` |
-| 8 | `LimitReached` | 19 | `SiteOccupied` |
-| 9 | `AlreadyAtMaximum` | 20 | reserved |
-| 10 | `InsufficientFunds` | 21 | `NotReady` |
+| `NoVessel` | `noVessel` | `WrongState` | `wrongState` |
+| `ModeUnavailable` | `modeUnavailable` | `NotClearToProceed` | `notClearToProceed` |
+| `Range` | `range` | `CapabilityMismatch` | `capabilityMismatch` |
+| `NotFound` | `notFound` | `NoConnection` | `noConnection` |
+| `PlanNotOwned` | `planNotOwned` | `NotUnlocked` | `notUnlocked` |
+| `LimitReached` | `limitReached` | `SiteOccupied` | `siteOccupied` |
+| `AlreadyAtMaximum` | `alreadyAtMaximum` | `FacilityDamaged` | `facilityDamaged` |
+| `InsufficientFunds` | `insufficientFunds` | `InsufficientResource` | `insufficientResource` |
+| `InsufficientScience` | `insufficientScience` | `Unreadable` | `unreadable` |
+| `CareerModeRequired` | `careerModeRequired` | `OutOfReach` | `outOfReach` |
+| `WrongScene` | `wrongScene` | | |
 
-Pick the specific code. The client shows it, and `Unknown` tells the operator nothing they can act on.
+Pick the specific code. The client shows its sentence, and a vague one tells the operator nothing they can act on.
 
-The numbers matter because the value, not the name, is what crosses the wire.
+When a root is true but you can say more, refine it, as a `public static readonly RefusalCode` field on a static class of your own: `CommandErrorCode.WrongState.Refine("exampleUplink.notDeployed", "the antenna is not deployed")`. The id is `owner.name`, and the owner must be your own Uplink id; the host drops the codes of an Uplink that declares under anyone else's. The root still travels as `errorCode` and the refinement as `reason`, so a client that knows only the roots still reads a correct refusal.
 
-**The published SDK knows only the first seven**, `None` through `Timeout`. Anything from `PlanNotOwned` up arrives on the client as a number its `CommandErrorCode` enum cannot name, so a reverse lookup gives `undefined`. Handle an unrecognised code, and put anything the operator needs to read into `Detail`.
+**The published SDK does not match.** `@ksp-gonogo/sitrep-sdk@0.0.1` declares `CommandErrorCode` as an integer enum of seven members, `None` through `Timeout`, while the wire carries the string id. Handle an unrecognised code, and put anything the operator needs to read into `Detail`.
 
 ## Gates
 
@@ -168,15 +184,16 @@ public enum GateOutcome { Pass, Fail, Abstain, Unknown }
 public class GateVerdict
 {
     public GateOutcome Outcome { get; set; }
-    public CommandErrorCode ErrorCode { get; set; }
+    public RefusalCode? ErrorCode { get; set; }
+    public string? Reason { get; }
     public LimitBreach? Breach { get; set; }
     public string Detail { get; set; }
 
     public static GateVerdict Pass();
     public static GateVerdict Fail(LimitBreach breach);
-    public static GateVerdict Fail(CommandErrorCode errorCode, LimitBreach breach);
+    public static GateVerdict Fail(RefusalCode errorCode, LimitBreach breach);
     public static GateVerdict Fail(string detail);
-    public static GateVerdict Fail(CommandErrorCode errorCode, string detail);
+    public static GateVerdict Fail(RefusalCode errorCode, string detail);
     public static GateVerdict Unknown(string detail);
 }
 ```

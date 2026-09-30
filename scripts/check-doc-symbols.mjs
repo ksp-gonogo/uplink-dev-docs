@@ -330,7 +330,7 @@ export async function checkDocSymbols(write = (s) => process.stdout.write(s)) {
 
   // Both directions on the export set. An over-broad one masks every real
   // finding and cannot be told from a correct one by counting.
-  const shouldExport = ["Panel", "Stack", "Unit", "Badge", "ActionButton"];
+  const shouldExport = ["Panel", "Stack", "Unit", "Badge", "Button"];
   const shouldNotExport = ["getHost", "registerComponent", "useTelemetry"];
   const wrong = [
     ...shouldExport.filter((n) => !exported.has(n)).map((n) => `missing ${n}`),

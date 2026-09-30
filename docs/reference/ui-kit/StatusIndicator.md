@@ -3,19 +3,19 @@
 A coloured dot and a line of state.
 
 ```ts
-type StatusTone = "neutral" | "info" | "go" | "warn" | "nogo";
-
 interface StatusIndicatorProps extends Omit<HTMLAttributes<HTMLDivElement>, "children"> {
-  tone: StatusTone;
+  tone: Tone;
   children: ReactNode;
   live?: boolean;
+  pulse?: "slow" | "fast";
 }
 ```
 
 | Prop | Default | Meaning |
 | --- | --- | --- |
-| `tone` | required | Its own five-name union, above. A sentence is not a chip, so it does not take a [Badge](/reference/ui-kit/Badge) severity |
+| `tone` | required | The dot's colour, on the kit's one [tone scale](/reference/ui-kit/#shared-vocabulary) |
 | `live` | `false` | Makes the indicator a polite live region |
+| `pulse` | none | Pulses the dot for an active, changing state: `slow` reads as steady-live, `fast` as working or reconnecting. Held still under `prefers-reduced-motion` |
 
 <<< ../../../template/client/src/ui/StatusIndicator.tsx#example
 

@@ -3,17 +3,10 @@
 A compact state pill.
 
 ```ts
-type Severity =
-  | "nominal"
-  | "info"
-  | "caution"
-  | "warning"
-  | "critical"
-  | "offline";
 type BadgeSize = "sm" | "md";
 
 interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
-  severity?: Severity;
+  tone?: Tone;
   size?: BadgeSize;
   live?: boolean;
   report?: { id: string; label?: string };
@@ -23,23 +16,24 @@ interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
 
 | Prop | Default | Meaning |
 | --- | --- | --- |
-| `severity` | none | Colour, and what the chip is claiming. Omit it for a decorative chip: a kind tag or a count, making no claim about state |
+| `tone` | `neutral` | Colour, and what the chip is claiming. Omit it, or pass `neutral`, for a decorative chip: a kind tag or a count, making no claim about state |
 | `size` | `md` | `sm` or `md` |
 | `live` | `false` | Announce changes to this chip through `role="status"` |
 | `report` | none | Register this chip in the enclosing [Panel](/reference/ui-kit/Panel)'s status summary, under an `id` that is stable for the chip's lifetime |
 
-`severity` is the one state vocabulary the whole kit speaks, so a panel of chips reads as one instrument rather than six colour choices.
+`tone` is the kit's one state scale, `Tone` from `@ksp-gonogo/sitrep-sdk`, so a panel of chips reads as one instrument rather than six colour choices.
 
-| `severity` | Use for |
+| `tone` | Use for |
 | --- | --- |
-| `nominal` | Working as intended. `LINKED`, `ARMED` |
+| `neutral` | No state. A kind tag or a count |
+| `go` | Working as intended. `LINKED`, `ABOARD` |
 | `info` | True and worth showing, but not a state to act on |
 | `caution` | Worth watching. Nothing is required yet |
-| `warning` | Action will be required |
-| `critical` | Action required now |
+| `warn` | Action will be required |
+| `nogo` | Action required now |
 | `offline` | Not reporting at all. The reading is gone, not bad |
 
-`offline` outranks `critical` rather than sitting below it: a chip whose data has stopped arriving is the most degraded thing it can say, and a critical alarm cannot be trusted once the feed behind it is gone.
+A panel summary ranks them `go`, `info`, `caution`, `warn`, `nogo`, `offline`, and `neutral` takes no part. `offline` outranks `nogo` rather than sitting below it: a chip whose data has stopped arriving is the most degraded thing it can say, and a nogo alarm cannot be trusted once the feed behind it is gone.
 
 <<< ../../../template/client/src/ui/Badge.tsx#example
 

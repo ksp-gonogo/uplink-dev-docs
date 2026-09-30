@@ -25,7 +25,7 @@ Four things there are worth copying:
 - **`Panel` takes its title and its body as props**, `panelTitle` and `sections`. That is what gives the widget the padded frame every other widget has, and what lets the body reflow when an operator makes the tile wider
 - **`EmptyState` for a missing value**, never a zero. Until the first frame lands you do not know the mode; showing `Idle` claims you do
 - **`Text` for a string you have already made**, which sets tabular figures so digits stop jittering as they update. A number with a unit goes through `Unit` instead, which formats it and draws its symbol
-- **`Badge` severity carries the state**, `nominal` and `info` rather than a colour you picked
+- **`Badge` tone carries the state**, `go` and `neutral` rather than a colour you picked
 
 ## Layout primitives
 

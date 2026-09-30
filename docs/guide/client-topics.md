@@ -36,7 +36,7 @@ Every `stream-data` frame carries a `meta` block alongside the payload:
 | --- | --- |
 | `validAt` | The UT the value was true at |
 | `deliveredAt` | The UT it reached the client |
-| `staleness` | `Fresh`, `HeldStale`, or `LastBeforeBlackout` |
+| `staleness` | `Fresh`, `Held`, `LastBeforeBlackout`, or `Recorded` |
 | `quality` | `Loaded` when the vessel is physically simulated, `OnRails` otherwise |
 | `active` | Whether the source is currently producing |
 | `seq` | Per-Topic sequence number |

@@ -20,7 +20,7 @@ The wire contract for the Gonogo mod's telemetry stream, generated from the mod'
 | Payload interfaces | types | One per built-in Topic payload |
 | `SDK_VERSION` | constant | Reports `"0.0.0"` in the `0.0.1` package. Do not depend on it. |
 
-The generated half was generated once, and the mod's contract has moved since. `CommandErrorCode` has 22 members in the assembly and 7 here. Read [Known limits](/guide/limits) before relying on a generated type to be complete.
+The generated half was generated once, and the mod's contract has moved since. `CommandErrorCode` is a string id on the wire and an integer enum of seven members here. Read [Known limits](/guide/limits) before relying on a generated type to be complete.
 
 ## What it is not
 

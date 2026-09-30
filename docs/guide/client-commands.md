@@ -8,7 +8,7 @@ A command is a request with a `requestId` you generate, answered by a `command-r
 
 <<< ../../template/client/src/sendCommand.ts#result
 
-`errorCode` is the plugin's `CommandErrorCode`, which the SDK exports as a real enum. Compare against its members rather than against a bare number.
+`errorCode` is the id of the plugin's refusal, a string such as `"range"`, and is absent on success. The SDK's `CommandErrorCode` maps each root refusal to its id, so compare against its members rather than against a bare string.
 
 ## A command does not resolve when it takes effect
 
@@ -21,6 +21,6 @@ Two consequences for the UI:
 
 ## Confirm anything destructive
 
-The delay makes a mistaken command unrecallable. Arm-then-confirm, rather than a bare click, for anything that stages, jettisons, terminates, or spends. `ActionButton`'s `go` tone exists for the confirm step.
+The delay makes a mistaken command unrecallable. Arm-then-confirm, rather than a bare click, for anything that stages, jettisons, terminates, or spends. `CommandButton` carries that step for you: give it a `confirmLabel` and the first press arms it, the second sends, and an arm left alone expires.
 
 Next: [Building the UI](/guide/client-ui).

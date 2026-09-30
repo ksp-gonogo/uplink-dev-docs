@@ -1,7 +1,7 @@
 // #region widget
 import {
-  ActionButton,
   Badge,
+  Button,
   Cluster,
   EmptyState,
   Panel,
@@ -37,19 +37,20 @@ export function ExampleWidget({ stream }: { stream: SitrepStream }) {
             </Row>
             <Row as="div">
               <Row.Name>Power</Row.Name>
-              <Badge severity={status.enabled ? "nominal" : "info"}>
+              <Badge tone={status.enabled ? "go" : "neutral"}>
                 {status.enabled ? "ON" : "OFF"}
               </Badge>
             </Row>
             <Cluster justify="end" gap="related-compact">
               {MODE_NAMES.map((name, mode) => (
-                <ActionButton
+                <Button
                   key={name}
-                  tone={mode === status.mode ? "go" : "ghost"}
+                  size="sm"
+                  pressed={mode === status.mode}
                   onClick={() => setMode(mode)}
                 >
                   {name}
-                </ActionButton>
+                </Button>
               ))}
             </Cluster>
           </Section>

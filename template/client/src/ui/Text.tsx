@@ -5,7 +5,12 @@ export function Mode({ mode, live }: { mode: string; live: boolean }) {
   return (
     <>
       Mode
-      <Text spaced size="lg" tone={live ? "go" : "muted"}>
+      <Text
+        spaced
+        size="lg"
+        tone={live ? "go" : undefined}
+        level="muted"
+      >
         {mode}
       </Text>
     </>

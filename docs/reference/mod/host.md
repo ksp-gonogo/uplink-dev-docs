@@ -131,20 +131,30 @@ The vantage variant passes the id of the command centre the request entered from
 ```csharp
 void SetSignalDelaySource(Func<KspSnapshot?, CommsDelay?> computeOnMainThread);
 void SetVesselDelay(string vesselId, double oneWaySeconds);
-void SetAuthorityDelay(string centreId, string vesselId, double oneWaySeconds);
 void SetCentreDelay(string fromCentreId, string toCentreId, double oneWaySeconds);
+void SetHomeCommandDelay(string centreId, double oneWaySeconds);
+void SetActiveVesselDelays(IReadOnlyDictionary<string, double> oneWaySecondsByCentre);
 void SetVesselConnectivity(string vesselId, bool connected);
 void SetConnectivitySource(Func<KspSnapshot?, bool?> computeOnMainThread);
+void SetPathBreakSource(Func<KspSnapshot?, double, IReadOnlyList<PathBreak>?> computeOnMainThread);
 ```
 
 ```csharp
-public enum CommsDelaySource { None = 0, SignalDelay = 1 }
+public enum CommsDelaySource { None, SignalDelay, NoCommsModel }
 
 public class CommsDelay
 {
-    public double OneWaySeconds { get; set; }
+    public double? OneWaySeconds { get; set; }
     public CommsDelaySource Source { get; set; }
-    public PayloadMeta Meta { get; set; }
+    public PayloadMeta Meta { get; set; } = new();
+}
+
+public readonly struct PathBreak
+{
+    public PathBreak(string node, double atUt, double lightSecondsOut);
+    public string Node { get; }
+    public double AtUt { get; }
+    public double LightSecondsOut { get; }
 }
 ```
 
