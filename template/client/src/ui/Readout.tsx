@@ -1,9 +1,9 @@
 // #region example
 import {
+  Badge,
   BigReadout,
   Readout,
   ReadoutCaption,
-  StatusPill,
 } from "@ksp-gonogo/ui-kit";
 
 export function DeltaV({ value, tight }: { value: string; tight: boolean }) {
@@ -12,7 +12,7 @@ export function DeltaV({ value, tight }: { value: string; tight: boolean }) {
     <>
       <Hero $tone="go">{value}</Hero>
       <ReadoutCaption>m/s remaining</ReadoutCaption>
-      <StatusPill $tone="go">NOMINAL</StatusPill>
+      <Badge tone="go">NOMINAL</Badge>
     </>
   );
 }

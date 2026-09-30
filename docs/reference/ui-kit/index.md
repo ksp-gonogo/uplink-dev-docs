@@ -32,7 +32,7 @@ No primitive reads telemetry, dispatches a command, or holds anything but its ow
 
 **Containers**: [Panel](/reference/ui-kit/Panel), [Card](/reference/ui-kit/Card)
 
-**Readouts**: [Unit](/reference/ui-kit/Unit), [Text](/reference/ui-kit/Text), [Readout](/reference/ui-kit/Readout) (with `BigReadout`, `ReadoutCaption` and `StatusPill`), [ProgressBar](/reference/ui-kit/ProgressBar), [Truncate](/reference/ui-kit/Truncate)
+**Readouts**: [Unit](/reference/ui-kit/Unit), [Text](/reference/ui-kit/Text), [Readout](/reference/ui-kit/Readout) (with `BigReadout` and `ReadoutCaption`), [ProgressBar](/reference/ui-kit/ProgressBar), [Truncate](/reference/ui-kit/Truncate)
 
 **State**: [Badge](/reference/ui-kit/Badge), [StatusIndicator](/reference/ui-kit/StatusIndicator), [Spinner](/reference/ui-kit/Spinner), [EmptyState](/reference/ui-kit/EmptyState)
 
@@ -57,6 +57,6 @@ Three scales run through the whole kit.
 | `tone` | `ActionButtonTone` | `ActionButton` |
 | `tone` | `StatusTone` | `StatusIndicator` |
 | `tone` | `TextTone` | `Text` |
-| `$tone` | `ReadoutTone` | `BigReadout`, `Readout`, `StatusPill` |
+| `$tone` | `ReadoutTone` | `BigReadout`, `Readout` |
 
 The `$` marks a styled-component transient prop, which is what keeps it off the DOM element. Everything else takes a plain `tone`.

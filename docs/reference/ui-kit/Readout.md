@@ -8,7 +8,6 @@ type ReadoutTone = "default" | "go" | "warning" | "alert";
 declare const BigReadout: StyledComponent<"div", { $tone?: ReadoutTone }>;
 declare const Readout: StyledComponent<"div", { $tone?: ReadoutTone }>;
 declare const ReadoutCaption: StyledComponent<"span">;
-declare const StatusPill: StyledComponent<"div", { $tone: ReadoutTone }>;
 ```
 
 | Export | Use |
@@ -16,7 +15,8 @@ declare const StatusPill: StyledComponent<"div", { $tone: ReadoutTone }>;
 | `BigReadout` | Fills the remaining panel space and centres one value |
 | `Readout` | Same treatment, compact, sits alongside other content |
 | `ReadoutCaption` | Muted sub-label under either, for units or a mode tag |
-| `StatusPill` | One token of state: `NOMINAL`, `GO`, `ABORT`. `$tone` is required. |
+
+A one-token state pill (`NOMINAL`, `GO`, `ABORT`) is [Badge](/reference/ui-kit/Badge), not part of this family.
 
 <<< ../../../template/client/src/ui/Readout.tsx#example
 
