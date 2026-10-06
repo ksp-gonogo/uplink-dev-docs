@@ -327,7 +327,7 @@ function extensionPoints(record, sdk, kit) {
     }
     const unnamed = withPrefix(sdk.getChildByName(registry), record.id).filter((m) => !ids.includes(m.name));
     if (unnamed.length > 0) {
-      throw new Error(`${registry} declares ${unnamed.map((m) => m.name).join(", ")}, which the ${record.id} record does not name as a ${kind} slot`);
+      throw new Error(`${registry} declares ${unnamed.map((m) => m.name).join(", ")}, which the ${record.id} record does not name as one of its ${kind} slots`);
     }
   }
   const standard = [
@@ -340,9 +340,18 @@ function extensionPoints(record, sdk, kit) {
     for (const segment of segments) {
       const member = declared.children?.find((c) => c.name === segment);
       if (!member) throw new Error(`${list} names ${segment}, which ${registry} does not declare`);
+      // A widget that declares a standard segment as its own slot keeps its own description of it, where it wrote one.
+      const own = points.find((p) => p.id === `${record.id}.${segment}`);
+      if (own) {
+        own.standard = true;
+        if (!own.doc?.summary?.length) own.doc = member.comment;
+        continue;
+      }
       points.push({ id: `${record.id}.${segment}`, kind, standard: true, type: member.type, doc: member.comment });
     }
   }
+  const bare = points.filter((p) => !p.doc?.summary?.length).map((p) => p.id);
+  if (bare.length > 0) throw new Error(`${bare.join(", ")} ${bare.length === 1 ? "has" : "have"} no doc comment on ${SDK}'s registry key, so the ${record.id} page cannot describe ${bare.length === 1 ? "it" : "them"}`);
   return points;
 }
 
