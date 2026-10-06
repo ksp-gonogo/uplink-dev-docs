@@ -231,8 +231,26 @@ function groupedMd(members, project, index) {
     .flatMap(([heading, list]) => [`## ${heading} {#${heading.toLowerCase()}}`, ...list.map((m) => symbolMd(m, project, index))]);
 }
 
-function categoryPage(page, project, index) {
+/** The sdk's root project, which owns any symbol another package re-exports. Set once the projects load. */
+let sdkProject;
+
+/**
+ * The symbols a category or guide page documents: its category's, less any
+ * the sdk exports under the same name when the page is another package's. A
+ * re-exported symbol is documented once, on the sdk's page.
+ */
+function pageMembers(page, project) {
   const members = categoryMembers(project, page.category);
+  if (page.package === SDK) return members;
+  const own = members.filter((m) => !sdkProject.getChildByName(m.name));
+  if (own.length === 0) {
+    throw new Error(`every symbol in ${page.package}'s @category ${page.category} is one the sdk exports, so its sdk page documents it: delete this module`);
+  }
+  return own;
+}
+
+function categoryPage(page, project, index) {
+  const members = pageMembers(page, project);
   const lead = members.find((m) => m.name === page.lead);
   if (!lead) throw new Error(`${page.lead} is not in @category ${page.category}`);
   // A component's props are rendered under the component, so they are not listed again as a type.
@@ -262,7 +280,7 @@ const REST = /^<!-- rest -->$/m;
  */
 function guidePage(page, project, index) {
   const source = readFileSync(resolve(ROOT, page.source), "utf8");
-  const members = new Map(categoryMembers(project, page.category).map((m) => [m.name, m]));
+  const members = new Map(pageMembers(page, project).map((m) => [m.name, m]));
   const examples = new Map((page.examples ?? []).map((e) => [e.id, e]));
   const remarksPlaced = new Set([...source.matchAll(PLACEHOLDER)].filter(([, kind]) => kind === "remarks").map(([, , name]) => name));
   const placed = new Set();
@@ -526,6 +544,7 @@ function recordWritten(written) {
 export async function generate({ install = true } = {}) {
   if (install) await installArtifacts();
   const projects = { [SDK]: await loadPackage(SDK), [KIT]: await loadPackage(KIT) };
+  sdkProject = projects[SDK];
   for (const page of PAGES) {
     if (page.package && !projects[specifierOf(page)]) projects[specifierOf(page)] = await loadPackage(page.package, page.entry);
   }
@@ -540,7 +559,7 @@ export async function generate({ install = true } = {}) {
     const url = urlOf(page);
     if (page.kind === "category" || page.kind === "guide") {
       const project = projects[specifierOf(page)];
-      for (const m of categoryMembers(project, page.category)) {
+      for (const m of pageMembers(page, project)) {
         index.add(m.name, m.name === page.title ? url : `${url}#${m.name}`);
         const props = propsOf(m, project);
         if (props) index.add(props.name, `${url}#${props.name}`);
