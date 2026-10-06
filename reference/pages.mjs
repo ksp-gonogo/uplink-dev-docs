@@ -9,8 +9,12 @@
  *
  * - `category`: every symbol tagged `@category <category>` in `package`: `lead`
  *   first, then what its doc links to, then the rest in source order
- * - `slots`: one widget's extension points, read off the slot and contribution
- *   registries
+ * - `widget`: one core widget, named by its id in `widget`. Its name, its
+ *   description and every other fact its registration declares come from its
+ *   record in uplink-tools' `widgets.json`, and the module states none of
+ *   them: generation fails on a `title` or any other record fact. Its slots
+ *   are the ones the record names, typed and described by the slot and
+ *   contribution registries, then the standard slots every widget carries
  * - `guide`: a hand-written page in `reference/guides/`, whose placeholders
  *   take the symbols of `category`, their `@remarks` and its `examples`. Every
  *   symbol in the category is placed exactly once, by name or by `<!-- rest -->`

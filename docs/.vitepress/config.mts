@@ -1,9 +1,18 @@
 import { defineConfig } from "vitepress";
 import { islandVite } from "./islands.mts";
 import { symbolLinks } from "./symbolLinks.mts";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+
+/**
+ * The widget pages, each named by its widget's record, as `npm run reference`
+ * last wrote them. None before the first run.
+ */
+const widgetSidebar = resolve(dirname(fileURLToPath(import.meta.url)), "sidebar-widgets.generated.json");
+const widgetPages: { text: string; link: string }[] = existsSync(widgetSidebar)
+  ? JSON.parse(readFileSync(widgetSidebar, "utf8"))
+  : [];
 
 const modules = resolve(
   dirname(fileURLToPath(import.meta.url)),
@@ -141,7 +150,7 @@ export default defineConfig({
         },
         {
           text: "Widgets",
-          items: [{ text: "Crew Status", link: "/reference/widgets/crew-status" }],
+          items: widgetPages,
         },
         {
           text: "ui-kit",

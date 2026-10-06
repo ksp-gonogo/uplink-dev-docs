@@ -1,7 +1,8 @@
 /**
- * Packs the three packages the generated reference reads, from a gonogo
- * checkout, into `artifacts/`: the stand-in for a registry until release
- * candidates are published.
+ * Packs the packages the generated reference reads, from a gonogo checkout,
+ * into `artifacts/`: the stand-in for a registry until release candidates are
+ * published. uplink-tools is read for its `widgets.json`, the record each
+ * widget page is headed with.
  *
  * This is the only script here that reads a gonogo checkout, and it reads it
  * only to produce packages. `generate.mjs` reads the packages and nothing else,
@@ -30,12 +31,17 @@ const run = (cmd, args, cwd) => execFileSync(cmd, args, { cwd, stdio: "inherit" 
 rmSync(ARTIFACTS, { recursive: true, force: true });
 mkdirSync(ARTIFACTS, { recursive: true });
 
-run("pnpm", ["turbo", "run", "build", "--filter=@ksp-gonogo/ui-kit", "--filter=@ksp-gonogo/sitrep-sdk"], root);
+run(
+  "pnpm",
+  ["turbo", "run", "build", "--filter=@ksp-gonogo/ui-kit", "--filter=@ksp-gonogo/sitrep-sdk", "--filter=@ksp-gonogo/uplink-tools"],
+  root,
+);
 
 /** `pnpm pack` applies `publishConfig`, so the tarball is what `npm publish` would upload. */
 const npmPackages = {
   "packages/ui-kit": "ksp-gonogo-ui-kit.tgz",
   "mod/sitrep-sdk": "ksp-gonogo-sitrep-sdk.tgz",
+  "packages/uplink-tools": "ksp-gonogo-uplink-tools.tgz",
 };
 for (const [dir, name] of Object.entries(npmPackages)) {
   const scratch = join(ARTIFACTS, ".pack");

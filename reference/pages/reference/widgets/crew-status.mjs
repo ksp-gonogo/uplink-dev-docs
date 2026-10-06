@@ -9,8 +9,7 @@ export const CREW_SCENE = {
 };
 
 export default {
-  kind: "slots",
-  title: "Crew Status",
+  kind: "widget",
   widget: "crew-status",
   scene: CREW_SCENE,
   examples: [{ id: "crew-status", file: CREW_FEED }],

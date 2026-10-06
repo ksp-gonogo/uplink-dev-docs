@@ -1,6 +1,8 @@
 /**
  * Fails on a reference page that is neither generated nor a listed hand page,
- * and on a generated page that was committed or edited by hand.
+ * on a generated page that was committed or edited by hand, and on a widget
+ * page whose header is not the one its record in the packed
+ * `@ksp-gonogo/uplink-tools/widgets.json` writes.
  *
  * Every page under `docs/reference/` is one of two things: written by
  * `npm run reference` from a module under `reference/pages/`, or a hand page
@@ -20,6 +22,7 @@ import { relative, resolve } from "node:path";
 import { PAGES } from "../reference/pages.mjs";
 import { HAND_PAGES } from "./hand-pages-debt.mjs";
 import { DOCS, GENERATED_HASHES, hashOf, ROOT } from "./reference/paths.mjs";
+import { loadWidgetRecords, opensWithHeader, WIDGET_RECORDS, widgetHeaderMd } from "./reference/widgets.mjs";
 
 const REFERENCE = resolve(DOCS, "reference");
 
@@ -32,8 +35,10 @@ const REFERENCE = resolve(DOCS, "reference");
  * - `tracked`: what git tracks
  * - `written`: each page's hash as the generator wrote it, or null before any run
  * - `hash` and `isGeneratedText`: a file's current hash, and whether it carries the generated frontmatter
+ * - `widgets`: each widget page's path, with its record from the packed `widgets.json` or null when it has none
+ * - `read`: a file's text, or null when it does not exist
  */
-export function pageFaults({ onDisk, generated, tracked, written, hand, hash, isGeneratedText }) {
+export function pageFaults({ onDisk, generated, tracked, written, hand, hash, isGeneratedText, widgets, read }) {
   const faults = [];
   for (const path of generated) {
     if (tracked.has(path)) faults.push(["committed", path, "is generated, so it is build output: git rm --cached it"]);
@@ -47,12 +52,34 @@ export function pageFaults({ onDisk, generated, tracked, written, hand, hash, is
       faults.push(["unlisted", path, "is a hand page. A reference page is a module under reference/pages/, generated from doc comments"]);
     }
   }
+  for (const [path, record] of widgets) {
+    const markdown = read(path);
+    if (record === null) faults.push(["unrecorded", path, `is a widget page for a widget ${WIDGET_RECORDS} does not list`]);
+    else if (markdown !== null && !opensWithHeader(markdown, record)) {
+      faults.push(["header", path, `does not open with the header its record in ${WIDGET_RECORDS} writes: run npm run reference`]);
+    }
+  }
   for (const path of hand) {
     if (generated.has(path)) faults.push(["listed", path, "is generated now: delete its entry in scripts/hand-pages-debt.mjs"]);
     else if (!onDisk.has(path)) faults.push(["listed", path, "is gone: delete its entry in scripts/hand-pages-debt.mjs"]);
   }
   return faults;
 }
+
+const PLANTED_RECORD = {
+  id: "planted",
+  name: "Planted",
+  description: "A widget no page shows.",
+  channels: ["vessel.crew"],
+  optionalChannels: [],
+  dataRequirements: [],
+  actions: [],
+  augmentSlots: [],
+  contributionSlots: [],
+  requires: [],
+  replaces: null,
+  defaultSize: { w: 4, h: 4 },
+};
 
 const PLANTED = {
   onDisk: new Set(["docs/reference/generated.md", "docs/reference/edited.md", "docs/reference/new-hand.md", "docs/reference/left-over.md"]),
@@ -62,8 +89,13 @@ const PLANTED = {
   hand: ["docs/reference/deleted.md"],
   hash: (path) => (path === "docs/reference/edited.md" ? "changed" : "a"),
   isGeneratedText: (path) => path === "docs/reference/left-over.md",
+  widgets: new Map([
+    ["docs/reference/generated.md", PLANTED_RECORD],
+    ["docs/reference/edited.md", null],
+  ]),
+  read: () => `---\ngenerated: npm run reference\n---\n\n${widgetHeaderMd({ ...PLANTED_RECORD, name: "Renamed by hand" })}\n\n## Example\n`,
 };
-const PLANTED_KINDS = ["committed", "unwritten", "edited", "unlisted", "orphan", "listed"];
+const PLANTED_KINDS = ["committed", "unwritten", "edited", "unlisted", "orphan", "listed", "unrecorded", "header"];
 
 function markdownUnder(dir) {
   if (!existsSync(dir)) return [];
@@ -72,6 +104,14 @@ function markdownUnder(dir) {
     if (entry.isDirectory()) return markdownUnder(full);
     return entry.name.endsWith(".md") ? [relative(ROOT, full)] : [];
   });
+}
+
+/** Each widget page by path, with the record the packed `widgets.json` holds for its widget. */
+function widgetPages() {
+  const pages = PAGES.filter((page) => page.kind === "widget");
+  if (pages.length === 0) return new Map();
+  const records = loadWidgetRecords();
+  return new Map(pages.map((page) => [`docs/${page.path}`, records.get(page.widget) ?? null]));
 }
 
 export function checkReferencePages() {
@@ -89,11 +129,13 @@ export function checkReferencePages() {
     hand: HAND_PAGES,
     hash: (path) => (existsSync(resolve(ROOT, path)) ? hashOf(resolve(ROOT, path)) : null),
     isGeneratedText: (path) => /^---\ngenerated:/.test(readFileSync(resolve(ROOT, path), "utf8")),
+    widgets: widgetPages(),
+    read: (path) => (existsSync(resolve(ROOT, path)) ? readFileSync(resolve(ROOT, path), "utf8") : null),
   };
   const faults = pageFaults(tree);
   if (faults.length === 0) {
     console.log(
-      `Reference pages: ${tree.generated.size} generated, ${HAND_PAGES.length} listed hand pages, none committed or edited (planted faults found: ${PLANTED_KINDS.length}).`,
+      `Reference pages: ${tree.generated.size} generated, ${HAND_PAGES.length} listed hand pages, none committed or edited, ${tree.widgets.size} widget pages headed by their records (planted faults found: ${PLANTED_KINDS.length}).`,
     );
     return [];
   }

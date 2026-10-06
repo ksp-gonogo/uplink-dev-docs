@@ -80,3 +80,8 @@
     max-width: 960px;
   }
 }
+
+/* A fact table, such as a widget page's header, has nothing to say in its header row. */
+.vp-doc table:has(thead th:empty:first-child + th:empty:last-child) thead {
+  display: none;
+}

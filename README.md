@@ -128,6 +128,9 @@ away.
   `scripts/reference/typescript.mjs` writes the Markdown, because a page here
   is a composition (a `@category`, a component's props, one widget's registry
   keys) rather than one file per declaration
+- **Widgets**: each core widget's record, in the packed
+  `@ksp-gonogo/uplink-tools/widgets.json`, heads its page. An Uplink README's
+  widget sections are written from the same kind of record
 - **C#**: xmldocmd reads `Sitrep.Contract.dll` and its XML doc file out of the
   `KspGonogo.Sitrep.Contract` NuGet package; `scripts/reference/csharp.mjs`
   composes its per-member files into one page
@@ -154,9 +157,15 @@ generated page that is committed or edited by hand (`npm run check:pages`).
   package, the category and its `lead` symbol. A guide that places a
   category's symbols through hand prose is a `guide` module over a source in
   `reference/guides/`
-- **A widget**: a `slots` module naming the widget, the fixture scene it
-  renders on, one example file per slot under `reference/examples/<widget>/`,
-  and its `stories`. The generator lists any slot with no scaffolding story
+- **A widget**: a `widget` module naming the widget by id, the fixture scene
+  it renders on, one example file per slot under `reference/examples/<widget>/`,
+  and its `stories`. The page's header (name, description, Topics, actions,
+  slots, default size and the rest) is the widget's record in uplink-tools'
+  `widgets.json`, so the module states none of it; generation fails if it
+  does, and `npm run check:pages` fails on a widget page whose header is not
+  its packed record's. The sidebar's Widgets group is generated from the same
+  records, so a new widget page needs no config edit. The generator lists any
+  slot with no scaffolding story
 - **Contract types**: a `contract` module naming the C# types, with a template
   region under any type that has one
 - **Replacing a hand page**: generate at its path and delete it from

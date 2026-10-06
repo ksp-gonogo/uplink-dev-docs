@@ -16,6 +16,7 @@ import { contractMd, isContractType, runXmldocmd } from "./csharp.mjs";
 import { installArtifacts } from "./install.mjs";
 import { DOCS, GENERATED_HASHES, hashOf, INSTALL, PLANTED_DEMO_FILE, PLANTED_DEMOS, ROOT, storybookRoot } from "./paths.mjs";
 import { UNRESOLVED_LINK_DEBT } from "../symbol-link-debt.mjs";
+import { anchorOf, assertModulesStateNoRecordFacts, loadWidgetRecords, recordOf, widgetHeaderMd } from "./widgets.mjs";
 import { SYMBOL_INDEX } from "../symbol-links.mjs";
 import {
   categoryMembers,
@@ -46,6 +47,7 @@ const hasExamples = (page) => page.kind !== "contract" && (page.examples?.length
 
 const SDK = "@ksp-gonogo/sitrep-sdk";
 const KIT = "@ksp-gonogo/ui-kit";
+const TOOLS = "@ksp-gonogo/uplink-tools";
 
 const urlOf = (page) => `/${page.path.replace(/(index)?\.md$/, "")}`;
 
@@ -80,7 +82,7 @@ function demoMd(page, id, file, { code = true } = {}) {
 function examplesMd(page) {
   const examples = page.examples ?? [];
   if (examples.length === 0) return "";
-  const one = (e) => demoMd(page, e.id, e.file, { code: page.kind !== "slots" });
+  const one = (e) => demoMd(page, e.id, e.file, { code: page.kind !== "widget" });
   if (examples.length === 1) {
     const [e] = examples;
     return `## ${e.title ?? "Example"} {#example}\n\n${one(e)}`;
@@ -302,20 +304,32 @@ function tupleValues(reflection) {
 }
 
 /**
- * Every extension point of one widget: the slots it declares in the two
- * registries, then the standard segments every widget carries, read off the
- * kit's own lists of what the dashboard mounts for every widget.
+ * Every extension point of one widget: the slots its record declares, typed
+ * and described by the registry that declares each, then the standard
+ * segments every widget carries, read off the kit's own lists of what the
+ * dashboard mounts for every widget. A slot the record names that its
+ * registry does not declare, or one the registry declares under the widget's
+ * prefix that the record does not name, is a mismatch to fix in gonogo.
  */
-function extensionPoints(page, sdk, kit) {
+function extensionPoints(record, sdk, kit) {
   const points = [];
   const entryOf = (slot) => slot.type?.declaration?.children?.find((f) => f.name === "entry")?.type;
-  for (const slot of withPrefix(sdk.getChildByName("SlotRegistry"), page.widget)) {
-    points.push({ id: slot.name, kind: "augment", standard: false, type: slot.type, doc: slot.comment });
+  const declared = [
+    ["augment", record.augmentSlots, "SlotRegistry", (slot) => slot.type],
+    ["contribution", record.contributionSlots, "ContributionRegistry", entryOf],
+  ];
+  for (const [kind, ids, registry, typeOf] of declared) {
+    const members = sdk.getChildByName(registry)?.children ?? [];
+    for (const id of ids) {
+      const slot = members.find((m) => m.name === id);
+      if (!slot) throw new Error(`the ${record.id} record names ${kind} slot ${id}, which ${registry} in ${SDK} does not declare`);
+      points.push({ id, kind, standard: false, type: typeOf(slot), doc: slot.comment });
+    }
+    const unnamed = withPrefix(sdk.getChildByName(registry), record.id).filter((m) => !ids.includes(m.name));
+    if (unnamed.length > 0) {
+      throw new Error(`${registry} declares ${unnamed.map((m) => m.name).join(", ")}, which the ${record.id} record does not name as a ${kind} slot`);
+    }
   }
-  for (const slot of withPrefix(sdk.getChildByName("ContributionRegistry"), page.widget)) {
-    points.push({ id: slot.name, kind: "contribution", standard: false, type: entryOf(slot), doc: slot.comment });
-  }
-  if (points.length === 0) throw new Error(`neither registry in ${SDK} declares a ${page.widget}.* slot`);
   const standard = [
     ["FRAMEWORK_AUGMENT_SEGMENTS", "AugmentSegmentRegistry", kit, "augment"],
     ["FRAMEWORK_CONTRIBUTION_SEGMENTS", "ComponentSlotRegistry", sdk, "contribution"],
@@ -326,24 +340,22 @@ function extensionPoints(page, sdk, kit) {
     for (const segment of segments) {
       const member = declared.children?.find((c) => c.name === segment);
       if (!member) throw new Error(`${list} names ${segment}, which ${registry} does not declare`);
-      points.push({ id: `${page.widget}.${segment}`, kind, standard: true, type: member.type, doc: member.comment });
+      points.push({ id: `${record.id}.${segment}`, kind, standard: true, type: member.type, doc: member.comment });
     }
   }
   return points;
 }
 
 /** The named types a widget's extension points pass or produce. */
-function slotTypes(page, sdk, kit) {
+function slotTypes(record, sdk, kit) {
   const names = new Set();
-  for (const point of extensionPoints(page, sdk, kit)) {
+  for (const point of extensionPoints(record, sdk, kit)) {
     if (point.type?.type === "reference" && point.type.name !== "Record") names.add(point.type.name);
   }
   return [...names];
 }
 
 const noProps = (type) => type?.type === "reference" && type.name === "Record";
-
-const anchorOf = (slot) => slot.replace(/\./g, "-");
 
 /** What an author writes to fill one extension point, and what it receives or returns. */
 function howToMd(point, index) {
@@ -361,8 +373,13 @@ function linkedName(name, index) {
   return `[${code(name)}](${url})`;
 }
 
-function slotsPage(page, sdk, kit, index) {
-  const points = extensionPoints(page, sdk, kit);
+/**
+ * One widget: the facts its record carries, the widget alone and in each of
+ * its Storybook states, then every extension point with its types, a worked
+ * example and the story that renders its scaffolding.
+ */
+function widgetPage(page, record, sdk, kit, index) {
+  const points = extensionPoints(record, sdk, kit);
   for (const slot of [...Object.keys(page.extensions ?? {}), ...Object.keys(page.stories?.extensions ?? {})]) {
     if (!points.some((p) => p.id === slot)) throw new Error(`${page.path} has an example for ${slot}, which is not a ${page.widget} slot`);
   }
@@ -380,12 +397,12 @@ function slotsPage(page, sdk, kit, index) {
     ? []
     : ["## States {#states}", ...stories.states.map((story) => `### ${story.title} {#${story.id}}\n\n${demoMd(page, story.id)}`)];
   const out = [
-    `# ${page.title}`,
-    `${code(SDK)} ${versionOf(SDK)} · ${code(KIT)} ${versionOf(KIT)}`,
+    widgetHeaderMd(record),
+    `${code(SDK)} ${versionOf(SDK)} · ${code(KIT)} ${versionOf(KIT)} · ${code(TOOLS)} ${versionOf(TOOLS)}`,
     examplesMd(page),
     ...states,
     "## Extension points {#extension-points}",
-    `Every slot an Uplink can fill on the ${code(page.widget)} widget. Standard slots are on every widget. [Extensions](/guide/extensions) explains augments and contributions.`,
+    `Every slot an Uplink can fill on the ${record.name} widget. Standard slots are on every widget. [Extensions](/guide/extensions) explains augments and contributions.`,
     `| Slot | Kind | Standard | Props or entry | Description |\n| --- | --- | --- | --- | --- |\n${rows.join("\n")}`,
   ];
   const shown = new Set();
@@ -441,6 +458,16 @@ function handWrittenEntries(generated, isSymbol) {
   return entries;
 }
 
+const WIDGET_SIDEBAR = resolve(DOCS, ".vitepress/sidebar-widgets.generated.json");
+
+/** The sidebar's Widgets group: each widget page under its record's name, in name order. */
+function writeWidgetSidebar(pages, records) {
+  const items = pages
+    .map((page) => ({ text: recordOf(records, page).name, link: urlOf(page) }))
+    .sort((a, b) => a.text.localeCompare(b.text));
+  writeFileSync(WIDGET_SIDEBAR, `${JSON.stringify(items, null, 2)}\n`);
+}
+
 /**
  * Keeps what the generator writes under `docs/` out of git: a `.gitignore`
  * there naming each generated file and itself. Git reads an untracked
@@ -450,7 +477,11 @@ function handWrittenEntries(generated, isSymbol) {
  */
 function recordWritten(written) {
   writeFileSync(GENERATED_HASHES, `${JSON.stringify(Object.fromEntries(written.map((file) => [file, hashOf(resolve(ROOT, file))])), null, 2)}\n`);
-  const files = [...written.map((file) => resolve(ROOT, file)), resolve(DOCS, ".vitepress/theme/islands/demos.generated.ts")];
+  const files = [
+    ...written.map((file) => resolve(ROOT, file)),
+    resolve(DOCS, ".vitepress/theme/islands/demos.generated.ts"),
+    WIDGET_SIDEBAR,
+  ];
   const lines = files.map((file) => `/${relative(DOCS, file)}`).sort();
   writeFileSync(resolve(DOCS, ".gitignore"), `# Written by npm run reference.\n/.gitignore\n${lines.join("\n")}\n`);
 }
@@ -463,6 +494,9 @@ export async function generate({ install = true } = {}) {
   if (install) await installArtifacts();
   const projects = { [SDK]: await loadPackage(SDK), [KIT]: await loadPackage(KIT) };
   runXmldocmd();
+  const widgetPages = PAGES.filter((page) => page.kind === "widget");
+  assertModulesStateNoRecordFacts(widgetPages);
+  const records = widgetPages.length > 0 ? loadWidgetRecords() : new Map();
 
   // Every symbol a page renders, registered before any page is written, so pages can link to each other.
   const index = new SymbolIndex();
@@ -477,8 +511,8 @@ export async function generate({ install = true } = {}) {
       }
     }
     if (page.kind === "contract") for (const t of page.types) index.add(t, `${url}#${t}`);
-    if (page.kind === "slots") {
-      for (const t of slotTypes(page, projects[SDK], projects[KIT])) index.add(t, `${url}#${t}`);
+    if (page.kind === "widget") {
+      for (const t of slotTypes(recordOf(records, page), projects[SDK], projects[KIT])) index.add(t, `${url}#${t}`);
     }
   }
   const isSymbol = (name) =>
@@ -491,13 +525,14 @@ export async function generate({ install = true } = {}) {
     let sections;
     if (page.kind === "category") sections = categoryPage(page, projects[page.package], index);
     else if (page.kind === "guide") sections = guidePage(page, projects[page.package], index);
-    else if (page.kind === "slots") sections = slotsPage(page, projects[SDK], projects[KIT], index);
+    else if (page.kind === "widget") sections = widgetPage(page, recordOf(records, page), projects[SDK], projects[KIT], index);
     else sections = contractPage(page);
     const file = resolve(DOCS, page.path);
     mkdirSync(dirname(file), { recursive: true });
     writeFileSync(file, `${frontmatter(page)}\n${sections.filter(Boolean).join("\n\n")}\n`);
     written.push(relative(ROOT, file));
   }
+  writeWidgetSidebar(widgetPages, records);
   recordWritten(written);
   const debt = new Set(UNRESOLVED_LINK_DEBT);
   const unresolved = index.missed.filter((name) => !debt.has(name));
