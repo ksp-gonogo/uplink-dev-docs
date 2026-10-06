@@ -1,5 +1,5 @@
 {
-  "gonogo": "f61acf7dcfbf27b23714eca62028e629fc6cefb2",
+  "gonogo": "2d949fd0d343c51c39630fea24d331f0ff45bb72",
   "npm": {
     "@ksp-gonogo/ui-kit": "file:../artifacts/ksp-gonogo-ui-kit.tgz",
     "@ksp-gonogo/sitrep-sdk": "file:../artifacts/ksp-gonogo-sitrep-sdk.tgz",
