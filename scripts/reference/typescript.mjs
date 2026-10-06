@@ -9,15 +9,24 @@
  * declaration, and every one of those compositions would mean parsing its
  * Markdown back apart.
  */
+import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { Application, ReflectionKind } from "typedoc";
 import { INSTALL } from "./paths.mjs";
 
-/** Load one installed package's root entry point as a TypeDoc project. */
-export async function loadPackage(name) {
+/**
+ * Load one entry point of an installed package as a TypeDoc project: its root,
+ * or the subpath `entry` names (`"frames"` for `@ksp-gonogo/sitrep-sdk/frames`),
+ * through the package's own export map.
+ */
+export async function loadPackage(name, entry) {
   const dir = resolve(INSTALL, "node_modules", ...name.split("/"));
+  const key = entry ? `./${entry}` : ".";
+  const target = JSON.parse(readFileSync(resolve(dir, "package.json"), "utf8")).exports?.[key];
+  const types = typeof target === "string" ? target : target?.types;
+  if (!types?.endsWith(".d.ts")) throw new Error(`${name} exports no declarations at ${key}`);
   const app = await Application.bootstrap({
-    entryPoints: [resolve(dir, "dist/index.d.ts")],
+    entryPoints: [resolve(dir, types)],
     tsconfig: resolve(INSTALL, "tsconfig.json"),
     skipErrorChecking: true,
     sort: ["source-order"],

@@ -7,8 +7,9 @@
  *
  * A page module's default export takes one of four kinds:
  *
- * - `category`: every symbol tagged `@category <category>` in `package`: `lead`
- *   first, then what its doc links to, then the rest in source order
+ * - `category`: every symbol tagged `@category <category>` in `package`, or
+ *   in its subpath `entry` (`"frames"` for `@ksp-gonogo/sitrep-sdk/frames`):
+ *   `lead` first, then what its doc links to, then the rest in source order
  * - `widget`: one core widget, named by its id in `widget`. Its name, its
  *   description and every other fact its registration declares come from its
  *   record in uplink-tools' `widgets.json`, and the module states none of

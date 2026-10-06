@@ -51,6 +51,9 @@ const TOOLS = "@ksp-gonogo/uplink-tools";
 
 const urlOf = (page) => `/${page.path.replace(/(index)?\.md$/, "")}`;
 
+/** The import specifier a category or guide page documents: its package, or the subpath its `entry` names. */
+const specifierOf = (page) => (page.entry ? `${page.package}/${page.entry}` : page.package);
+
 function versionOf(name) {
   const manifest = resolve(INSTALL, "node_modules", ...name.split("/"), "package.json");
   return JSON.parse(readFileSync(manifest, "utf8")).version;
@@ -238,7 +241,7 @@ function categoryPage(page, project, index) {
   const leadIsTitle = page.title === lead.name;
   return [
     `# ${page.title}`,
-    `${code(page.package)} · ${versionOf(page.package)}`,
+    `${code(specifierOf(page))} · ${versionOf(page.package)}`,
     examplesMd(page),
     symbolMd(lead, project, index, { title: !leadIsTitle, level: 2 }),
     ...groupedMd(rest, project, index),
@@ -523,6 +526,9 @@ function recordWritten(written) {
 export async function generate({ install = true } = {}) {
   if (install) await installArtifacts();
   const projects = { [SDK]: await loadPackage(SDK), [KIT]: await loadPackage(KIT) };
+  for (const page of PAGES) {
+    if (page.package && !projects[specifierOf(page)]) projects[specifierOf(page)] = await loadPackage(page.package, page.entry);
+  }
   runXmldocmd();
   const widgetPages = PAGES.filter((page) => page.kind === "widget");
   assertModulesStateNoRecordFacts(widgetPages);
@@ -533,7 +539,7 @@ export async function generate({ install = true } = {}) {
   for (const page of PAGES) {
     const url = urlOf(page);
     if (page.kind === "category" || page.kind === "guide") {
-      const project = projects[page.package];
+      const project = projects[specifierOf(page)];
       for (const m of categoryMembers(project, page.category)) {
         index.add(m.name, m.name === page.title ? url : `${url}#${m.name}`);
         const props = propsOf(m, project);
@@ -553,8 +559,8 @@ export async function generate({ install = true } = {}) {
   const written = [];
   for (const page of PAGES) {
     let sections;
-    if (page.kind === "category") sections = categoryPage(page, projects[page.package], index);
-    else if (page.kind === "guide") sections = guidePage(page, projects[page.package], index);
+    if (page.kind === "category") sections = categoryPage(page, projects[specifierOf(page)], index);
+    else if (page.kind === "guide") sections = guidePage(page, projects[specifierOf(page)], index);
     else if (page.kind === "widget") sections = widgetPage(page, recordOf(records, page), projects[SDK], projects[KIT], index);
     else sections = contractPage(page, index);
     const file = resolve(DOCS, page.path);

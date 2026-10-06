@@ -67,8 +67,8 @@ export async function installArtifacts() {
           skipLibCheck: true,
           noEmit: true,
         },
-        // Only what TypeDoc is pointed at; this compile checks nothing and writes nothing.
-        files: Object.keys(manifest.npm).map((name) => `node_modules/${name}/dist/index.d.ts`),
+        // Only what TypeDoc is pointed at; this compile checks nothing and writes nothing. Filled in after the install.
+        files: [],
       },
       null,
       2,
@@ -80,6 +80,18 @@ export async function installArtifacts() {
     ["install", "--legacy-peer-deps", "--no-package-lock", "--no-audit", "--no-fund", "--silent"],
     { cwd: INSTALL, stdio: "inherit" },
   );
+
+  // Every declaration entry of every package's export map, so TypeDoc can read any subpath a page names.
+  const tsconfig = resolve(INSTALL, "tsconfig.json");
+  const config = JSON.parse(readFileSync(tsconfig, "utf8"));
+  config.files = Object.keys(manifest.npm).flatMap((name) => {
+    const { exports = {} } = JSON.parse(readFileSync(resolve(INSTALL, "node_modules", name, "package.json"), "utf8"));
+    return Object.values(exports)
+      .map((target) => (typeof target === "string" ? target : target?.types))
+      .filter((types) => types?.endsWith(".d.ts"))
+      .map((types) => `node_modules/${name}/${types.replace(/^\.\//, "")}`);
+  });
+  writeFileSync(tsconfig, `${JSON.stringify(config, null, 2)}\n`);
 
   for (const [id, spec] of Object.entries(manifest.nuget)) {
     const nupkg = await nupkgFor(id, spec);
