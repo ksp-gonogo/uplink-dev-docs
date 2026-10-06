@@ -467,14 +467,23 @@ function handWrittenEntries(generated, isSymbol) {
   return entries;
 }
 
-const WIDGET_SIDEBAR = resolve(DOCS, ".vitepress/sidebar-widgets.generated.json");
+const SIDEBAR = resolve(DOCS, ".vitepress/sidebar.generated.json");
 
-/** The sidebar's Widgets group: each widget page under its record's name, in name order. */
-function writeWidgetSidebar(pages, records) {
-  const items = pages
-    .map((page) => ({ text: recordOf(records, page).name, link: urlOf(page) }))
-    .sort((a, b) => a.text.localeCompare(b.text));
-  writeFileSync(WIDGET_SIDEBAR, `${JSON.stringify(items, null, 2)}\n`);
+/**
+ * Every generated reference page's sidebar entry, by the directory it sits
+ * in (`reference/client`, `reference/widgets` ...), in name order. A widget
+ * page is named by its record; any other by its module's `title`. The guide
+ * pages are placed in the guide sidebar by hand.
+ */
+function writeSidebar(pages, records) {
+  const sections = {};
+  for (const page of pages) {
+    if (!page.path.startsWith("reference/")) continue;
+    const text = page.kind === "widget" ? recordOf(records, page).name : page.title;
+    (sections[dirname(page.path)] ??= []).push({ text, link: urlOf(page) });
+  }
+  for (const items of Object.values(sections)) items.sort((a, b) => a.text.localeCompare(b.text));
+  writeFileSync(SIDEBAR, `${JSON.stringify(sections, null, 2)}\n`);
 }
 
 /**
@@ -489,7 +498,7 @@ function recordWritten(written) {
   const files = [
     ...written.map((file) => resolve(ROOT, file)),
     resolve(DOCS, ".vitepress/theme/islands/demos.generated.ts"),
-    WIDGET_SIDEBAR,
+    SIDEBAR,
   ];
   const lines = files.map((file) => `/${relative(DOCS, file)}`).sort();
   writeFileSync(resolve(DOCS, ".gitignore"), `# Written by npm run reference.\n/.gitignore\n${lines.join("\n")}\n`);
@@ -541,7 +550,7 @@ export async function generate({ install = true } = {}) {
     writeFileSync(file, `${frontmatter(page)}\n${sections.filter(Boolean).join("\n\n")}\n`);
     written.push(relative(ROOT, file));
   }
-  writeWidgetSidebar(widgetPages, records);
+  writeSidebar(PAGES, records);
   recordWritten(written);
   const debt = new Set(UNRESOLVED_LINK_DEBT);
   const unresolved = index.missed.filter((name) => !debt.has(name));

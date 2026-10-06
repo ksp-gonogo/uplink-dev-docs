@@ -5,14 +5,22 @@ import { existsSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+type SidebarItem = { text: string; link: string };
+
 /**
- * The widget pages, each named by its widget's record, as `npm run reference`
- * last wrote them. None before the first run.
+ * The generated reference pages' sidebar entries by directory, as
+ * `npm run reference` last wrote them. None before the first run.
  */
-const widgetSidebar = resolve(dirname(fileURLToPath(import.meta.url)), "sidebar-widgets.generated.json");
-const widgetPages: { text: string; link: string }[] = existsSync(widgetSidebar)
-  ? JSON.parse(readFileSync(widgetSidebar, "utf8"))
-  : [];
+const sidebarFile = resolve(dirname(fileURLToPath(import.meta.url)), "sidebar.generated.json");
+const generatedSidebar: Record<string, SidebarItem[]> = existsSync(sidebarFile)
+  ? JSON.parse(readFileSync(sidebarFile, "utf8"))
+  : {};
+
+/** A section's hand pages and its generated pages, in name order after an optional first entry. */
+function section(dir: string, hand: SidebarItem[], first?: SidebarItem): SidebarItem[] {
+  const items = [...hand, ...(generatedSidebar[dir] ?? [])].sort((a, b) => a.text.localeCompare(b.text));
+  return first ? [first, ...items] : items;
+}
 
 const modules = resolve(
   dirname(fileURLToPath(import.meta.url)),
@@ -58,7 +66,6 @@ const primitives = [
   "EmptyState",
   "Grid",
   "Inline",
-  "Meter",
   "Panel",
   "Readout",
   "Row",
@@ -130,36 +137,37 @@ export default defineConfig({
         { text: "Reference", link: "/reference/" },
         {
           text: "Mod API",
-          items: [
-            { text: "ISitrepUplink", link: "/reference/mod/" },
+          items: section("reference/mod", [
             { text: "IUplinkHost", link: "/reference/mod/host" },
             { text: "Channels", link: "/reference/mod/channels" },
             { text: "Commands", link: "/reference/mod/commands" },
             { text: "Kernel", link: "/reference/mod/kernel" },
-          ],
+          ]),
         },
         {
           text: "Client SDK",
-          items: [
+          items: section(
+            "reference/client",
+            [
+              { text: "Messages", link: "/reference/client/messages" },
+              { text: "Topics", link: "/reference/client/topics" },
+              { text: "Binary frames", link: "/reference/client/binary-frames" },
+            ],
             { text: "Package contents", link: "/reference/client/" },
-            { text: "Messages", link: "/reference/client/messages" },
-            { text: "Topics", link: "/reference/client/topics" },
-            { text: "Reading telemetry", link: "/reference/client/reading-telemetry" },
-            { text: "Binary frames", link: "/reference/client/binary-frames" },
-          ],
+          ),
         },
         {
           text: "Widgets",
-          items: widgetPages,
+          items: section("reference/widgets", []),
         },
         {
           text: "ui-kit",
           items: [
-            { text: "Setup", link: "/reference/ui-kit/" },
-            ...primitives.map((name) => ({
-              text: name,
-              link: `/reference/ui-kit/${name}`,
-            })),
+            ...section(
+              "reference/ui-kit",
+              primitives.map((name) => ({ text: name, link: `/reference/ui-kit/${name}` })),
+              { text: "Setup", link: "/reference/ui-kit/" },
+            ),
             { text: "Theme", link: "/reference/ui-kit/theme" },
           ],
         },

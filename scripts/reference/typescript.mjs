@@ -163,7 +163,9 @@ export function partsMd(parts, index) {
       const target = typeof part.target?.kindOf === "function" ? part.target : undefined;
       const name = target?.name ?? part.text;
       const shown = part.text.trim() || name;
-      const symbol = target ? ownerOf(target).name : name.split(".")[0];
+      // TypeDoc resolves a bare name to a sibling member first; a top-level export of that name is the one meant.
+      const member = target && ownerOf(target) !== target;
+      const symbol = target && !(member && index.url(target.name)) ? ownerOf(target).name : name.split(".")[0];
       if (!index.url(symbol)) index.miss(symbol);
       return linked(symbol, index, shown);
     })
@@ -263,7 +265,7 @@ export function propertiesMd(reflection, index, { withDefaults = false } = {}) {
     const type = member.type
       ? cellSafe(typeMd(member.type, index))
       : member.signatures
-        ? code(member.signatures[0].toString())
+        ? cellSafe(code(methodText(member.signatures[0])))
         : "";
     const cells = [`${code(member.name + optional)}`, type];
     if (withDefaults) cells.push(defaultOf(member) ? code(defaultOf(member)) : "");
@@ -275,6 +277,12 @@ export function propertiesMd(reflection, index, { withDefaults = false } = {}) {
     : "| Name | Type | Description |\n| --- | --- | --- |";
   const rest = dropped > 0 ? "\n\nEvery other prop is passed to the element it renders, as React's `HTMLAttributes`." : "";
   return `${head}\n${rows.join("\n")}${rest}`;
+}
+
+/** A method member as the function type an author would write for it: `<T>(a: A, b?: B) => R`. */
+function methodText(signature) {
+  const params = (signature.parameters ?? []).map((p) => `${p.name}${p.flags.isOptional ? "?" : ""}: ${p.type}`);
+  return `${typeParamsText(signature.typeParameters)}(${params.join(", ")}) => ${signature.type}`;
 }
 
 /** `<T extends X = Y>`, as the declaration wrote it. */
@@ -328,7 +336,7 @@ function parametersMd(signature, index, level) {
 
 /** The props interface a component is drawn from, when there is exactly one. */
 export function propsOf(reflection, project) {
-  if (reflection.kind !== ReflectionKind.Function) return undefined;
+  if (reflection.kind !== ReflectionKind.Function || !isComponent(reflection)) return undefined;
   const params = reflection.signatures?.[0]?.parameters ?? [];
   if (params.length !== 1 || params[0].type?.type !== "reference") return undefined;
   const props = project.getChildByName(params[0].type.name);
@@ -345,11 +353,15 @@ export function callSignatures(reflection) {
   return reflection.type?.type === "reflection" ? (reflection.type.declaration.signatures ?? []) : [];
 }
 
-/** Whether a reflection is a React component: a styled or function component. */
+/**
+ * Whether a reflection is a React component: a styled or function component.
+ * A constant that is not callable is one only when its type is a component
+ * type (`ForwardRefExoticComponent`, a styled component), never a plain value.
+ */
 export function isComponent(reflection) {
   const signatures = callSignatures(reflection);
-  if (reflection.kind === ReflectionKind.Variable && signatures.length === 0) return true;
-  return signatures.length > 0 && signatures.every((s) => /Element$/.test(String(s.type)));
+  if (reflection.kind === ReflectionKind.Variable && signatures.length === 0) return /Component|Styled/.test(String(reflection.type));
+  return signatures.length > 0 && signatures.every((s) => /^(Element|ReactElement|ReactNode|ReactPortal)\b/.test(String(s.type)));
 }
 
 /** Whether a reflection is called like a function and is not a component. */

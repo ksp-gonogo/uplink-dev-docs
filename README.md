@@ -163,13 +163,17 @@ generated page that is committed or edited by hand (`npm run check:pages`).
   slots, default size and the rest) is the widget's record in uplink-tools'
   `widgets.json`, so the module states none of it; generation fails if it
   does, and `npm run check:pages` fails on a widget page whose header is not
-  its packed record's. The sidebar's Widgets group is generated from the same
-  records, so a new widget page needs no config edit. The generator lists any
-  slot with no scaffolding story
+  its packed record's. The generator lists any slot with no scaffolding story
 - **Contract types**: a `contract` module naming the C# types, with a template
   region under any type that has one
 - **Replacing a hand page**: generate at its path and delete it from
-  `scripts/hand-pages-debt.mjs` in the same commit
+  `scripts/hand-pages-debt.mjs` in the same commit, with its line in
+  `docs/.vitepress/config.mts` if the sidebar lists it
+
+Every generated reference page gets its sidebar entry from the generator
+(`docs/.vitepress/sidebar.generated.json`), in its directory's group, named by
+its module's `title` or, for a widget, its record. A new page needs no config
+edit; only hand pages are listed in `config.mts`.
 
 `reference/pages.mjs` documents every field a module takes.
 
