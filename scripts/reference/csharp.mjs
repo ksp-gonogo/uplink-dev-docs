@@ -8,13 +8,15 @@
  * an undocumented member of this assembly to learn.microsoft.com.
  */
 import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, rmSync } from "node:fs";
 import { resolve } from "node:path";
 import { CONTRACT_DLL } from "./install.mjs";
 import { INSTALL, ROOT } from "./paths.mjs";
 
 const OUT = resolve(INSTALL, "xmldocmd");
 const NAMESPACE = "Sitrep.Contract";
+/** Every namespace xmldocmd writes a directory for: `Sitrep.Contract` and the ones under it. */
+const namespaces = () => readdirSync(OUT, { withFileTypes: true }).filter((e) => e.isDirectory() && e.name.startsWith(NAMESPACE)).map((e) => e.name);
 
 /** Run xmldocmd over the installed contract. Its Markdown lands in `.reference/xmldocmd`. */
 export function runXmldocmd() {
@@ -27,10 +29,31 @@ export function runXmldocmd() {
   );
 }
 
-/** Whether the contract declares a public type by this name. */
-export const isContractType = (name) => existsSync(resolve(OUT, NAMESPACE, `${name}.md`));
+/** The namespace directory holding a type's file, or undefined when the contract declares no public type by this name. */
+const namespaceOf = (name) => namespaces().find((ns) => existsSync(resolve(OUT, ns, `${name}.md`)));
 
-const read = (path) => readFileSync(resolve(OUT, NAMESPACE, path), "utf8");
+/** Whether the contract declares a public type by this name. */
+export const isContractType = (name) => namespaceOf(name) !== undefined;
+
+/** A file of xmldocmd's, by its path under its type's namespace. */
+const read = (path) => readFileSync(resolve(OUT, namespaceOf(path.split("/")[0].replace(/\.md$/, "")), path), "utf8");
+
+/**
+ * The public types tagged `<category>name</category>`, in the order the XML
+ * doc file lists them. A type nested in another has no page of its own, so it
+ * is left out.
+ */
+export function contractCategory(name) {
+  const xml = readFileSync(CONTRACT_DLL.replace(/\.dll$/, ".xml"), "utf8");
+  const types = [];
+  for (const [, id, doc] of xml.matchAll(/<member name="T:([^"]+)">([\s\S]*?)<\/member>/g)) {
+    if (/<category>([^<]+)<\/category>/.exec(doc)?.[1].trim() !== name) continue;
+    const simple = id.split(".").pop().replace(/`\d+$/, "");
+    if (isContractType(simple)) types.push(simple);
+  }
+  if (types.length === 0) throw new Error(`no public type in ${NAMESPACE} carries <category>${name}</category>`);
+  return types;
+}
 
 /** A file's body: no title, no See Also, no generator footer. */
 function body(md) {
@@ -44,17 +67,20 @@ function body(md) {
 
 /**
  * Rewrites xmldocmd's file links. A type on this page becomes an anchor, and
- * so does a member of one; anything else keeps its name as code and loses the
- * link, since its page does not exist here.
+ * so does a member of one; a type on another contract page links there; a
+ * name with no page keeps its name as code and loses the link.
  */
-function relink(md, onPage) {
+function relink(md, onPage, index) {
   return md.replace(/\[(`[^`]+`|[^\]]+)\]\(([^)]+)\.md\)/g, (_, text, target) => {
-    const parts = target.replace(/^(\.\.?\/)+/, "").split("/");
+    const parts = target.replace(/^(\.\.?\/)+/, "").split("/").filter((p) => !p.startsWith(NAMESPACE));
     const shown = text.startsWith("`") ? text : `\`${text}\``;
-    if (parts[0] === NAMESPACE || parts.length > 2) return shown;
+    if (parts.length === 0 || parts.length > 2) return shown;
     const [type, member] = parts;
-    if (!onPage.has(type)) return shown;
-    return `[${shown}](#${member ? `${type}.${member}` : type})`;
+    if (onPage.has(type)) return `[${shown}](#${member ? `${type}.${member}` : type})`;
+    const url = index?.url(type);
+    if (!url) return shown;
+    // A generated page anchors each member under its type's; a hand page has only the page.
+    return `[${shown}](${member && url.includes("#") ? `${url}.${member}` : url})`;
   });
 }
 
@@ -78,7 +104,7 @@ function memberFiles(typeMd, type) {
  * page's own type has no heading of its own and its members sit at `##`;
  * every other type is a `###` with its members at `####`.
  */
-function typeMd(type, onPage, lead, example) {
+function typeMd(type, onPage, lead, example, index) {
   const page = read(`${type}.md`);
   const kind = /^# \S+ (\w+)/.exec(page)?.[1] ?? "";
   const [head, table] = body(page).split(/\n## (?:Public )?Members\n/);
@@ -90,7 +116,9 @@ function typeMd(type, onPage, lead, example) {
       const member = file.split("/")[1].replace(/\.md$/, "");
       const sections = read(file)
         .split(/\n---\n/)
-        .map((section) => relink(tidyTables(body(section)), onPage));
+        .map((section) => relink(tidyTables(body(section)), onPage, index))
+        // xmldocmd heads a member's Return Value, Exceptions and Remarks at `##`; they belong under the member.
+        .map((section) => section.replace(/^## /gm, `${memberLevel}# `));
       // xmldocmd writes a sentence for the implicit constructor, which says nothing about the type.
       if (sections.every((section) => section.startsWith("The default constructor."))) continue;
       for (const section of sections) {
@@ -112,7 +140,8 @@ function typeMd(type, onPage, lead, example) {
   );
   const out = [];
   if (!lead) out.push(`### ${type} {#${type}}`);
-  out.push(relink(tidyTables(whole.replace(/\n## Values\n/, "\n")), onPage));
+  const own = relink(tidyTables(whole.replace(/\n## Values\n/, "\n")), onPage, index);
+  out.push(lead ? own : own.replace(/^## /gm, "#### "));
   if (lead && members.length > 0) out.push("## Members {#members}");
   out.push(...members);
   if (example) out.push(example);
@@ -124,17 +153,17 @@ function typeMd(type, onPage, lead, example) {
  * grouped under "Related types". `examples` maps a type to a `<<<` include
  * shown after it.
  */
-export function contractMd(types, examples) {
+export function contractMd(types, examples, index) {
   const onPage = new Set(types);
   for (const type of types) {
-    if (!existsSync(resolve(OUT, NAMESPACE, `${type}.md`))) {
-      throw new Error(`${NAMESPACE} has no public type ${type}`);
-    }
+    if (!isContractType(type)) throw new Error(`${NAMESPACE} has no public type ${type}`);
   }
   const [lead, ...rest] = types;
   return [
-    typeMd(lead, onPage, true, examples[lead]),
-    "## Related types {#related-types}",
-    ...rest.map((type) => typeMd(type, onPage, false, examples[type])),
-  ].join("\n\n");
+    typeMd(lead, onPage, true, examples[lead], index),
+    rest.length > 0 ? "## Related types {#related-types}" : "",
+    ...rest.map((type) => typeMd(type, onPage, false, examples[type], index)),
+  ]
+    .filter(Boolean)
+    .join("\n\n");
 }

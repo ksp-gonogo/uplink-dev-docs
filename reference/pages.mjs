@@ -18,8 +18,9 @@
  * - `guide`: a hand-written page in `reference/guides/`, whose placeholders
  *   take the symbols of `category`, their `@remarks` and its `examples`. Every
  *   symbol in the category is placed exactly once, by name or by `<!-- rest -->`
- * - `contract`: C# types from the Sitrep.Contract package, with the compiled
- *   template region shown under a type in `examples`
+ * - `contract`: C# types from the Sitrep.Contract package: those named in
+ *   `types`, or `lead` then every type tagged `<category>` `category`. The
+ *   compiled template region in `examples` is shown under its type
  *
  * `examples` are the live examples at the top of the page, each an `id`, a
  * `title` when there is more than one, and the file under `reference/examples/`

@@ -12,7 +12,7 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, relative, resolve } from "node:path";
 import { PAGES } from "../../reference/pages.mjs";
-import { contractMd, isContractType, runXmldocmd } from "./csharp.mjs";
+import { contractCategory, contractMd, isContractType, runXmldocmd } from "./csharp.mjs";
 import { installArtifacts } from "./install.mjs";
 import { DOCS, GENERATED_HASHES, hashOf, INSTALL, PLANTED_DEMO_FILE, PLANTED_DEMOS, ROOT, storybookRoot } from "./paths.mjs";
 import { UNRESOLVED_LINK_DEBT } from "../symbol-link-debt.mjs";
@@ -431,7 +431,18 @@ function widgetPage(page, record, sdk, kit, index) {
   return out;
 }
 
-function contractPage(page) {
+/**
+ * A contract page's types: those it names, or its `lead` then every other
+ * type tagged with its `category`.
+ */
+function contractTypes(page) {
+  if (page.types) return page.types;
+  const tagged = contractCategory(page.category);
+  if (!tagged.includes(page.lead)) throw new Error(`${page.lead} is not in <category>${page.category}</category>`);
+  return [page.lead, ...tagged.filter((t) => t !== page.lead)];
+}
+
+function contractPage(page, index) {
   const includes = Object.fromEntries(
     Object.entries(page.examples ?? {}).map(([type, include]) => {
       const [path, region] = include.split("#");
@@ -439,9 +450,10 @@ function contractPage(page) {
       return [type, `<<< ${from}#${region}{cs}`];
     }),
   );
-  const body = contractMd(page.types, includes);
+  const types = contractTypes(page);
+  const body = contractMd(types, includes, index);
   // The title is a type the page's own links point at, so it carries the type's anchor.
-  const title = page.types.includes(page.title) ? `# ${page.title} {#${page.title}}` : `# ${page.title}`;
+  const title = types.includes(page.title) ? `# ${page.title} {#${page.title}}` : `# ${page.title}`;
   return [title, `${code("Sitrep.Contract")} · ${code("KspGonogo.Sitrep.Contract")} ${contractVersion()}`, body];
 }
 
@@ -528,7 +540,7 @@ export async function generate({ install = true } = {}) {
         if (props) index.add(props.name, `${url}#${props.name}`);
       }
     }
-    if (page.kind === "contract") for (const t of page.types) index.add(t, `${url}#${t}`);
+    if (page.kind === "contract") for (const t of contractTypes(page)) index.add(t, `${url}#${t}`);
     if (page.kind === "widget") {
       for (const t of slotTypes(recordOf(records, page), projects[SDK], projects[KIT])) index.add(t, `${url}#${t}`);
     }
@@ -544,7 +556,7 @@ export async function generate({ install = true } = {}) {
     if (page.kind === "category") sections = categoryPage(page, projects[page.package], index);
     else if (page.kind === "guide") sections = guidePage(page, projects[page.package], index);
     else if (page.kind === "widget") sections = widgetPage(page, recordOf(records, page), projects[SDK], projects[KIT], index);
-    else sections = contractPage(page);
+    else sections = contractPage(page, index);
     const file = resolve(DOCS, page.path);
     mkdirSync(dirname(file), { recursive: true });
     writeFileSync(file, `${frontmatter(page)}\n${sections.filter(Boolean).join("\n\n")}\n`);
