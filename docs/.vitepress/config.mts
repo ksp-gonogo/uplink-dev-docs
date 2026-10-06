@@ -160,6 +160,7 @@ export default defineConfig({
           text: "Widgets",
           items: section("reference/widgets", []),
         },
+        ...(generatedSidebar["reference/tools"] ? [{ text: "uplink-tools", items: section("reference/tools", []) }] : []),
         {
           text: "ui-kit",
           items: [

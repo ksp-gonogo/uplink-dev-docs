@@ -503,8 +503,8 @@ function handWrittenEntries(generated, isSymbol) {
 const SIDEBAR = resolve(DOCS, ".vitepress/sidebar.generated.json");
 
 /**
- * Every generated reference page's sidebar entry, by the directory it sits
- * in (`reference/client`, `reference/widgets` ...), in name order. A widget
+ * Every generated reference page's sidebar entry, by the section it sits in
+ * (`reference/client`, `reference/widgets` ...), in name order. A widget
  * page is named by its record; any other by its module's `title`. The guide
  * pages are placed in the guide sidebar by hand.
  */
@@ -513,7 +513,8 @@ function writeSidebar(pages, records) {
   for (const page of pages) {
     if (!page.path.startsWith("reference/")) continue;
     const text = page.kind === "widget" ? recordOf(records, page).name : page.title;
-    (sections[dirname(page.path)] ??= []).push({ text, link: urlOf(page) });
+    // A subpath's pages (`reference/client/testing/...`) sit in their package's group.
+    (sections[page.path.split("/").slice(0, 2).join("/")] ??= []).push({ text, link: urlOf(page) });
   }
   for (const items of Object.values(sections)) items.sort((a, b) => a.text.localeCompare(b.text));
   writeFileSync(SIDEBAR, `${JSON.stringify(sections, null, 2)}\n`);
