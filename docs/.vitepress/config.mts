@@ -1,4 +1,6 @@
 import { defineConfig } from "vitepress";
+import { islandVite } from "./islands.mts";
+import { symbolLinks } from "./symbolLinks.mts";
 import { readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -47,8 +49,8 @@ const primitives = [
   "EmptyState",
   "Grid",
   "Inline",
+  "Meter",
   "Panel",
-  "ProgressBar",
   "Readout",
   "Row",
   "Section",
@@ -69,6 +71,8 @@ export default defineConfig({
   // toggle would hand the reader a half-styled light page built from tokens that
   // were never defined for it.
   appearance: "force-dark",
+  vite: islandVite(),
+  markdown: { config: symbolLinks },
   cleanUrls: true,
   lastUpdated: true,
   themeConfig: {
@@ -102,6 +106,7 @@ export default defineConfig({
             { text: "Reading a Topic", link: "/guide/client-topics" },
             { text: "Sending a command", link: "/guide/client-commands" },
             { text: "Building the UI", link: "/guide/client-ui" },
+            { text: "Extensions", link: "/guide/extensions" },
           ],
         },
         {
@@ -130,8 +135,13 @@ export default defineConfig({
             { text: "Package contents", link: "/reference/client/" },
             { text: "Messages", link: "/reference/client/messages" },
             { text: "Topics", link: "/reference/client/topics" },
+            { text: "Reading telemetry", link: "/reference/client/reading-telemetry" },
             { text: "Binary frames", link: "/reference/client/binary-frames" },
           ],
+        },
+        {
+          text: "Widgets",
+          items: [{ text: "Crew Status", link: "/reference/widgets/crew-status" }],
         },
         {
           text: "ui-kit",

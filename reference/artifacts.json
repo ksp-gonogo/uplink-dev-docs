@@ -1,0 +1,10 @@
+{
+  "gonogo": "f61acf7dcfbf27b23714eca62028e629fc6cefb2",
+  "npm": {
+    "@ksp-gonogo/ui-kit": "file:../artifacts/ksp-gonogo-ui-kit.tgz",
+    "@ksp-gonogo/sitrep-sdk": "file:../artifacts/ksp-gonogo-sitrep-sdk.tgz"
+  },
+  "nuget": {
+    "KspGonogo.Sitrep.Contract": "file:../artifacts/KspGonogo.Sitrep.Contract.nupkg"
+  }
+}

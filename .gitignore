@@ -3,3 +3,8 @@ docs/.vitepress/cache/
 docs/.vitepress/dist/
 bin/
 obj/
+
+# The generated reference: packed stand-ins for published packages and their
+# install. The pages written from them ignore themselves (docs/.gitignore).
+artifacts/
+.reference/

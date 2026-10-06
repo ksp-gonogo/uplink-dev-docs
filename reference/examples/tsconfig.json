@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "noUnusedLocals": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "types": [],
+    "baseUrl": ".",
+    "paths": {
+      "@ksp-gonogo/sitrep-sdk": [
+        "../../.reference/node_modules/@ksp-gonogo/sitrep-sdk"
+      ],
+      "@ksp-gonogo/ui-kit": ["../../.reference/node_modules/@ksp-gonogo/ui-kit"]
+    }
+  },
+  "include": ["**/*.ts", "**/*.tsx"]
+}

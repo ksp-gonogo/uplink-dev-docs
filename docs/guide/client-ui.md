@@ -47,7 +47,7 @@ With KSP running and your plugin loaded, the widget fills in as frames arrive. I
 
 ## Accessibility
 
-The primitives carry their own semantics: `ProgressBar` renders `role="progressbar"`, `StatusIndicator` can be a live region, `Spinner` honours `prefers-reduced-motion`. What is on you:
+The primitives carry their own semantics: `Meter` renders `role="meter"`, `StatusIndicator` can be a live region, `Spinner` honours `prefers-reduced-motion`. What is on you:
 
 - Give every icon-only control an `aria-label`
 - Never live-region streaming telemetry. It floods a screen reader

@@ -69,3 +69,14 @@
     font-size: 1.9rem;
   }
 }
+
+/*
+ * A page with live examples shows each one's render and code side by side,
+ * so on a wide screen its column takes the room the default layout leaves
+ * empty either side of it.
+ */
+@media (min-width: 1440px) {
+  .has-examples .VPDoc.has-aside .content-container {
+    max-width: 960px;
+  }
+}

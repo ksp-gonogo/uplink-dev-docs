@@ -87,6 +87,14 @@ shrink, never grow: a page added to one is a bug written down instead of fixed.
 `vitepress build` adds one more: it fails on a dead internal link. It does **not**
 check heading anchors, so a wrong `#fragment` still builds. Check those by hand.
 
+After the build, `npm run check:links` reads the built site. Every inline code
+span naming a documented symbol must link to its reference entry, and every
+such link, anchor included, must land. The Markdown pass in
+`docs/.vitepress/symbolLinks.mts` writes those links on every page from the
+index `npm run reference` writes, so prose links a symbol by naming it in
+backticks. A `{@link}` in a doc comment to a symbol with no reference entry
+fails `npm run reference`, bar the ceiling in `scripts/symbol-link-debt.mjs`.
+
 The mod gate needs `Sitrep.Contract.dll`, which is distributed in a KSP install
 rather than on a package registry. Locally it is skipped unless you point at one:
 
@@ -96,6 +104,78 @@ SITREP_CONTRACT_DLL="/path/to/GameData/Gonogo/Plugins/Sitrep.Contract.dll" npm r
 
 CI builds `Sitrep.Contract` from the same gonogo checkout, since it references
 no KSP assembly, and fails if `SITREP_CONTRACT_DLL` is unset.
+
+## The generated reference
+
+Most of `docs/reference/` is generated and never edited. Each generated page is
+a module under `reference/pages/`, at the page's own path:
+`reference/pages/reference/ui-kit/Meter.mjs` writes
+`docs/reference/ui-kit/Meter.md`. The pages are build output written from
+package artifacts only, never from a gonogo source path, and they keep
+themselves out of git (`docs/.gitignore`, written with them).
+
+```bash
+npm run reference:pack   # pnpm pack + dotnet pack from a gonogo checkout, into artifacts/
+npm run reference        # install the artifacts into .reference/, then write the pages
+```
+
+`reference/artifacts.json` names each package as a `file:` tarball, and
+`gonogo` there pins the commit CI packs them from. When the release candidates
+are published it names versions instead, and the pack step and the pin go
+away.
+
+- **TypeScript**: TypeDoc reads the packed `.d.ts` and its TSDoc;
+  `scripts/reference/typescript.mjs` writes the Markdown, because a page here
+  is a composition (a `@category`, a component's props, one widget's registry
+  keys) rather than one file per declaration
+- **C#**: xmldocmd reads `Sitrep.Contract.dll` and its XML doc file out of the
+  `KspGonogo.Sitrep.Contract` NuGet package; `scripts/reference/csharp.mjs`
+  composes its per-member files into one page
+- **Live examples**: each is a typechecked file under `reference/examples/`,
+  importing only the published packages, mounted as a React island
+  (`docs/.vitepress/theme/islands/`) in the app's own styling beside its code.
+  A widget page also shows the widget's Storybook stories: every scene in its
+  stories file, and the story that renders each slot's scaffolding. Islands
+  mount gonogo's Storybook harness from `packages/storybook` in the gonogo
+  checkout, or `GONOGO_STORYBOOK`, whose stories are generated with
+  `pnpm --filter @ksp-gonogo/storybook generate`. Storybook's UI is never
+  loaded. Without a checkout the site still builds and each island says it
+  has nothing to mount
+
+To change a generated page, change the doc comment it comes from, its example
+file, or its module. A page under `docs/reference/` is either generated or on
+the shrink-only list in `scripts/hand-pages-debt.mjs`, and the build fails on a
+generated page that is committed or edited by hand (`npm run check:pages`).
+
+### Adding a page
+
+- **A sdk, ui-kit or uplink-tools category**: tag its symbols
+  `@category <Name>` in gonogo, repack, and add a `category` module naming the
+  package, the category and its `lead` symbol. A guide that places a
+  category's symbols through hand prose is a `guide` module over a source in
+  `reference/guides/`
+- **A widget**: a `slots` module naming the widget, the fixture scene it
+  renders on, one example file per slot under `reference/examples/<widget>/`,
+  and its `stories`. The generator lists any slot with no scaffolding story
+- **Contract types**: a `contract` module naming the C# types, with a template
+  region under any type that has one
+- **Replacing a hand page**: generate at its path and delete it from
+  `scripts/hand-pages-debt.mjs` in the same commit
+
+`reference/pages.mjs` documents every field a module takes.
+
+### Checking one page
+
+```bash
+npm run reference -- --no-install            # regenerate from the installed artifacts
+npm run check:pages                          # generated or listed, never committed or edited
+npx vitepress build docs
+npm run check:links                          # every symbol reference linked
+npm run check:demos -- --page widgets/crew   # the live examples on matching pages
+```
+
+`npm run check` typechecks every example file with the template, and
+`npm run build` runs everything in the order CI does.
 
 ## What is compiled and what is quoted
 

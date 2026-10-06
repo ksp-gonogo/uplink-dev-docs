@@ -3,18 +3,25 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vitepress dev docs",
-    "build": "npm run check && vitepress build docs",
+    "dev": "npm run reference && vitepress dev docs",
+    "build": "npm run reference && npm run check && vitepress build docs && npm run check:links && npm run check:demos",
     "preview": "vitepress preview docs",
     "check": "node scripts/check-snippets.mjs",
     "prepare": "git config core.hooksPath .githooks || true",
     "check:symbols": "node scripts/check-doc-symbols.mjs",
-    "sync:ui-kit-exports": "node scripts/check-doc-symbols.mjs --sync"
+    "check:links": "node scripts/check-symbol-links.mjs",
+    "check:demos": "node scripts/check-demos.mjs",
+    "check:pages": "node scripts/check-reference-pages.mjs",
+    "sync:ui-kit-exports": "node scripts/check-doc-symbols.mjs --sync",
+    "reference": "node scripts/reference/generate.mjs",
+    "reference:pack": "node scripts/reference/pack-artifacts.mjs"
   },
   "devDependencies": {
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "lucide-react": "^1.48.0",
+    "playwright": "1.60.0",
+    "typedoc": "^0.28.20",
     "typescript": "^5.9.3",
     "vitepress": "^1.6.4"
   },

@@ -1,6 +1,7 @@
 /**
  * Compiles every snippet the documentation includes, resolves every include,
- * and checks that every symbol the pages name is one the kit exports.
+ * checks that every symbol the pages name is one the kit exports, and that
+ * every reference page is generated or a listed hand page.
  *
  * The published client pass always runs. The source pass needs a gonogo
  * checkout, and the mod half needs `Sitrep.Contract.dll` via
@@ -37,6 +38,10 @@ process.stdout.write("\n== client snippets against source (tsc) ==\n");
 failures.push(...(await checkTemplateAgainstSource()));
 process.stdout.write("\n== client snippets against published packages (tsc) ==\n");
 failures.push(...(await checkTemplateAgainstPublished()));
+
+process.stdout.write("\n== reference examples against the packed artifacts (tsc) ==\n");
+const { checkReferenceExamples } = await import("./check-reference-examples.mjs");
+failures.push(...(await checkReferenceExamples()));
 
 const contractDll = process.env.SITREP_CONTRACT_DLL;
 if (!contractDll && process.env.CI === "true") {
@@ -104,6 +109,10 @@ process.stdout.write(`${includeCount} includes resolved.\n`);
 process.stdout.write("\n== documented symbols ==\n");
 const { checkDocSymbols } = await import("./check-doc-symbols.mjs");
 failures.push(...(await checkDocSymbols()));
+
+process.stdout.write("\n== reference pages ==\n");
+const { checkReferencePages } = await import("./check-reference-pages.mjs");
+failures.push(...checkReferencePages());
 
 if (failures.length > 0) {
   process.stdout.write(`\nFAILED: ${failures.join(", ")}\n`);

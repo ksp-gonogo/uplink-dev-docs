@@ -176,7 +176,9 @@ function collectClaims() {
     const rel = relative(ROOT, file);
     const body = readFileSync(file, "utf8");
     const lines = body.split("\n");
-    const isReference = rel.startsWith("docs/reference/ui-kit/");
+    // A generated page names what TypeDoc resolved in the package itself, so its names cannot be stale against it.
+    const generated = /^---\ngenerated:/.test(body);
+    const isReference = rel.startsWith("docs/reference/ui-kit/") && !generated;
     const declared = [];
     let fence = null;
 
@@ -216,7 +218,7 @@ function collectClaims() {
 
     pages.push({
       file: rel,
-      isReference,
+      isReference: isReference || (generated && rel.startsWith("docs/reference/ui-kit/")),
       // The page's subject, as the two places a page says what it is about.
       subjects: [
         rel.split("/").pop().replace(/\.md$/, ""),

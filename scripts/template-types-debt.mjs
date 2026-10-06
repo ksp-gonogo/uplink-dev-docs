@@ -9,7 +9,7 @@
  */
 export const NEEDS_REPUBLISH = {
   "template/client/src/ExampleWidget.tsx": 4,
-  "template/client/src/sdkSurface.ts": 10,
+  "template/client/src/sdkSurface.ts": 12,
   "template/client/src/stream.ts": 1,
   "template/client/src/ui/Badge.tsx": 2,
   "template/client/src/ui/Box.tsx": 3,
@@ -20,8 +20,8 @@ export const NEEDS_REPUBLISH = {
   "template/client/src/ui/Grid.tsx": 2,
   "template/client/src/ui/Inline.tsx": 4,
   "template/client/src/ui/Panel.tsx": 3,
-  "template/client/src/ui/ProgressBar.tsx": 4,
   "template/client/src/ui/Provider.tsx": 1,
+  "template/client/src/ui/Readout.tsx": 1,
   "template/client/src/ui/Section.tsx": 1,
   "template/client/src/ui/Spinner.tsx": 1,
   "template/client/src/ui/Stack.tsx": 2,

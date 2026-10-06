@@ -1,0 +1,20 @@
+{
+  "_meta": {
+    "notes": "The scene every Crew Status example renders on. Its vessel.crew value comes from reference/examples/crew-status/crew.ts, which the top example shows."
+  },
+  "_stream": {
+    "pinnedUt": 0,
+    "emits": [
+      {
+        "channel": "vessel.identity",
+        "value": {
+          "vesselId": "kerbal-x",
+          "name": "Kerbal X",
+          "vesselType": 0,
+          "situation": 32,
+          "parentBodyIndex": 1
+        }
+      }
+    ]
+  }
+}

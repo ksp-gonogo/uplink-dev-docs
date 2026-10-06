@@ -10,6 +10,10 @@ Three surfaces, and nothing else is available to an Uplink.
 
 `@ksp-gonogo/sitrep-sdk`. The wire contract: message envelopes, the Topic-to-payload map, and one parser.
 
+## [Widgets](/reference/widgets/crew-status)
+
+The extension points a built-in widget offers an Uplink: the slots its augments fill and the contributions it draws.
+
 ## [ui-kit](/reference/ui-kit/)
 
 `@ksp-gonogo/ui-kit`. Twenty presentational primitives, a theme contract, and a number formatter.

@@ -1,8 +1,8 @@
 name: Deploy docs
 
+# Every push builds and checks the site; only main deploys it.
 on:
   push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -11,7 +11,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
+  group: pages-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -19,43 +19,55 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-      - run: npm ci
-      # The pages describe gonogo's source, so the check compiles the template
-      # against it and verifies the ui-kit export snapshot against it. A change
-      # to the kit on staging that a page contradicts turns this job red.
+      # The generated reference is build output, written here from packages
+      # packed out of one pinned gonogo commit, so every deploy publishes pages
+      # that match each other and the hand pages are checked against that same
+      # commit. Bump the pin in reference/artifacts.json to move the site.
+      - id: pin
+        run: echo "sha=$(jq -er .gonogo reference/artifacts.json)" >> "$GITHUB_OUTPUT"
       - uses: actions/checkout@v4
         with:
           repository: ksp-gonogo/gonogo
-          ref: staging
+          ref: ${{ steps.pin.outputs.sha }}
           path: gonogo
-          sparse-checkout: |
-            packages/ui-kit
-            packages/theme
-            mod/sitrep-sdk
-            mod/Sitrep.Contract
-            mod/Directory.Build.props
-          sparse-checkout-cone-mode: false
+      - uses: pnpm/action-setup@v6
+        with:
+          package_json_file: gonogo/package.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 10.0.x
+      # The live examples mount gonogo's Storybook harness and its generated
+      # stories, so the checkout is installed and Storybook built with
+      # everything it depends on.
+      - run: pnpm install --frozen-lockfile
+        working-directory: gonogo
+      - run: pnpm turbo run build --filter=@ksp-gonogo/storybook...
+        working-directory: gonogo
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
       # Sitrep.Contract references no KSP assembly, so it builds here, and the
       # mod snippets compile against the same contract the mod ships.
       - run: dotnet build gonogo/mod/Sitrep.Contract/Sitrep.Contract.csproj -c Release -f net472 -o "$RUNNER_TEMP/contract" --nologo -v q
-      - run: npm run check
+      - run: npm run reference:pack
+        env:
+          GONOGO_REPO: ${{ github.workspace }}/gonogo
+      # Generates the reference, runs every check, builds the site, then fails
+      # on an unlinked symbol or a live example that does not render.
+      - run: npm run build
         env:
           GONOGO_REPO: ${{ github.workspace }}/gonogo
           SITREP_CONTRACT_DLL: ${{ runner.temp }}/contract/Sitrep.Contract.dll
-      - run: npx vitepress build docs
       - uses: actions/upload-pages-artifact@v3
         with:
           path: docs/.vitepress/dist
 
   deploy:
     needs: build
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment:
       name: github-pages

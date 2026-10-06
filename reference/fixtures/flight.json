@@ -1,0 +1,23 @@
+{
+  "subscribed": ["vessel.flight"],
+  "emits": [
+    {
+      "topic": "vessel.flight",
+      "payload": {
+        "latitude": -0.1,
+        "longitude": -74.6,
+        "altitudeAsl": 71420,
+        "altitudeTerrain": 71420,
+        "verticalSpeed": 212.4,
+        "surfaceSpeed": 1604.2,
+        "orbitalSpeed": 1780.9,
+        "gForce": 1.4,
+        "dynamicPressureKPa": 0.8,
+        "mach": 5.1,
+        "atmDensity": 0.00012,
+        "externalTemperature": 238,
+        "atmosphericTemperature": 231
+      }
+    }
+  ]
+}

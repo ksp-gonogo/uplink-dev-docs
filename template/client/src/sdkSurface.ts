@@ -17,6 +17,7 @@ import {
   type CommandResponse,
   type ErrorMsg,
   type EventMsg,
+  type GameState,
   type Meta,
   type ServerMessage,
   type SetVantage,
@@ -57,6 +58,10 @@ export function describe(raw: string): string {
     case "event": {
       const event: EventMsg = message;
       return `${event.topic} ${event.name}`;
+    }
+    case "game-state": {
+      const game: GameState = message;
+      return `${game.scene} ${game.state}`;
     }
   }
 }

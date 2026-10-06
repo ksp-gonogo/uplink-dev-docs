@@ -32,7 +32,7 @@ No primitive reads telemetry, dispatches a command, or holds anything but its ow
 
 **Containers**: [Panel](/reference/ui-kit/Panel), [Card](/reference/ui-kit/Card)
 
-**Readouts**: [Unit](/reference/ui-kit/Unit), [Text](/reference/ui-kit/Text), [Readout](/reference/ui-kit/Readout) (with `BigReadout` and `ReadoutCaption`), [ProgressBar](/reference/ui-kit/ProgressBar), [Truncate](/reference/ui-kit/Truncate)
+**Readouts**: [Unit](/reference/ui-kit/Unit), [Text](/reference/ui-kit/Text), [Readout](/reference/ui-kit/Readout) (with `ReadoutCaption`), [Meter](/reference/ui-kit/Meter), [Truncate](/reference/ui-kit/Truncate)
 
 **State**: [Badge](/reference/ui-kit/Badge), [StatusIndicator](/reference/ui-kit/StatusIndicator), [Spinner](/reference/ui-kit/Spinner), [EmptyState](/reference/ui-kit/EmptyState)
 
@@ -58,10 +58,7 @@ type Tone = "neutral" | "info" | "go" | "caution" | "warn" | "nogo" | "offline";
 
 | Prop | Takes | On |
 | --- | --- | --- |
-| `tone` | `Tone` | [Badge](/reference/ui-kit/Badge), [StatusIndicator](/reference/ui-kit/StatusIndicator), [Text](/reference/ui-kit/Text) |
+| `tone` | `Tone` | [Badge](/reference/ui-kit/Badge), [StatusIndicator](/reference/ui-kit/StatusIndicator), [Text](/reference/ui-kit/Text), [Readout](/reference/ui-kit/Readout) |
 | `tone` | `ButtonTone`, the four a button's action can mean | [Button](/reference/ui-kit/Button) |
-| `$tone` | `Tone` | `BigReadout`, `Readout` |
 
 A [Panel](/reference/ui-kit/Panel) merges the badges under it into a single worst-case summary, so the one scale is what lets separate chips add up to a panel state.
-
-The `$` marks a styled-component transient prop, which is what keeps it off the DOM element. Everything else takes a plain `tone`.
