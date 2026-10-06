@@ -555,6 +555,8 @@ export async function generate({ install = true } = {}) {
 
   // Every symbol a page renders, registered before any page is written, so pages can link to each other.
   const index = new SymbolIndex();
+  // The sdk's TypeScript mirrors carry the contract's type names, so a C# page links through its own index.
+  const contractIndex = new SymbolIndex();
   for (const page of PAGES) {
     const url = urlOf(page);
     if (page.kind === "category" || page.kind === "guide") {
@@ -565,14 +567,22 @@ export async function generate({ install = true } = {}) {
         if (props) index.add(props.name, `${url}#${props.name}`);
       }
     }
-    if (page.kind === "contract") for (const t of contractTypes(page)) index.add(t, `${url}#${t}`);
+    if (page.kind === "contract") {
+      for (const t of contractTypes(page)) {
+        index.add(t, `${url}#${t}`);
+        contractIndex.add(t, `${url}#${t}`);
+      }
+    }
     if (page.kind === "widget") {
       for (const t of slotTypes(recordOf(records, page), projects[SDK], projects[KIT])) index.add(t, `${url}#${t}`);
     }
   }
   const isSymbol = (name) =>
     Object.values(projects).some((project) => project.getChildByName(name)) || isContractType(name);
-  for (const [name, url] of handWrittenEntries(new Set(PAGES.map((p) => p.path)), isSymbol)) index.add(name, url);
+  for (const [name, url] of handWrittenEntries(new Set(PAGES.map((p) => p.path)), isSymbol)) {
+    index.add(name, url);
+    if (isContractType(name) && url.startsWith("/reference/mod/")) contractIndex.add(name, url);
+  }
   writeFileSync(SYMBOL_INDEX, `${JSON.stringify(index, null, 2)}\n`);
 
   const written = [];
@@ -581,7 +591,7 @@ export async function generate({ install = true } = {}) {
     if (page.kind === "category") sections = categoryPage(page, projects[specifierOf(page)], index);
     else if (page.kind === "guide") sections = guidePage(page, projects[specifierOf(page)], index);
     else if (page.kind === "widget") sections = widgetPage(page, recordOf(records, page), projects[SDK], projects[KIT], index);
-    else sections = contractPage(page, index);
+    else sections = contractPage(page, contractIndex);
     const file = resolve(DOCS, page.path);
     mkdirSync(dirname(file), { recursive: true });
     writeFileSync(file, `${frontmatter(page)}\n${sections.filter(Boolean).join("\n\n")}\n`);
