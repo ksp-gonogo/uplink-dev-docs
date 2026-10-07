@@ -1,0 +1,39 @@
+{
+  "_meta": {
+    "notes": "The scene every Experiments example renders on. Its science.instruments value comes from reference/examples/experiments/instruments.ts, which the top example shows."
+  },
+  "_stream": {
+    "pinnedUt": 10,
+    "emits": [
+      {
+        "channel": "science.experiments",
+        "value": [
+          {
+            "partName": "Mk1 Command Pod",
+            "experimentId": "crewReport",
+            "subjectId": "crewReport@KerbinInSpaceLowShores",
+            "title": "Crew Report while in space low over Kerbin's shores",
+            "location": "InSpaceLow",
+            "situation": "Shores",
+            "dataAmount": 5.5,
+            "scienceValueRatio": 1,
+            "baseTransmitValue": 3.2,
+            "transmitBonus": 0
+          },
+          {
+            "partName": "Mystery Goo™ Containment Unit",
+            "experimentId": "mysteryGoo",
+            "subjectId": "mysteryGoo@KerbinInSpaceLowShores",
+            "title": "Mystery Goo Observation while in space low over Kerbin's shores",
+            "location": "InSpaceLow",
+            "situation": "Shores",
+            "dataAmount": 2,
+            "scienceValueRatio": 0.6,
+            "baseTransmitValue": 1.8,
+            "transmitBonus": 0
+          }
+        ]
+      }
+    ]
+  }
+}
