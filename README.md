@@ -187,6 +187,7 @@ first. A new page needs no config edit.
 npm run reference -- --no-install            # regenerate from the installed artifacts
 npm run check:pages                          # generated or listed, never committed or edited
 npx vitepress build docs
+npm run check:rendered                       # no page's server render left it empty
 npm run check:links                          # every symbol reference linked
 npm run check:demos -- --page widgets/crew   # the live examples on matching pages
 ```
