@@ -1,0 +1,15 @@
+{
+  "subscribed": ["career.status"],
+  "emits": [
+    {
+      "topic": "career.status",
+      "payload": {
+        "balances": { "funds": 154200, "reputation": 312, "science": 48.5 },
+        "contracts": null,
+        "strategies": null,
+        "tech": null,
+        "meta": { "source": "game" }
+      }
+    }
+  ]
+}

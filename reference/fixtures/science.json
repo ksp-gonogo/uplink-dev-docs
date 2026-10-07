@@ -1,0 +1,12 @@
+{
+  "subscribed": ["science.experiments"],
+  "emits": [
+    {
+      "topic": "science.experiments",
+      "payload": [
+        { "partName": "Mystery Goo Containment Unit", "location": "experiment", "experimentId": "mysteryGoo", "subjectId": "mysteryGoo@KerbinSrfLandedLaunchPad", "title": "Mystery Goo Observation while landed at the Launch Pad", "dataAmount": 10, "deployed": true },
+        { "partName": "Mk1 Command Pod", "location": "container", "experimentId": null, "subjectId": "crewReport@KerbinSrfLandedLaunchPad", "title": "Crew Report from the Launch Pad", "dataAmount": 5, "deployed": null }
+      ]
+    }
+  ]
+}

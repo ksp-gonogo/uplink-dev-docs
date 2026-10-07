@@ -1,0 +1,6 @@
+{
+  "subscribed": ["spaceCenter.scene"],
+  "emits": [
+    { "topic": "spaceCenter.scene", "payload": { "scene": "Flight", "launchSite": null } }
+  ]
+}
