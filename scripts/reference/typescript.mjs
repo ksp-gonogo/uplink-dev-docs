@@ -243,20 +243,33 @@ function cellMd(parts, index) {
 const commentOf = (reflection) =>
   reflection.comment ?? reflection.signatures?.[0]?.comment;
 
-/** The tags a page renders in its own place, rather than in the running text. */
-const PLACED_TAGS = new Set(["@example", "@category", "@categoryDescription", "@param", "@defaultValue", "@typeParam", "@returns"]);
+/**
+ * The block tags printed in a symbol's running text, each under its label.
+ * `@remarks` runs on as plain paragraphs; `@example`, `@param`,
+ * `@typeParam`, `@returns` and `@defaultValue` are printed in their own
+ * places; any other tag (`@category`, or one a package uses for its own
+ * checks, such as `@intent`) says nothing to an author and is not printed.
+ */
+const LABELLED_TAGS = new Map([
+  ["@deprecated", "Deprecated"],
+  ["@see", "See also"],
+  ["@throws", "Throws"],
+]);
 
 function summaryMd(comment, index, level, { omitRemarks = false } = {}) {
   if (!comment) return "";
   const body = [partsMd(comment.summary, index).trim()];
   for (const tag of comment.blockTags) {
-    if (PLACED_TAGS.has(tag.tag)) continue;
-    if (omitRemarks && tag.tag === "@remarks") continue;
-    const text = partsMd(tag.content, index).trim();
-    if (tag.tag === "@remarks") body.push(text);
-    else body.push(`**${tag.tag.slice(1)}:** ${text}`);
+    if (tag.tag === "@remarks" && !omitRemarks) body.push(partsMd(tag.content, index).trim());
+    if (LABELLED_TAGS.has(tag.tag)) body.push(`**${LABELLED_TAGS.get(tag.tag)}:** ${partsMd(tag.content, index).trim()}`);
   }
   return demoteHeadings(body.filter(Boolean).join("\n\n"), level);
+}
+
+/** What a signature's `@returns` says it returns, as a line of its own. */
+function returnsMd(comment, index) {
+  const tag = comment?.blockTags.find((t) => t.tag === "@returns");
+  return tag ? `**Returns:** ${partsMd(tag.content, index).trim()}` : "";
 }
 
 /** A symbol's `@remarks` alone, for a page that places them apart from the rest of its doc. */
@@ -307,9 +320,10 @@ function ownMembers(reflection) {
 export const cellSafe = (md) => md.replace(/`[^`]*`/g, (span) => span.replace(/(?<!\\)\|/g, "\\|"));
 
 /** A properties table for an interface or an object-literal type. */
-export function propertiesMd(reflection, index, { withDefaults = false } = {}) {
+export function propertiesMd(reflection, index) {
   const { own, dropped } = ownMembers(reflection);
   if (own.length === 0) return "";
+  const withDefaults = own.some((member) => defaultOf(member));
   const rows = own.map((member) => {
     const optional = member.flags.isOptional ? "?" : "";
     const type = member.type
@@ -317,7 +331,7 @@ export function propertiesMd(reflection, index, { withDefaults = false } = {}) {
       : member.signatures
         ? cellSafe(code(methodText(member.signatures[0])))
         : "";
-    const cells = [memberName(member.name + optional, memberAnchor(member)), type];
+    const cells = [memberName(`${member.flags.isStatic ? "static " : ""}${member.name}${optional}`, memberAnchor(member)), type];
     if (withDefaults) cells.push(defaultOf(member) ? code(defaultOf(member)) : "");
     cells.push(cellMd(commentOf(member)?.summary, index));
     return `| ${cells.join(" | ")} |`;
@@ -356,11 +370,11 @@ function interfaceText(reflection) {
     .map((sig) => `  constructor(${params(sig)});`);
   const lines = own.flatMap((m) => {
     const optional = m.flags.isOptional ? "?" : "";
-    const readonly = m.flags.isReadonly ? "readonly " : "";
+    const modifiers = `${m.flags.isStatic ? "static " : ""}${m.flags.isReadonly ? "readonly " : ""}`;
     if (!m.type && m.signatures) {
-      return m.signatures.map((sig) => `  ${name(m)}${optional}${typeParamsText(sig.typeParameters)}(${params(sig)}): ${sig.type};`);
+      return m.signatures.map((sig) => `  ${modifiers}${name(m)}${optional}${typeParamsText(sig.typeParameters)}(${params(sig)}): ${sig.type};`);
     }
-    return [`  ${readonly}${name(m)}${optional}: ${m.type?.toString() ?? "unknown"};`];
+    return [`  ${modifiers}${name(m)}${optional}: ${m.type?.toString() ?? "unknown"};`];
   });
   return `${keyword} ${reflection.name}${typeParamsText(reflection.typeParameters)}${heritage} {\n${[...constructors, ...lines].join("\n")}\n}`;
 }
@@ -398,7 +412,9 @@ export function propsOf(reflection, project) {
   if (reflection.kind !== ReflectionKind.Function || !isComponent(reflection)) return undefined;
   const params = reflection.signatures?.[0]?.parameters ?? [];
   if (params.length !== 1 || params[0].type?.type !== "reference") return undefined;
-  const props = project.getChildByName(params[0].type.name);
+  // `Readonly<DialProps<Unit>>` is drawn from DialProps.
+  const type = params[0].type.name === "Readonly" && params[0].type.typeArguments?.[0]?.type === "reference" ? params[0].type.typeArguments[0] : params[0].type;
+  const props = project.getChildByName(type.name);
   return props?.kind === ReflectionKind.Interface ? props : undefined;
 }
 
@@ -459,14 +475,13 @@ export function symbolMd(reflection, project, index, { level = 3, title = true, 
     // A constant's doc comment sits on the constant, not on its signature.
     const comments = distinctComments(signatures);
     if (comments.length === 0 && reflection.comment) comments.push(reflection.comment);
-    if (!props) {
-      const text = signatures.map((s) => signatureText(reflection.name, s)).join("\n");
-      out.push(`\`\`\`ts\n${text}\n\`\`\``);
-    }
+    const text = signatures.map((s) => signatureText(reflection.name, s)).join("\n");
+    out.push(`\`\`\`ts\n${text}\n\`\`\``);
     out.push(...comments.map((c) => summaryMd(c, index, inner, { omitRemarks })));
+    out.push(...comments.map((c) => returnsMd(c, index)));
     out.push(typeParamsMd(signatures[0]?.typeParameters, index));
     if (props) {
-      out.push(`${h(inner)} Props {#${props.name}}`, propertiesMd(props, index, { withDefaults: true }));
+      out.push(`${h(inner)} Props {#${props.name}}`, propertiesMd(props, index));
     } else {
       out.push(parametersMd(signatures[0], index, inner));
     }
@@ -504,8 +519,11 @@ export function symbolMd(reflection, project, index, { level = 3, title = true, 
     out.push(examplesMd(reflection.comment, index, inner));
   } else {
     const declared = reflection.type?.toString() ?? "";
+    const element = styledElementOf(declared);
     // A styled component's inferred type is hundreds of characters of library generics, and says nothing.
-    if (declared && declared.length <= 120) {
+    if (element) {
+      out.push(`Renders a ${code(`<${element.tag}>`)} and takes every prop the element does, as React's ${code(element.attributes)}.`);
+    } else if (declared && declared.length <= 120) {
       out.push(`\`\`\`ts\nconst ${reflection.name}: ${declared};\n\`\`\``);
     }
     out.push(summaryMd(reflection.comment, index, inner, { omitRemarks }));
@@ -545,6 +563,20 @@ export function categoryDescriptionMd(project, name, index) {
     throw new Error(`@category ${name} is described ${distinct.length} times (${distinct.map(([, s]) => s.from).join(", ")}): keep one`);
   }
   return distinct[0]?.[0] ?? "";
+}
+
+const ELEMENT_TAGS = { Div: "div", Span: "span", Button: "button", Input: "input", Label: "label", Select: "select", TextArea: "textarea", Paragraph: "p", Anchor: "a", Form: "form" };
+
+/**
+ * The element a styled component renders and the attribute type its props
+ * are, read off its inferred type: `IStyledComponentBase<"web", ...
+ * ButtonHTMLAttributes<HTMLButtonElement> ...>` renders a `<button>`.
+ */
+function styledElementOf(declared) {
+  if (!declared.includes("IStyledComponentBase")) return undefined;
+  const match = /(\w*HTMLAttributes)<HTML(\w*)Element>/.exec(declared);
+  const tag = match && ELEMENT_TAGS[match[2]];
+  return tag ? { tag, attributes: `${match[1]}<HTML${match[2]}Element>` } : undefined;
 }
 
 /** Every top-level reflection carrying `@category <name>`, a constant and its same-named type counted once, as the constant. */

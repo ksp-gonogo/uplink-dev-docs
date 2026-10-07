@@ -285,18 +285,25 @@ function groupedMd(members, project, index) {
 
 /** The sdk's root project, which owns any symbol another package re-exports. Set once the projects load. */
 let sdkProject;
+/** Each package's root project, which owns any symbol one of its subpaths re-exports. Set once the projects load. */
+const rootProjects = {};
 
 /**
  * The symbols a category or guide page documents: its category's, less any
- * the sdk exports under the same name when the page is another package's. A
- * re-exported symbol is documented once, on the sdk's page.
+ * the sdk exports under the same name when the page is another package's, and
+ * less any its package's root exports when the page is a subpath's. A symbol
+ * exported twice is documented once, where an author first meets it.
  */
 function pageMembers(page, project) {
   const members = categoryMembers(project, page.category);
-  if (page.package === SDK) return members;
-  const own = members.filter((m) => !sdkProject.getChildByName(m.name));
+  const elsewhere = [];
+  if (page.package !== SDK) elsewhere.push(["the sdk", sdkProject]);
+  if (page.entry) elsewhere.push([`${page.package}'s root`, rootProjects[page.package]]);
+  const own = members.filter((m) => !elsewhere.some(([, other]) => other.getChildByName(m.name)));
   if (own.length === 0) {
-    throw new Error(`every symbol in ${page.package}'s @category ${page.category} is one the sdk exports, so its sdk page documents it: delete this module`);
+    throw new Error(
+      `every symbol in ${specifierOf(page)}'s @category ${page.category} is one ${elsewhere.map(([name]) => name).join(" or ")} exports, so its page there documents it: delete this module`,
+    );
   }
   return own;
 }
@@ -616,7 +623,9 @@ export async function generate({ install = true } = {}) {
   const projects = { [SDK]: await loadPackage(SDK), [KIT]: await loadPackage(KIT) };
   sdkProject = projects[SDK];
   for (const page of PAGES) {
+    if (page.package && !projects[page.package]) projects[page.package] = await loadPackage(page.package);
     if (page.package && !projects[specifierOf(page)]) projects[specifierOf(page)] = await loadPackage(page.package, page.entry);
+    if (page.package) rootProjects[page.package] = projects[page.package];
   }
   runXmldocmd();
   const widgetPages = PAGES.filter((page) => page.kind === "widget");

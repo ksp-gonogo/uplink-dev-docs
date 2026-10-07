@@ -4,6 +4,7 @@
  * writes each widget's section of an Uplink README, so a widget page takes
  * every fact the record carries from it, and its page module states none.
  */
+import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { resolve } from "node:path";
 import { INSTALL } from "./paths.mjs";
@@ -79,8 +80,29 @@ export function assertModulesStateNoRecordFacts(pages) {
 const text = (s) => s.replace(/([<>])/g, "\\$1");
 const codeList = (items) => items.map((item) => `\`${item}\``).join(", ");
 
-/** The slots a widget declares, as its record names them. */
-export const slotsOf = (record) => [...record.augmentSlots, ...record.contributionSlots];
+let standardSegments;
+
+/**
+ * The standard segments every widget carries, which a widget's record may name
+ * again as its own: the kit's `FRAMEWORK_AUGMENT_SEGMENTS` and
+ * `FRAMEWORK_CONTRIBUTION_SEGMENTS`, read off its installed declarations.
+ */
+function standardSegmentsOf() {
+  if (standardSegments) return standardSegments;
+  const declarations = readFileSync(resolve(INSTALL, "node_modules/@ksp-gonogo/ui-kit/dist/index.d.ts"), "utf8");
+  const lists = [...declarations.matchAll(/declare const FRAMEWORK_(?:AUGMENT|CONTRIBUTION)_SEGMENTS: readonly \[([^\]]*)\]/g)];
+  if (lists.length !== 2) throw new Error("the installed ui-kit does not declare both FRAMEWORK_*_SEGMENTS lists");
+  standardSegments = new Set(lists.flatMap(([, list]) => [...list.matchAll(/"([^"]+)"/g)].map(([, segment]) => segment)));
+  return standardSegments;
+}
+
+/**
+ * The slots a widget declares as its own, as its record names them. A
+ * standard segment its record also names is on every widget, so it is listed
+ * with the standard slots on the page rather than here.
+ */
+export const slotsOf = (record) =>
+  [...record.augmentSlots, ...record.contributionSlots].filter((slot) => !standardSegmentsOf().has(slot.slice(record.id.length + 1)));
 
 /** A slot's anchor on its widget's page. */
 export const anchorOf = (slot) => slot.replace(/\./g, "-");

@@ -4,5 +4,8 @@ export default {
   package: "@ksp-gonogo/ui-kit",
   category: "Layout",
   lead: "Stack",
-  examples: [{ id: "layout--crew-panel", file: "reference/examples/layout/CrewPanel.tsx", export: "CrewPanel" }],
+  examples: [
+    { id: "layout--crew-panel", title: "A panel", file: "reference/examples/layout/CrewPanel.tsx", export: "CrewPanel" },
+    { id: "layout-grid--floor", title: "Grid units", file: "reference/examples/layout/GridFloor.tsx", export: "GridFloor" },
+  ],
 };
