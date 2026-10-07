@@ -18,6 +18,4 @@ What the published packages, at the <Published field="name" /> <Published field=
 ## The tools
 
 - **The version is in three places**: `client/package.json`, `UPLINK_VERSION` in `client/src/uplink.ts`, and the folder in `client.url`. `release` refuses while they disagree, but changing them is yours ([Releasing and installing](/guide/release#a-new-version))
-- **`npm run page` refuses while the page check fails**, which it does whenever the page is out of date: run `npm run docs` instead ([Testing](/guide/testing#when-the-page-is-out-of-date))
-- **A new release candidate reaches NuGet some minutes after npm.** `npx @ksp-gonogo/uplink-tools@rc new` takes the newest from npm, and nuget.org lists the matching `KspGonogo.Sitrep.Contract` only once it has checked it, usually within twenty minutes. Until then `new` stops at generating the client's types with `error NU1102: Unable to find package KspGonogo.Sitrep.Contract with version (= <version>)`. Wait, then run `npm run codegen` in `client/`
 - **`new` is tested on macOS and Linux**, not on Windows

@@ -20,7 +20,7 @@ npm run release
 
 The app loads a client only when the plugin vouches for the exact bundle it fetched, so the bundle must be built and hashed before the plugin is compiled. A plugin compiled first builds and passes its tests, and the app shows none of its widgets. `release` refuses to run while `client.url` in `uplink.json` is still the placeholder `new` writes without a repository, and while the version's three places disagree ([A new version](#a-new-version)).
 
-The `gonogo-uplink.json` to publish is the one `release` writes beside the bundle in `client/dist/example/`, which carries the bundle's hash as its `integrity`. The one committed beside the client, which `npm run page` and `npm run docs` write, has an empty `integrity`: right for a working copy, and refused by the app if published. So run `release` last, after any `page` or `docs`, and publish from `dist/`.
+The `gonogo-uplink.json` to publish is the one `release` writes beside the bundle in `client/dist/example/`, which carries the bundle's hash as its `integrity`. The one committed beside the client, which `npm run page` and `npm run docs` write, has an empty `integrity` until a hash is stamped into it, and `page` and `docs` leave a stamped one alone. An empty one is right for a working copy and refused by the app if published, so publish from `dist/`.
 
 ## How the app loads a client
 

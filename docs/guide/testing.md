@@ -35,7 +35,7 @@ A widget rendered alone has no data, which is the waiting state, and worth a tes
 
 <<< ../../example/client/src/Heartbeat/__fixtures__/beating.json
 
-A fixture is a scene the render harness draws a widget in: `_scene` names the widget, its picture's `caption` and the modes to draw it in, and `_stream` says what is on the wire. The `min` mode draws the widget at its `minSize`, and exists only while `minSize` is smaller than `defaultSize`: make them equal and a fixture naming `min` fails every test, so take it out of `modes`. `npm run render` draws every fixture to `client/renders/` in a real browser, and `npm run docs` draws them into the generated page, so a fixture is both a picture to look at and the page's illustration. Rendering needs Chromium, installed once with `npx playwright install chromium`.
+A fixture is a scene the render harness draws a widget in: `_scene` names the widget, its picture's `caption` and the modes to draw it in, and `_stream` says what is on the wire. The `min` mode draws the widget at its `minSize`, and exists only while `minSize` is smaller than `defaultSize`: make them equal and a fixture naming `min` fails with a message naming the fixture, saying the widget has no separate smallest size, so take `min` out of `modes` or give the widget a smaller `minSize`. `npm run render` draws every fixture to `client/renders/` in a real browser, and `npm run docs` draws them into the generated page, so a fixture is both a picture to look at and the page's illustration. Rendering needs Chromium, installed once with `npx playwright install chromium`.
 
 Beside `pinnedUt` and `emits`, `_stream` takes `delaySeconds`, which stages a signal delay so the scene shows modelled values beside received ones, and `stopsArriving`, which draws every figure held. The [`@ksp-gonogo/uplink-tools` README](https://www.npmjs.com/package/@ksp-gonogo/uplink-tools) documents each field.
 
@@ -73,6 +73,6 @@ dotnet test ../mod-tests
 
 ## When the page is out of date
 
-`npm test` includes the page check, so after a change to a registration it fails until the page is regenerated. `npm run page` regenerates it by running the tests, and refuses while they fail, including that one. Run `npm run docs` instead, which writes the page and the pictures without running the tests, then `npm test` again.
+`npm test` includes the page check, so after a change to a registration it fails until the page is regenerated. `npm run page` regenerates it by running only that check, so it writes the page even while another test is failing, and says which files it wrote. Then run `npm test` again.
 
 Next: [Documenting your Uplink](/guide/documenting).

@@ -11,5 +11,5 @@
   "contractMinor": 22,
   "bundleUrl": "example/example.client.js",
   "integrity": "",
-  "sdkVersion": "1.0.0-rc.16"
+  "sdkVersion": "1.0.0-rc.21"
 }

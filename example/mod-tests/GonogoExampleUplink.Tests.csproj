@@ -24,7 +24,7 @@
   <!-- For a test project the package also carries Sitrep.Contract.TestSupport
        (fakes and rule assertions) and the real delay engine behind it. -->
   <ItemGroup>
-    <PackageReference Include="KspGonogo.Sitrep.Contract" Version="[1.0.0-rc.16]" />
+    <PackageReference Include="KspGonogo.Sitrep.Contract" Version="[1.0.0-rc.21]" />
     <ProjectReference Include="..\mod-contract\GonogoExampleUplink.Contract.csproj" />
   </ItemGroup>
 
