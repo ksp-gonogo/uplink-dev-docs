@@ -11,7 +11,7 @@ The two halves never call each other. They meet at a WebSocket the Gonogo mod se
 
 The published packages cover both halves: the plugin, and a client that either registers widgets into the Gonogo dashboard or runs as a standalone page speaking the stream directly. [Known limits](/guide/limits) states what they do not do.
 
-The command line is `@ksp-gonogo/uplink-tools`. `npx @ksp-gonogo/uplink-tools new <id>` scaffolds an Uplink, and the same package bundles, renders and documents it. Each command answers `--help`, and [Command line](/reference/tools/command-line) prints every command's help. `@ksp-gonogo/uplink-tools` is not on npm at the <Published field="name" /> yet: the command arrives with the next one.
+The command line is `@ksp-gonogo/uplink-tools`. `npx @ksp-gonogo/uplink-tools@rc new <id>` scaffolds an Uplink, and the same package bundles, renders and documents it. Each command answers `--help`, and [Command line](/reference/tools/command-line) prints every command's help.
 
 ## Vocabulary
 

@@ -3,10 +3,7 @@
   "published": {
     "version": "0.2.0-rc.8",
     "npmTag": "rc",
-    "name": "release candidate",
-    "pending": [
-      "@ksp-gonogo/uplink-tools"
-    ]
+    "name": "release candidate"
   },
   "npm": {
     "@ksp-gonogo/ui-kit": "file:../artifacts/ksp-gonogo-ui-kit.tgz",

@@ -31,10 +31,10 @@
 ```bash
 npm install @ksp-gonogo/sitrep-sdk@rc @ksp-gonogo/ui-kit@rc \
   react@18 react-dom@18 styled-components
-npm install -D @ksp-gonogo/uplink-tools typescript @types/react @types/react-dom vite @vitejs/plugin-react
+npm install -D @ksp-gonogo/uplink-tools@rc typescript @types/react @types/react-dom vite @vitejs/plugin-react
 ```
 
-The `rc` tag is the <Published field="name" />, <Published field="version" />, which these pages document. A plain `npm install @ksp-gonogo/sitrep-sdk` fetches an older `latest` that lacks most of it. `@ksp-gonogo/uplink-tools` is not on npm at the <Published field="name" /> yet: the command arrives with the next one.
+The `rc` tag is the <Published field="name" />, <Published field="version" />, which these pages document. A plain `npm install @ksp-gonogo/sitrep-sdk` fetches an older `latest` that lacks most of it.
 
 The template's `client/package.json` pins the same list except `@ksp-gonogo/uplink-tools`: the template is a standalone page built with Vite, so it does not bundle for the dashboard.
 
