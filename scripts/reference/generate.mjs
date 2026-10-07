@@ -580,8 +580,14 @@ export async function generate({ install = true } = {}) {
   const index = new SymbolIndex();
   // The sdk's TypeScript mirrors carry the contract's type names, so a C# page links through its own index.
   const contractIndex = new SymbolIndex();
-  // Widget pages first: a slot's type is documented beside its slot, so its link goes there before any category page.
-  for (const page of [...widgetPages, ...PAGES.filter((p) => p.kind !== "widget")]) {
+  /*
+   * A symbol links to the first page that registers it. Category pages go first, so a type with a
+   * category of its own (BadgeEntry, PlotEntry) links there; then widget pages, so a slot's own type
+   * links beside its slot; and last the Widget slots page, which holds slot types until their widget has a page.
+   */
+  const stopgap = (p) => p.kind === "category" && p.category === "Widget slots";
+  const indexOrder = [...PAGES.filter((p) => p.kind !== "widget" && !stopgap(p)), ...widgetPages, ...PAGES.filter(stopgap)];
+  for (const page of indexOrder) {
     const url = urlOf(page);
     if (page.kind === "category" || page.kind === "guide") {
       const project = projects[specifierOf(page)];
