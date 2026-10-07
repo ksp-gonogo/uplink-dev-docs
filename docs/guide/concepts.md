@@ -24,7 +24,7 @@ Between samples, and across a signal delay, the last value received is older tha
 
 ## Values and units
 
-A quantity in a payload is a `Value`: a number with its unit, such as `Value<"m/s">`. Values convert between units and compare with each other, so a widget compares a speed with `lessThan` rather than with a bare number, and `Unit` draws a value in the unit the operator chose for its kind of quantity. [Units and values](/reference/client/units-and-values) defines them.
+A quantity in a payload is a `Value`: a number with its unit, such as `Value<"m/s">`. Values convert between units and compare with each other, so a widget compares a speed with `lessThan` rather than with a bare number, and `Unit` draws a value in the unit its size suits, such as kilometres for a long distance, unless you pin one with its `format` or `as` prop. [Units and values](/reference/client/units-and-values) defines them.
 
 ## Slots, augments and contributions
 

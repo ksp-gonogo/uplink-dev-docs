@@ -46,6 +46,40 @@ namespace ExampleUplink
     }
     #endregion binder
 
+    #region gate
+    /// <summary>Refuses a command until the save has unlocked what the mod requires, by the mod's own rule.</summary>
+    internal sealed class ClockUnlockGate : ICommandGateEvaluator
+    {
+        private readonly Func<bool?> _unlocked;
+
+        /// <param name="unlocked">The mod's own unlock check as last read on the main thread, or null before the first read.</param>
+        public ClockUnlockGate(Func<bool?> unlocked) => _unlocked = unlocked;
+
+        public string Kind => "clock.unlocked";
+
+        public GateVerdict Evaluate(CommandRequirement requirement, IGateArguments arguments) =>
+            _unlocked() switch
+            {
+                true => GateVerdict.Pass(),
+                false => GateVerdict.NotUnlocked("The clock is not researched in this save"),
+                null => GateVerdict.Unknown("The clock's unlock state has not been read yet"),
+            };
+    }
+
+    internal static class ClockCommands
+    {
+        /// <summary>
+        /// Listed in the manifest's <c>Commands</c>, with the evaluator registered in <c>Register</c>:
+        /// <c>host.AddGateEvaluator(new ClockUnlockGate(() => unlocked))</c>.
+        /// </summary>
+        public static readonly CommandDeclaration Sync = new CommandDeclaration
+        {
+            Command = "clock.sync",
+            Requires = new[] { new CommandRequirement { Kind = "clock.unlocked" } },
+        };
+    }
+    #endregion gate
+
     /// <summary>A plugin wrapping the mod <see cref="ClockReflection"/> reaches.</summary>
     [SitrepUplink("clock")]
     public sealed class ClockUplink : ISitrepUplink

@@ -19,12 +19,15 @@ declare module "@ksp-gonogo/sitrep-sdk" {
   interface TopicPayloadMap {
     "example.heartbeat": ExampleHeartbeat;
   }
+  // #region commandmaps
   // Every command the contract slice declares, from the command map codegen writes, so useCommand("example.reset") is typed.
   interface CommandArgsMap extends GeneratedCommandArgsMap {}
   interface CommandReplyMap extends GeneratedCommandReplyMap {}
+  // #endregion commandmaps
 }
 // #endregion maps
 
+// #region units
 // The unit of each field, from the [SitrepUnit] attributes in the contract slice. It is what lets <Unit> write a value with its unit.
 for (const [topic, units] of Object.entries(GENERATED_TOPIC_UNITS)) {
   registerTopicUnits(topic, units, GENERATED_TOPIC_SHAPES[topic] ?? {});
@@ -32,6 +35,7 @@ for (const [topic, units] of Object.entries(GENERATED_TOPIC_UNITS)) {
 for (const [typeName, units] of Object.entries(GENERATED_TYPE_UNITS)) {
   registerTypeUnits(typeName, units, GENERATED_TYPE_SHAPES[typeName] ?? {});
 }
+// #endregion units
 
 // #region command
 // How each command travels, as its [SitrepCommand] in the slice declares it, so the app draws a sent command right.

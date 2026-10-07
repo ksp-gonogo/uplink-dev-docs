@@ -2,6 +2,8 @@
 
 The plugin is one class in `mod/`, `ExampleUplink.cs`. This page covers what Gonogo needs from it: how it is found, what its manifest declares, where its work is wired up, and how it reports its own health.
 
+The snippets on this page come from the finished example, so they already carry the `example.reset` command (`ResetCommand`, its declaration and its handler) that [Accepting a command](/guide/commands) adds. The file `new` writes is the same without those lines.
+
 Two threads matter throughout. The **main thread** is the game's own, the only one that may touch KSP. The **Courier thread** is the Gonogo mod's background thread, which samples every Topic and writes the stream; code running on it must never touch the game.
 
 ## How Gonogo finds it
@@ -36,11 +38,13 @@ There is no matching teardown: the Uplink lives as long as the game does, so any
 
 <<< ../../example/mod/ExampleUplink.cs#health{cs}
 
-`Health` returns an `UplinkHealth`, whose `UplinkHealthState` is `Healthy`, `Degraded` (working, with something it needs missing or wrong) or `Unavailable`, with a sentence the operator reads beside it. Gonogo calls it often and off the main thread, so it must be cheap, must not block, and must not touch the game. The heartbeat has nothing to report; an Uplink wrapping another mod reports that mod's state:
+`Health` returns an `UplinkHealth`, whose `UplinkHealthState` is `Healthy`, `Degraded` (working, with something it needs missing or wrong) or `Unavailable`, with a sentence the operator reads beside it. Gonogo polls it on every sample, up to ten times a second, and off the main thread, so it must be cheap, must not block, and must not touch the game. The heartbeat has nothing to report; an Uplink wrapping another mod reports that mod's state:
 
 <<< ../../reference/examples/mod/GuideExamples.cs#health{cs}
 
-When the mod you integrate is missing at load, `Register` also calls [`IUplinkHost.SetAvailability`](/reference/mod/host-and-kernel#IUplinkHost.SetAvailability) with an [`Availability`](/reference/mod/#Availability) saying why, and registers nothing.
+When the mod you integrate is missing at load, `Register` also calls [`IUplinkHost.SetAvailability`](/reference/mod/host-and-kernel#IUplinkHost.SetAvailability) with an [`Availability`](/reference/mod/#Availability) saying why, and registers nothing:
+
+<<< ../../reference/examples/mod/GuideExamples.cs#unavailable{cs}
 
 ## The sample
 
@@ -68,15 +72,15 @@ A plugin that reads live game state, rather than the snapshot every source share
 
 A build that needs it and cannot find it says which of these to set.
 
-**`IUplinkHost.AddSampledSource`** instead of `AddChannelSource`. It takes two functions: the first runs on the main thread, where reading the game is safe, and returns plain data; the second runs on the Courier thread with exactly what the first returned, and publishes it.
+**A source registered with `IUplinkHost.AddSampledSource`** rather than `AddChannelSource`. It takes two functions: the first runs on the main thread, where reading the game is safe, and returns plain data; the second runs on the Courier thread with exactly what the first returned, and publishes it.
 
 <<< ../../reference/examples/mod/GuideExamples.cs#sampled{cs}
 
-Never pass a live game object, such as a `Vessel` or a `Part`, from the first function to the second: reading one off the main thread can crash the game.
+A second overload takes, after the two functions, the Topic prefixes the source publishes (an exact Topic is its own prefix), and skips the main-thread read on every tick no client is watching them; [Wrapping a mod](/guide/wrapping-a-mod#reading-on-the-main-thread) uses it. Never pass a live game object, such as a `Vessel` or a `Part`, from the first function to the second: reading one off the main thread can crash the game.
 
 ## Reaching another mod
 
-Reach the mod you integrate by reflection, not by referencing its assembly. A plugin that references a missing assembly fails to load at all, where one that uses reflection can report the mod missing in `Health`. A reference also brings that mod's licence terms to your combined work.
+Prefer reaching the mod you integrate by reflection over referencing its assembly. A plugin that references a missing assembly fails to load at all, where one that uses reflection can report the mod missing in `Health`. A reference also brings that mod's licence terms to your combined work. [Wrapping a mod](/guide/wrapping-a-mod) covers both, and when a reference suits.
 
 Two cautions about what you read:
 

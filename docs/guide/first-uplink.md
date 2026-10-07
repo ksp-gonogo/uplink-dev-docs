@@ -23,7 +23,7 @@ npx @ksp-gonogo/uplink-tools@rc new example --name Example --author "Your Name" 
 | The id | `<id>` | the directory's name, when it is a valid id |
 | The display name | `--name <name>` | the id, capitalised |
 | Who wrote it | `--author <name>` | git's `user.name` |
-| The GitHub repository it is published from | `--repo <owner>/<name>` or `--no-repo` | this directory's GitHub remote; otherwise a placeholder `release` refuses |
+| The GitHub repository it is published from | `--repo <owner>/<name>` or `--no-repo` | this directory's GitHub remote; otherwise a placeholder [`release` refuses](/guide/release#hosting-the-client) |
 | Whether it publishes Topics of its own | `--topics own` or `--topics core` | `own` |
 | A GitHub Actions workflow | `--workflows` or `--no-workflows` | none |
 | Your KSP install | `--ksp <path>` or `--no-ksp` | Steam's install, when there is one |
@@ -50,14 +50,17 @@ example/
 │   ├── ExampleUplink.cs            the plugin class
 │   ├── GonogoExampleUplink.csproj
 │   ├── GonogoExampleUplink.netkan  the metadata CKAN indexes it from
-│   └── *.g.cs                      written by bake, never committed
+│   └── Provenance.g.cs, ClientSource.g.cs, ExpectedClientHash.g.cs
+│                                   written by bake, never committed
 ├── mod-contract/                 the contract slice: the Uplink's own wire types
 │   ├── ExamplePayloads.cs          the payload of each Topic, the arguments of each command
-│   ├── ExampleRtConfig.cs          which of those codegen turns into TypeScript
+│   ├── ExampleRtConfig.cs          the Reinforced.Typings configuration codegen runs:
+│                                     which of those types it turns into TypeScript
 │   └── GonogoExampleUplink.Contract.csproj
 ├── mod-contract-codegen/         the build codegen runs, never shipped
 ├── mod-tests/                    the plugin's tests
-│   └── ExampleUplinkTests.cs
+│   ├── ExampleUplinkTests.cs
+│   └── GonogoExampleUplink.Tests.csproj
 └── client/                       the client package
     ├── package.json
     ├── tsconfig.json, tsconfig.nodenext.json
@@ -81,7 +84,7 @@ The **contract slice** is a small assembly holding the C# classes that describe 
 
 <<< ../../example/uplink.json
 
-The Uplink's identity, where its plugin and client go, and how codegen runs. [uplink.json](/guide/uplink-json) lists each field and the command that reads it. The version lives in `client/package.json` instead, and two other places repeat it: `UPLINK_VERSION` in `client/src/uplink.ts`, and the version folder in `client.url`.
+This is the example's, made with `--author "Uplink docs"` and `--repo ksp-gonogo/uplink-dev-docs`; yours holds your own answers. The Uplink's identity, where its plugin and client go, and how codegen runs. [uplink.json](/guide/uplink-json) lists each field and the command that reads it. The version lives in `client/package.json` instead, and two other places repeat it: `UPLINK_VERSION` in `client/src/uplink.ts`, and the version folder in `client.url`.
 
 ## Prove it works
 
@@ -95,10 +98,22 @@ dotnet test ../mod-tests
 
 ## What to commit
 
-Everything except what `.gitignore` names: `node_modules`, the build outputs, `ksp.local.props`, and the three `*.g.cs` files, one of which can hold a path on the machine that baked it. Commit `client/src/__generated__/`, the generated page files and `package-lock.json`: a reader of your repository, and CI, use them without running the generators.
+Everything except what `.gitignore` names: `node_modules`, the build outputs, `ksp.local.props`, and the three `*.g.cs` files `bake` writes into `mod/`, of which `ClientSource.g.cs` can hold a path on the machine that baked it (`DevPath`). Commit `client/src/__generated__/`, the generated page files and `package-lock.json`: a reader of your repository, and CI, use them without running the generators.
 
 ## The heartbeat
 
 The scaffold's plugin publishes one Topic, `example.heartbeat`, carrying a count of how many times it has published and the game time of the last sample. Its widget shows both. The next four pages take the plugin apart, and the four after them the client.
+
+## What is left to change by hand
+
+The heartbeat is a placeholder for your own Topics and widgets, and `new` writes it in several places that nothing renames for you. When you build your own, change or remove each:
+
+- **The `description`** in `client/src/uplink.ts`, which the closing message names
+- **The heartbeat widget**: `client/src/Heartbeat/`, with its test `index.test.tsx` and its fixture `__fixtures__/beating.json`, and the two lines of `client/src/index.ts` that import and export it
+- **Every `<id>.heartbeat` reference**: `HeartbeatTopic` and its channel and source in `mod/<Id>Uplink.cs`, the payload class in `mod-contract/<Id>Payloads.cs`, its entry in the wire types of `mod-contract/<Id>RtConfig.cs`, its line in the `declare module` block of `client/src/topics.ts` and that file's example comment, and the test in `mod-tests/<Id>UplinkTests.cs` that names it
+- **The netkan** `mod/<GameData name>.netkan`: its `abstract` describes the heartbeat, and its `depends` names only `GonogoCore`, so add the mod you wrap ([Wrapping a mod](/guide/wrapping-a-mod#by-a-compile-time-reference)); its `license` is `MIT` until you change it
+- **`"mod": null`** in `uplink.json`, which names the mod you wrap, if any ([Wrapping a mod](/guide/wrapping-a-mod#in-uplink-json))
+
+`npm test` and `dotnet test ../mod-tests` both pass on what `new` wrote, so run them after each change: a code reference left behind fails to compile or fails a test. The netkan, the description and `uplink.json` fail nothing when left as they are, so read them over before a release.
 
 Next: [The plugin class](/guide/plugin).

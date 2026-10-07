@@ -1,7 +1,7 @@
 # Extensions
 
 A built-in widget can be extended without changing it. Each widget names the
-places an Uplink may add to, called slots, and each slot takes one of two
+places an Uplink may add to, called [slots](/reference/concepts/augment-contribution-and-slot), and each slot takes one of two
 kinds of extension: an augment or a contribution. Every widget's reference
 page lists its slots, for example [Crew Status](/reference/widgets/crew-status).
 

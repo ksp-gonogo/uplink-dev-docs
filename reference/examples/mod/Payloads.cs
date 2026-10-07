@@ -1,3 +1,6 @@
+#if SITREP_CODEGEN
+using Reinforced.Typings.Attributes;
+#endif
 using System.Collections.Generic;
 using Sitrep.Contract;
 
@@ -24,9 +27,14 @@ namespace ExampleUplink
 
     // #region args
     /// <summary>Arguments of the <c>example.setMode</c> command.</summary>
+    [SitrepContract]
     [SitrepCommand("example.setMode", Payload = typeof(int))]
+#if SITREP_CODEGEN
+    [TsInterface]
+#endif
     public sealed class SetModeArgs
     {
+        /// <summary>The mode to switch to, 0, 1 or 2.</summary>
         public int Mode { get; set; }
     }
     // #endregion args

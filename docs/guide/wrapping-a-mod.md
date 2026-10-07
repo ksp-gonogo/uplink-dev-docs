@@ -7,12 +7,16 @@ Most Uplinks exist to bring another mod's state into Gonogo, such as SCANsat's c
 | | By reflection | By a compile-time reference |
 | --- | --- | --- |
 | How | Find the mod's assembly among the loaded ones and its types and members by name | Reference the mod's DLL in the plugin's project, and call it like any library |
-| When the mod is missing | The plugin loads, reports the mod missing, and publishes that | The plugin cannot work, so the netkan makes the mod a dependency |
+| When the mod is missing | The plugin loads, reports the mod missing, and publishes that | The plugin cannot work, so the netkan (the metadata CKAN installs the plugin from, `mod/<GameData name>.netkan`) makes the mod a dependency |
 | When the mod changes | A renamed member is found missing at load, and reported | A renamed member fails when it is called |
 | Licence | Yours | The mod's licence reaches your plugin, a combined work |
-| Used by | TestFlight, Kerbalism, Ferram Aerospace Research, RealFuels, RP-1, Principia | SCANsat, kOS, MechJeb, kerbcast |
+| Used by | TestFlight, Kerbalism, Ferram Aerospace Research, RealFuels, RP-1, Principia, Action Groups Extended, RealAntennas | SCANsat, kOS, MechJeb, kerbcast |
 
 Reflection is the default: it keeps your plugin loadable without the mod, and keeps the mod's licence off your work. A compile-time reference suits a mod whose API you call heavily and whose presence your Uplink cannot do without; gonogo-uplinks' SCANsat and MechJeb Uplinks are licensed GPL-3.0 because they link those mods.
+
+## Finding the mod's API
+
+Every name a plugin binds, by reflection or by a reference, comes from the mod's own source. Look in its repository first for a file meant for other mods: many ship a wrapper or an API class, such as Kerbal Alarm Clock's `KACWrapper.cs`, which names the types and members the mod keeps stable for callers, and that is the surface to bind. Without one, read the classes that hold the state you want, and treat every member you bind as one the mod may rename. Note the version you read, for `builtAgainst` in [`uplink.json`](#in-uplink-json), and bind against the release a player installs, since a repository's default branch can be ahead of it.
 
 ## By reflection
 
@@ -47,6 +51,8 @@ A build server has no KSP install, so a plugin that references the game or a mod
 
 <<< ../../reference/examples/mod/WrappingExample.cs#manifest{cs}
 
+The manifest is trimmed to what this section is about; a real one also carries `Name`, `Author`, `Repo` and the client fields, as on [The plugin class](/guide/plugin#the-manifest). `AvailableTopic` and `UtTopic` are the class's constants for `clock.available` and `clock.ut`, and `_mod` the binder above, constructed with the plugin.
+
 <<< ../../reference/examples/mod/WrappingExample.cs#register{cs}
 
 <<< ../../reference/examples/mod/WrappingExample.cs#health{cs}
@@ -62,17 +68,21 @@ Its payload is a bare boolean, so it needs no wire type in the contract slice: t
 
 <<< ../../reference/examples/guide/clockTopics.ts
 
-`registerBarePrimitiveTopic` makes the id known at runtime, the way the generated Topics are; [`registerBarePrimitiveTopic`](/reference/client/reading-telemetry#registerBarePrimitiveTopic) has the detail.
+`registerBarePrimitiveTopic` makes the id known at runtime, the way the generated Topics are, and its reference entry has the detail.
 
 `<id>.available` also makes the Uplink's id a [Domain](/reference/concepts/domain-and-seat): a client's augment that names it in `requires` mounts once the Topic has published anything, `true` or `false`, which says the Uplink is installed. Read its value for whether the mod is.
 
 ## Reading on the main thread
 
-Every read of a mod's state goes in the first function of `IUplinkHost.AddSampledSource`, which runs on the main thread and returns plain data; the second runs on the Courier thread and publishes it. Pass Topic names after the two functions, as above, and neither runs while no client is watching those Topics, so an unwatched mod costs nothing. [The plugin class](/guide/plugin#calling-the-game) covers the two halves.
+Every read of a mod's state goes in the first function of `IUplinkHost.AddSampledSource`, which runs on the main thread and returns plain data; the second runs on the Courier thread and publishes it. Pass the Topic prefixes the source publishes after the two functions (an exact Topic is its own prefix, as `UtTopic` above), and neither runs while no client is watching those Topics, so an unwatched mod costs nothing. [The plugin class](/guide/plugin#calling-the-game) covers the two halves.
 
 ## What the save has not unlocked
 
-Some of a mod's state is not the operator's to see until the career has earned it, such as a scanner's data before the part is researched. A `ChannelDeclaration` or `CommandDeclaration` takes `Requires`: what the save must have unlocked before the channel carries anything or the command runs, checked by Gonogo, so neither the plugin nor a widget checks it. When the rule is the mod's own, register an evaluator for it with `IUplinkHost.AddGateEvaluator`: MechJeb's Uplink locks its autopilot commands by MechJeb's own unlock check, in [MechJebUnlockGate.cs](https://github.com/ksp-gonogo/gonogo-uplinks/blob/addc1fa21877b9de1e60909f4ec572d3b51a86ef/uplinks/mechjeb/mod/MechJebUnlockGate.cs).
+Some of a mod's state is not the operator's to see until the career has earned it, such as a scanner's data before the part is researched. A `ChannelDeclaration` or `CommandDeclaration` takes `Requires`, an array of `CommandRequirement`: what the save must have unlocked before the channel carries anything or the command runs, checked by Gonogo, so neither the plugin nor a widget checks it. Each requirement names a `Kind`, and an evaluator registered under that kind decides it. When the rule is the mod's own, write the evaluator, an `ICommandGateEvaluator`, and register it with `IUplinkHost.AddGateEvaluator`:
+
+<<< ../../reference/examples/mod/WrappingExample.cs#gate{cs}
+
+`Evaluate` returns `GateVerdict.Pass()`, a refusal such as `GateVerdict.NotUnlocked` with the sentence the operator reads, or `GateVerdict.Unknown` when the state it needs has not been read. A kind a declaration names with no evaluator registered for it is a startup failure, checked once every Uplink has registered, so a gate cannot silently not exist. MechJeb's Uplink locks its autopilot commands by MechJeb's own unlock check, in [MechJebUnlockGate.cs](https://github.com/ksp-gonogo/gonogo-uplinks/blob/addc1fa21877b9de1e60909f4ec572d3b51a86ef/uplinks/mechjeb/mod/MechJebUnlockGate.cs).
 
 ## Testing without the mod
 
@@ -80,13 +90,17 @@ Keep every line that names a KSP or mod type in its own file, and leave that fil
 
 ## In uplink.json
 
-`mod` names the mod the Uplink wraps, its version and how a player gets it:
+`new` writes `"mod": null`. Set it to the mod the Uplink wraps, its version and how a player gets it:
 
 ```json
 "mod": { "name": "TestFlight", "tier": "ckan", "builtAgainst": "2.12.0.0" }
 ```
 
-It gates nothing: the generated page prints it, and the app does not read it. The netkan's `depends` is what keeps a player from installing a direct-linked Uplink without its mod ([uplink.json](/guide/uplink-json)).
+- **`name`**: the mod's name as a player knows it
+- **`builtAgainst`**: the version of the mod you built and tested against
+- **`tier`**: how a player gets the mod, one word the generated page prints in brackets after the name. It is free text; the gonogo-uplinks Uplinks use `"ckan"` for a mod CKAN installs and `"manual"` for one a player downloads by hand, as Principia's does
+
+It gates nothing: the generated page prints it, and the app does not read it. The netkan's `depends` is what keeps a player from installing an Uplink that references the mod at compile time without that mod ([uplink.json](/guide/uplink-json)).
 
 ## What this page cannot show
 

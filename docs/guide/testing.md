@@ -25,7 +25,7 @@ A widget rendered alone has no data, which is the waiting state, and worth a tes
 
 `setupStreamFixture` builds the app's telemetry pipeline over a transport the test feeds by hand. Render inside its `Provider`, then `emit` payloads in the form the plugin sends them, plain numbers included, with the game time each was true at. `pinnedUt` fixes the operator's clock. Wrap emits in `act` and end with `store.beginFrame()`, so React and the pipeline both settle before you assert.
 
-`stopArriving` drops the link, so every reading the widget drew becomes held:
+`stopArriving` drops the link, so every reading the widget drew becomes [held](/reference/concepts/held). Further down the same file, with its own import so the block above stands alone:
 
 <<< ../../example/client/src/Heartbeat/index.test.tsx#held
 

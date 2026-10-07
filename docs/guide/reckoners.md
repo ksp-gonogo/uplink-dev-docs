@@ -16,7 +16,7 @@ The first half of `client/src/reckoner.ts`:
 
 <<< ../../example/client/src/reckoner.ts#reckon
 
-`reckonTicks` is the model. It is a plain function of the latest sample (`point`), the window of samples before it (`history`) and the game time the model is asked to reach (`reckonUt`), so it can be tested without the app. It returns either a `TopicModel` or `{ declined }` with a `ReckoningDecline`:
+`reckonTicks` is the model. It is a plain function of the latest sample (`point`), the window of recent samples, oldest first and ending with that same sample (`history`) and the game time the model is asked to reach (`reckonUt`), so it can be tested without the app. It returns either a `TopicModel` or `{ declined }` with a `ReckoningDecline`:
 
 - **`modelled`** lists the parts of the payload the model moves, each a path and a `ReckoningBasis` naming the kind of model (`"rate-integration"` here: a rate, carried forward). An Uplink's model moves the whole payload, path `""`: a model of some fields only is offered just for a core Topic whose contract declares those fields
 - **`reckon(viewUt)`** returns the payload as the model says it is at `viewUt`. It must be pure, the same inputs always giving the same result, because the app runs it for every frame that reads the Topic
@@ -53,7 +53,7 @@ In the widget:
 
 <<< ../../example/client/src/reckoner.test.ts
 
-And test the widget with the model running, through a stream fixture: two samples ten seconds apart, the clock pinned five seconds after the second, and the widget drawing the count received beside the count the model carried there.
+And test the widget with the model running, through a stream fixture: two samples ten seconds apart, the clock pinned five seconds after the second, and the widget drawing the count received beside the count the model carried there. From `client/src/Heartbeat/index.test.tsx`:
 
 <<< ../../example/client/src/Heartbeat/index.test.tsx#reckoned
 

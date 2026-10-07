@@ -22,6 +22,11 @@ export const CONCEPT_TERMS = resolve(ROOT, ".reference/concept-terms.json");
 export const AMBIGUOUS_TERMS = {
   action: "also a GitHub Actions workflow, and an action a command performs",
   binding: "also binding a member by name through reflection",
+  domain: "also a graph axis's range, as in a line graph's shared x and y domain",
+  held: "also kept or stored, as in a data source held in memory",
+  seat: "also a crew seat on a craft, as in how many seats are filled",
+  slot: "also a free place under a limit, as in freeing a slot",
+  station: "also a space station, a ground station or the tracking station, as in a fixed ground station such as a CommNet home node",
 };
 
 /** A concept name's terms, lower-cased: "Station and main screen" is `station` and `main screen`. */

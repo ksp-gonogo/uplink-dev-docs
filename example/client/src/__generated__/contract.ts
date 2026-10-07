@@ -18,7 +18,8 @@ export interface ExampleHeartbeat
 	ut?: Value<"ut"> | null;
 	/**
 	* How many samples this Uplink has published since the game started, this one
-	* included. It starts again from 1 when the game restarts.
+	* included. It starts again from 1 when the game restarts or `example.reset`
+	* runs.
 	*/
 	ticks?: Value<"count"> | null;
 }

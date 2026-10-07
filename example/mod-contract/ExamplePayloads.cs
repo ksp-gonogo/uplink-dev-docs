@@ -28,7 +28,7 @@ public sealed class ExampleHeartbeat
     [SitrepUnit(Units.UniversalTime)]
     public double? Ut { get; set; }
 
-    /// <summary>How many samples this Uplink has published since the game started, this one included. It starts again from 1 when the game restarts.</summary>
+    /// <summary>How many samples this Uplink has published since the game started, this one included. It starts again from 1 when the game restarts or <c>example.reset</c> runs.</summary>
     [SitrepUnit(Units.Count)]
     public double? Ticks { get; set; }
 }

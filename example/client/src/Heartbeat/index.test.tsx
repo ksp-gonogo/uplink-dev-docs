@@ -1,5 +1,5 @@
 // #region reckoned
-import { render, screen, setupStreamFixture, stopArriving } from "@ksp-gonogo/sitrep-sdk/testing";
+import { render, screen, setupStreamFixture } from "@ksp-gonogo/sitrep-sdk/testing";
 import { act } from "react";
 import { describe, expect, it } from "vitest";
 import "../index.js";
@@ -30,10 +30,14 @@ describe("HeartbeatWidget", () => {
     expect(ticks).toHaveTextContent("20");
     expect(ticks).toHaveTextContent("25");
   });
-  // #endregion reckoned
+});
+// #endregion reckoned
 
-  // #region held
-  it("keeps the last count when samples stop arriving", async () => {
+// #region held
+import { stopArriving } from "@ksp-gonogo/sitrep-sdk/testing";
+
+describe("HeartbeatWidget when samples stop arriving", () => {
+  it("keeps the last count", async () => {
     const stream = setupStreamFixture({ pinnedUt: 110 });
     render(
       <stream.Provider>
@@ -50,5 +54,5 @@ describe("HeartbeatWidget", () => {
     expect(await screen.findByText(/Ticks/)).toHaveTextContent("20");
     expect(screen.queryByText(/waiting/i)).toBeNull();
   });
-  // #endregion held
 });
+// #endregion held

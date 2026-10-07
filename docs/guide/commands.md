@@ -8,11 +8,11 @@ In `mod-contract/ExamplePayloads.cs`, beside the payload types:
 
 <<< ../../example/mod-contract/ExamplePayloads.cs#reset{cs}
 
-A command's arguments are a class in the contract slice, carrying `SitrepCommandAttribute` with the command's name. A command with no arguments still needs the class, empty, to carry the attribute. Add it to the wire types in `mod-contract/ExampleRtConfig.cs`, as on [Publishing a Topic](/guide/topics#generating-the-client-s-types), and run `npm run codegen` so the client gets its TypeScript interface.
+A command's arguments are a class in the contract slice, carrying `SitrepCommandAttribute` with the command's name. A command with no arguments still needs the class, empty, to carry the attribute. Add it to the wire types in `mod-contract/ExampleRtConfig.cs`, as on [Publishing a Topic](/guide/topics#generating-the-client-s-types), and run `npm run codegen` from `client/` so the client gets its TypeScript interface.
 
 The attribute is where a command's delay is declared. Its `Delay` defaults to `DelayRole.Delayed`: an order to a craft takes as long to arrive as the craft's telemetry does, and runs when it gets there. `TrueNow` runs it on arrival, for a command about the ground or about the plugin itself, like this reset.
 
-Arguments arrive as JSON and are matched to the class's properties by name, ignoring case. A property the app did not send keeps its default, so an absent nullable stays `null`. An enum accepts its number or its member's name. A `string` accepts only a string and a `bool` only a boolean.
+Arguments arrive as JSON and are matched to the class's properties by name, ignoring case. A property the app did not send keeps its default, so an absent nullable stays `null`. An enum accepts its number or its member's name in any case: for a property `Delay` of type `DelayRole`, `{ "delay": 1 }` and `{ "delay": "truenow" }` arrive as the same member. A `string` accepts only a string and a `bool` only a boolean.
 
 ## Declaring it
 
