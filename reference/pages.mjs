@@ -30,7 +30,9 @@
  * on the scene's stream in place of the fixture's. A widget page's top example
  * is the widget alone on its `scene`, a render with no code, fed by its file;
  * `extensions` names the example file for each of its slots, rendered on the
- * same scene with that one extension registered. `stories` names the Storybook
+ * same scene with that one extension registered; a slot whose effect depends
+ * on a tile setting gives `{ file, config }`, the widget config that example
+ * mounts with. A scene may carry `config` for every example on the page. `stories` names the Storybook
  * stories a widget page shows, by path under the Storybook package's
  * `dist/stories/`: `states` a widget's stories file, every story in it shown
  * as one of its states, and `extensions` the story (`file#Export`) that

@@ -24,6 +24,8 @@ export interface WidgetDemo {
   feeds?: Record<string, SceneFeed>;
   w: number;
   h: number;
+  /** The widget config the scene mounts it with, as a dashboard tile's saved settings. */
+  config?: Record<string, unknown>;
   register?: () => Promise<unknown>;
 }
 

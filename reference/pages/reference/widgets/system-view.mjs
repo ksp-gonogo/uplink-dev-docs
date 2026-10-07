@@ -7,7 +7,8 @@ export default {
     "system-view.overlay": "reference/examples/system-view/overlay.tsx",
     "system-view.vessel-status": "reference/examples/system-view/vessel-status.ts",
     "system-view.entities": "reference/examples/system-view/entities.ts",
-    "system-view.projection": "reference/examples/system-view/projection.ts",
+    // The frame is a tile setting, so the example pins its own entry for Kerbin, the body the scene centres on.
+    "system-view.projection": { file: "reference/examples/system-view/projection.ts", config: { projection: "pair-frames:1" } },
   },
   stories: {
     states: "widgets/system-view.stories.tsx",

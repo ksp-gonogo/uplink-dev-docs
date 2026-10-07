@@ -49,6 +49,7 @@ async function widgetTree(demo: WidgetDemo, wrap: (tree: ReactNode) => ReactNode
     fixture,
     w: demo.w,
     h: demo.h,
+    mode: demo.config ? { config: demo.config } : undefined,
     wrap,
   });
 }

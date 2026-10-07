@@ -129,8 +129,9 @@ function demosOf(pages) {
   for (const page of pages) {
     if (page.kind === "contract") continue;
     for (const e of page.examples ?? []) add({ ...e, scene: e.scene ?? page.scene, widget: e.widget ?? page.widget });
-    for (const [slot, file] of Object.entries(page.extensions ?? {})) {
-      add({ id: extensionDemoId(slot), file, scene: page.scene, widget: page.widget });
+    for (const slot of Object.keys(page.extensions ?? {})) {
+      const { file, config } = extensionOf(page, slot);
+      add({ id: extensionDemoId(slot), file, scene: config ? { ...page.scene, config } : page.scene, widget: page.widget });
     }
     const { states, extensions } = storiesOf(page);
     for (const story of [...states, ...extensions.values()]) stories.set(story.id, story);
@@ -145,6 +146,17 @@ function demosOf(pages) {
 }
 
 const extensionDemoId = (slot) => slot.replace(/\./g, "--");
+
+/**
+ * A slot's worked example: its file, and the widget config the example needs
+ * to show its effect (a setting such as the projection System View draws in),
+ * when the module gives `{ file, config }` rather than a file alone.
+ */
+function extensionOf(page, slot) {
+  const entry = page.extensions?.[slot];
+  if (entry === undefined) return {};
+  return typeof entry === "string" ? { file: entry } : entry;
+}
 
 /** Every story a generated stories file exports, by export name, with the name Storybook shows. */
 function storyExports(root, file) {
@@ -204,6 +216,7 @@ function writeDemoLoaders() {
         `w: ${d.scene.w}`,
         `h: ${d.scene.h}`,
       );
+      if (d.scene.config) fields.push(`config: ${JSON.stringify(d.scene.config)}`);
       const feeds = Object.entries(d.scene.feeds ?? {}).map(
         ([topic, feed]) => `${JSON.stringify(topic)}: { load: () => import(${from(feed.file)}), name: ${JSON.stringify(feed.export)} }`,
       );
@@ -459,7 +472,7 @@ function widgetPage(page, record, sdk, kit, index) {
   const shown = new Set();
   for (const point of points) {
     out.push(`### ${code(point.id)} {#${anchorOf(point.id)}}`, partsMd(point.doc?.summary, index).trim(), howToMd(point, index));
-    const file = page.extensions?.[point.id];
+    const { file } = extensionOf(page, point.id);
     if (file) out.push(demoMd(page, extensionDemoId(point.id), file));
     const story = stories.extensions.get(point.id);
     if (story) out.push(`#### Where it renders {#${story.id}}`, demoMd(page, story.id));
