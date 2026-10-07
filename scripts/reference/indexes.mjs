@@ -15,6 +15,7 @@ import { cellSafe, code, partsMd, typeMd } from "./typescript.mjs";
  * description introduces it.
  */
 export const SECTIONS = [
+  { dir: "reference/concepts", name: "Concepts" },
   { dir: "reference/mod", name: "Mod API", nuget: "KspGonogo.Sitrep.Contract", specifier: "Sitrep.Contract" },
   { dir: "reference/client", name: "Client SDK", package: "@ksp-gonogo/sitrep-sdk" },
   { dir: "reference/widgets", name: "Widgets" },

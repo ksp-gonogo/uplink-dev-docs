@@ -11,6 +11,9 @@
  * A member's own name in its table row is not a reference, so it is never
  * linked; nor is a name on the ambiguous list unless a link was written.
  *
+ * Every Guide page a reference entry links to with `@guide` must have the
+ * anchor it names.
+ *
  * Before grading the site it grades a planted page holding one of each fault
  * and one of each exemption, and fails as BLIND unless it finds exactly the
  * faults.
@@ -21,7 +24,7 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { AMBIGUOUS_SYMBOLS } from "./ambiguous-symbols.mjs";
-import { isSelf, loadSymbolIndex, namedSymbol, pageOf, symbolOf } from "./symbol-links.mjs";
+import { GUIDE_LINK_LIST, isSelf, loadSymbolIndex, namedSymbol, pageOf, symbolOf } from "./symbol-links.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const DIST = resolve(ROOT, "docs/.vitepress/dist");
@@ -120,6 +123,13 @@ for (const [name, url] of Object.entries(index)) {
   const [page, anchor] = url.split("#");
   const ids = site.get(pageOf(page));
   if (!ids || (anchor && !ids.has(anchor))) faults.push(`symbol index: ${name}'s entry ${url} is not on the built site`);
+}
+// A reference entry's `@guide` link: its page is checked when the reference is generated, its anchor here.
+const guideLinks = existsSync(GUIDE_LINK_LIST) ? JSON.parse(readFileSync(GUIDE_LINK_LIST, "utf8")) : [];
+for (const url of guideLinks) {
+  const [page, anchor] = url.split("#");
+  const ids = site.get(pageOf(page));
+  if (!ids || (anchor && !ids.has(anchor))) faults.push(`@guide link ${url} is not on the built site`);
 }
 for (const file of files) {
   for (const fault of grade(pageOfHtml(file), readFileSync(file, "utf8"), index, site)) {

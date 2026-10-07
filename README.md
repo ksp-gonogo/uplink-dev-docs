@@ -170,6 +170,16 @@ or edited by hand (`npm run check:pages`).
   its packed record's. The generator lists any slot with no scaffolding story
 - **Contract types**: a `contract` module naming the C# types, with a template
   region under any type that has one
+- **A concept**: write it in gonogo, in a doc comment beside the code it
+  explains, as a `@concept <Name>` tag whose first line is the name and the
+  rest the text; repack, and add a `concept` module naming it under
+  `reference/pages/reference/concepts/`. Generation fails on a concept no
+  page shows and on a page whose concept no comment writes. Every symbol
+  carrying the tag links to the page
+- **A link from a reference entry to the Guide**: a `@guide <page>#<anchor>`
+  tag in the symbol's doc comment (`@guide extensions#augments`). Generation
+  fails when the Guide page does not exist, and `npm run check:links` when
+  the anchor does not
 - **An index page**: none to add. A section's index (`reference/client/`)
   lists every page in its section, and the Topic list every Topic, as soon as
   they are generated

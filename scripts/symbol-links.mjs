@@ -13,6 +13,8 @@ import { AMBIGUOUS_SYMBOLS } from "./ambiguous-symbols.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 export const SYMBOL_INDEX = resolve(ROOT, ".reference/symbols.json");
+/** Every Guide page a reference entry links to with `@guide`, as `npm run reference` last wrote them. */
+export const GUIDE_LINK_LIST = resolve(ROOT, ".reference/guide-links.json");
 
 /**
  * The documented symbol a code span names, or null. A span names one when it

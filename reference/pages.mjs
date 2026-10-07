@@ -5,7 +5,7 @@
  * from the packages' own doc comments; a page module only says which symbols
  * share the page and which examples it shows.
  *
- * A page module's default export takes one of seven kinds:
+ * A page module's default export takes one of eight kinds:
  *
  * - `category`: every symbol tagged `@category <category>` in `package`, or
  *   in its subpath `entry` (`"frames"` for `@ksp-gonogo/sitrep-sdk/frames`):
@@ -32,6 +32,13 @@
  *   description and install line, then every page in the section with its
  *   lead's first sentence. `reference/index.mjs` lists every section instead.
  *   It takes only a `title`, so a new page appears on its index with no edit
+ * - `concept`: one concept, named in `concept`, whose text is the
+ *   `@concept <concept>` tag a doc comment in the packages writes beside the
+ *   code it explains, then every symbol carrying that tag. Generation fails
+ *   on a concept a comment writes that no page shows, and on a page naming
+ *   one no comment writes. A symbol carrying the tag links to the page, and
+ *   one carrying `@guide <page>#<anchor>` links to that Guide page, which
+ *   must exist
  * - `topics`: every Topic in `package`'s `TOPIC_IDS` by prefix, with its
  *   payload type. `lead` names the symbol whose summary opens the page. The same list, and the command
  *   list from `COMMAND_IDS`, are written as includes for the guides under

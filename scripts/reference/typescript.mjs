@@ -9,11 +9,11 @@
  * declaration, and every one of those compositions would mean parsing its
  * Markdown back apart.
  */
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { Application, ReflectionKind } from "typedoc";
 import { AMBIGUOUS_SYMBOLS } from "../ambiguous-symbols.mjs";
-import { INSTALL } from "./paths.mjs";
+import { DOCS, INSTALL } from "./paths.mjs";
 
 /**
  * Load one entry point of an installed package as a TypeDoc project: its root,
@@ -266,6 +266,85 @@ function summaryMd(comment, index, level, { omitRemarks = false } = {}) {
   return demoteHeadings(body.filter(Boolean).join("\n\n"), level);
 }
 
+/**
+ * A block tag whose first line names something, as TypeDoc reads
+ * `@categoryDescription`: the name, and the text after it as display parts.
+ */
+function namedTag(tag) {
+  const [first, ...rest] = tag.content;
+  const [name, ...text] = (first?.text ?? "").split("\n");
+  return { name: name.trim(), parts: [{ ...first, text: text.join("\n") }, ...rest] };
+}
+
+/** Each concept's page, by concept name, set before any page is written. */
+let conceptPages = new Map();
+export const setConceptPages = (pages) => {
+  conceptPages = pages;
+};
+
+/** Every Guide page a reference entry links to with `@guide`, so the link check can find each anchor on the built site. */
+export const GUIDE_LINKS = new Set();
+
+/** A Guide page's title: the first heading of its source, without an explicit anchor. */
+function guideTitle(file) {
+  const heading = /^# (.+)$/m.exec(readFileSync(file, "utf8"))?.[1];
+  return heading?.replace(/\s*\{#[^}]+\}\s*$/, "").trim();
+}
+
+/**
+ * The links a symbol's comments make out of the reference: `@concept <Name>`
+ * to the concept page that shows that text, and `@guide <page>#<anchor>` to
+ * the Guide page that teaches the symbol. A Guide page that does not exist
+ * fails generation; an anchor that does not fails the link check.
+ */
+function crossLinksMd(comments, owner) {
+  const out = [];
+  for (const tag of comments.flatMap((c) => c?.blockTags ?? [])) {
+    if (tag.tag === "@concept") {
+      const { name } = namedTag(tag);
+      const url = conceptPages.get(name);
+      if (!url) throw new Error(`${owner} carries @concept ${name}, which no concept page shows`);
+      out.push(`**Concept:** [${name}](${url})`);
+    }
+    if (tag.tag === "@guide") {
+      const target = tag.content.map((p) => p.text).join("").trim().replace(/^\/?guide\//, "");
+      const [page, anchor] = target.split("#");
+      const file = resolve(DOCS, "guide", `${page || "index"}.md`);
+      if (!existsSync(file)) throw new Error(`${owner} carries @guide ${target}, but docs/guide/${page || "index"}.md does not exist`);
+      const url = `/guide/${page}${anchor ? `#${anchor}` : ""}`;
+      GUIDE_LINKS.add(url);
+      out.push(`**Guide:** [${guideTitle(file) ?? page}](${url})`);
+    }
+  }
+  return [...new Set(out)].join("\n\n");
+}
+
+/**
+ * Every `@concept` written in a project's doc comments: the concept's name,
+ * its text as display parts, and the symbols whose comments carry it. One
+ * concept written twice with different text is an error.
+ */
+export function conceptsOf(projects) {
+  const concepts = new Map();
+  for (const project of projects) {
+    for (const reflection of Object.values(project.reflections)) {
+      for (const comment of [reflection.comment, ...callSignatures(reflection).map((s) => s.comment)]) {
+        for (const tag of comment?.blockTags ?? []) {
+          if (tag.tag !== "@concept") continue;
+          const { name, parts } = namedTag(tag);
+          const text = parts.map((p) => p.text).join("").trim();
+          const known = concepts.get(name);
+          if (known && known.text !== text) throw new Error(`@concept ${name} is written twice, on ${known.carriers[0]} and ${reflection.name}: keep one`);
+          const concept = known ?? { name, parts, text, carriers: [] };
+          if (!concept.carriers.includes(reflection.name)) concept.carriers.push(reflection.name);
+          concepts.set(name, concept);
+        }
+      }
+    }
+  }
+  return concepts;
+}
+
 /** What a signature's `@returns` says it returns, as a line of its own. */
 function returnsMd(comment, index) {
   const tag = comment?.blockTags.find((t) => t.tag === "@returns");
@@ -479,6 +558,7 @@ export function symbolMd(reflection, project, index, { level = 3, title = true, 
     out.push(`\`\`\`ts\n${text}\n\`\`\``);
     out.push(...comments.map((c) => summaryMd(c, index, inner, { omitRemarks })));
     out.push(...comments.map((c) => returnsMd(c, index)));
+    out.push(crossLinksMd(comments, reflection.name));
     out.push(typeParamsMd(signatures[0]?.typeParameters, index));
     if (props) {
       out.push(`${h(inner)} Props {#${props.name}}`, propertiesMd(props, index));
@@ -489,6 +569,7 @@ export function symbolMd(reflection, project, index, { level = 3, title = true, 
   } else if (reflection.kind === ReflectionKind.Interface || reflection.kind === ReflectionKind.Class) {
     out.push(`\`\`\`ts\n${interfaceText(reflection)}\n\`\`\``);
     out.push(summaryMd(reflection.comment, index, inner, { omitRemarks }));
+    out.push(crossLinksMd([reflection.comment], reflection.name));
     out.push(typeParamsMd(reflection.typeParameters, index));
     out.push(propertiesMd(reflection, index));
     out.push(examplesMd(reflection.comment, index, inner));
@@ -497,6 +578,7 @@ export function symbolMd(reflection, project, index, { level = 3, title = true, 
     const value = (m) => (m.type?.type === "literal" ? JSON.stringify(m.type.value) : String(m.defaultValue ?? ""));
     out.push(`\`\`\`ts\nenum ${reflection.name} {\n${members.map((m) => `  ${m.name} = ${value(m)},`).join("\n")}\n}\n\`\`\``);
     out.push(summaryMd(reflection.comment, index, inner, { omitRemarks }));
+    out.push(crossLinksMd([reflection.comment], reflection.name));
     const rows = members.map((m) => `| ${memberName(m.name, memberAnchor(m))} | ${code(value(m))} | ${cellMd(m.comment?.summary, index)} |`);
     if (rows.length > 0) out.push(`| Member | Value | Description |\n| --- | --- | --- |\n${rows.join("\n")}`);
     out.push(examplesMd(reflection.comment, index, inner));
@@ -504,6 +586,7 @@ export function symbolMd(reflection, project, index, { level = 3, title = true, 
     const params = typeParamsText(reflection.typeParameters);
     out.push(`\`\`\`ts\ntype ${reflection.name}${params} =${declarationText(reflection.type)};\n\`\`\``);
     out.push(summaryMd(reflection.comment, index, inner, { omitRemarks }));
+    out.push(crossLinksMd([reflection.comment], reflection.name));
     out.push(typeParamsMd(reflection.typeParameters, index));
     out.push(examplesMd(reflection.comment, index, inner));
   } else if (reflection.type?.type === "reflection" && reflection.type.declaration.children?.length) {
@@ -513,6 +596,7 @@ export function symbolMd(reflection, project, index, { level = 3, title = true, 
     out.push(`\`\`\`ts\nconst ${reflection.name}: { ... };${alias}\n\`\`\``);
     const summary = summaryMd(reflection.comment, index, inner, { omitRemarks });
     out.push(summary);
+    out.push(crossLinksMd([reflection.comment, twin?.comment], reflection.name));
     const twinSummary = twin?.comment && summaryMd(twin.comment, index, inner, { omitRemarks });
     if (twinSummary && twinSummary !== summary) out.push(twinSummary);
     out.push(propertiesMd(reflection.type.declaration, index));
@@ -527,6 +611,7 @@ export function symbolMd(reflection, project, index, { level = 3, title = true, 
       out.push(`\`\`\`ts\nconst ${reflection.name}: ${declared};\n\`\`\``);
     }
     out.push(summaryMd(reflection.comment, index, inner, { omitRemarks }));
+    out.push(crossLinksMd([reflection.comment], reflection.name));
     out.push(examplesMd(reflection.comment, index, inner));
   }
   return out.filter(Boolean).join("\n\n");
@@ -548,12 +633,11 @@ export function categoryDescriptionMd(project, name, index) {
     for (const comment of [member.comment, ...callSignatures(member).map((s) => s.comment)]) {
       for (const tag of comment?.blockTags ?? []) {
         if (tag.tag !== "@categoryDescription") continue;
-        const [first, ...rest] = tag.content;
-        const [named, ...text] = (first?.text ?? "").split("\n");
-        if (named.trim() !== name) {
-          throw new Error(`${member.name} carries @categoryDescription ${named.trim()}, but sits in @category ${name}`);
+        const described = namedTag(tag);
+        if (described.name !== name) {
+          throw new Error(`${member.name} carries @categoryDescription ${described.name}, but sits in @category ${name}`);
         }
-        sources.push({ from: member.name, parts: [{ ...first, text: text.join("\n") }, ...rest] });
+        sources.push({ from: member.name, parts: described.parts });
       }
     }
   }

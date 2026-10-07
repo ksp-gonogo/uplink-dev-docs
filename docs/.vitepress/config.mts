@@ -92,6 +92,7 @@ export default defineConfig({
       ],
       "/reference/": [
         { text: "Reference", link: "/reference/" },
+        ...(generatedSidebar["reference/concepts"] ? [{ text: "Concepts", items: section("reference/concepts") }] : []),
         {
           text: "Mod API",
           items: section("reference/mod"),

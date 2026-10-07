@@ -21,10 +21,13 @@ import { DOCS, GENERATED_HASHES, hashOf, PLANTED_DEMO_FILE, PLANTED_DEMOS, PUBLI
 import { AMBIGUOUS_SYMBOLS } from "../ambiguous-symbols.mjs";
 import { UNRESOLVED_LINK_DEBT } from "../symbol-link-debt.mjs";
 import { anchorOf, assertModulesStateNoRecordFacts, loadWidgetRecords, recordOf, widgetHeaderMd } from "./widgets.mjs";
-import { SYMBOL_INDEX } from "../symbol-links.mjs";
+import { GUIDE_LINK_LIST, SYMBOL_INDEX } from "../symbol-links.mjs";
 import {
   categoryDescriptionMd,
   categoryMembers,
+  conceptsOf,
+  GUIDE_LINKS,
+  setConceptPages,
   cellSafe,
   code,
   exported,
@@ -547,6 +550,18 @@ function contractPage(page, index) {
   return [title, description, `${code("Sitrep.Contract")} · ${code("KspGonogo.Sitrep.Contract")} ${versionOf()}`, body];
 }
 
+/**
+ * One concept: its text, from the `@concept` tag that writes it beside the
+ * code it explains, then every symbol whose comment carries that tag.
+ */
+function conceptPage(page, concept, index) {
+  const carriers = concept.carriers.map((name) => {
+    const url = index.url(name);
+    return url ? `- [${code(name)}](${url})` : `- ${code(name)}`;
+  });
+  return [`# ${page.title}`, partsMd(concept.parts, index).trim(), "## In the API {#in-the-api}", carriers.join("\n")];
+}
+
 const SIDEBAR = resolve(DOCS, ".vitepress/sidebar.generated.json");
 
 /** The lists a guide page includes with `<!--@include: @/.vitepress/includes/topics.md-->`. */
@@ -666,6 +681,18 @@ export async function generate({ install = true } = {}) {
   writeFileSync(SYMBOL_INDEX, `${JSON.stringify(index, null, 2)}\n`);
   assertStillAmbiguous(Object.values(projects), index);
 
+  // Every concept written in the packages is on exactly the page that names it, and no page names one that is not written.
+  const concepts = conceptsOf([...new Set(Object.values(projects))]);
+  const conceptModules = PAGES.filter((p) => p.kind === "concept");
+  for (const page of conceptModules) {
+    if (!concepts.has(page.concept)) throw new Error(`${page.path} shows @concept ${page.concept}, which no doc comment writes`);
+  }
+  const unshown = [...concepts.keys()].filter((name) => !conceptModules.some((p) => p.concept === name));
+  if (unshown.length > 0) {
+    throw new Error(`a doc comment writes @concept ${unshown.join(", ")}, which no page shows: add a concept module under reference/pages/reference/concepts/`);
+  }
+  setConceptPages(new Map(conceptModules.map((p) => [p.concept, urlOf(p)])));
+
   /** A category page's description of its category, from the package's own doc comments. */
   const describedOf = (page) => {
     if (page.kind === "contract") return page.category ? contractCategoryDescription(page.category, contractIndex) : "";
@@ -681,6 +708,7 @@ export async function generate({ install = true } = {}) {
     const described = describedOf(page);
     if (described) return described;
     if (page.kind === "contract") return contractSummary(contractTypes(page)[0], contractIndex);
+    if (page.kind === "concept") return concepts.get(page.concept)?.text ?? "";
     const lead = page.lead && projects[specifierOf(page)]?.getChildByName(page.lead);
     const comment = lead && (lead.comment ?? lead.signatures?.[0]?.comment);
     return comment ? partsMd(comment.summary, index).trim() : "";
@@ -708,6 +736,7 @@ export async function generate({ install = true } = {}) {
     else if (page.kind === "category") sections = categoryPage(page, projects[specifierOf(page)], index);
     else if (page.kind === "guide") sections = guidePage(page, projects[specifierOf(page)], index);
     else if (page.kind === "widget") sections = widgetPage(page, recordOf(records, page), projects[SDK], projects[KIT], index);
+    else if (page.kind === "concept") sections = conceptPage(page, concepts.get(page.concept), index);
     else sections = contractPage(page, contractIndex);
     const file = resolve(DOCS, page.path);
     mkdirSync(dirname(file), { recursive: true });
@@ -718,6 +747,7 @@ export async function generate({ install = true } = {}) {
   writeFileSync(INCLUDES.topics, `${topicListMd(projects[SDK], index, 3)}\n`);
   writeFileSync(INCLUDES.commands, `${commandListMd(projects[SDK], index, 3)}\n`);
   writeSidebar(PAGES, records);
+  writeFileSync(GUIDE_LINK_LIST, `${JSON.stringify([...GUIDE_LINKS].sort(), null, 2)}\n`);
   recordWritten(written);
   const debt = new Set(UNRESOLVED_LINK_DEBT);
   const unresolved = index.missed.filter((name) => !debt.has(name));
