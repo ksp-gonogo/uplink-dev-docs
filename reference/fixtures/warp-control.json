@@ -1,0 +1,40 @@
+{
+  "_meta": {
+    "notes": "The scene every Warp Control example renders on. Its time.warp value comes from reference/examples/warp-control/warp.ts, which the top example shows."
+  },
+  "_stream": {
+    "emits": [
+      {
+        "channel": "time.warp",
+        "value": {
+          "warpRate": 1000,
+          "warpRateIndex": 5,
+          "warpMode": 0,
+          "paused": false
+        }
+      },
+      {
+        "channel": "spaceCenter.scene",
+        "value": {
+          "scene": "Flight"
+        }
+      },
+      {
+        "channel": "spaceCenter.launchSites",
+        "value": [
+          {
+            "name": "__pad_occupancy__",
+            "padOccupied": false,
+            "padVesselTitle": null
+          }
+        ]
+      },
+      {
+        "channel": "career.mode",
+        "value": {
+          "mode": 1
+        }
+      }
+    ]
+  }
+}
