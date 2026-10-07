@@ -21,7 +21,7 @@ jobs:
       - uses: actions/checkout@v4
       # The generated reference is build output, written here from packages
       # packed out of one pinned gonogo commit, so every deploy publishes pages
-      # that match each other and the hand pages are checked against that same
+      # that match each other and the guides are checked against that same
       # commit. Bump the pin in reference/artifacts.json to move the site.
       - id: pin
         run: echo "sha=$(jq -er .gonogo reference/artifacts.json)" >> "$GITHUB_OUTPUT"

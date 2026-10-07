@@ -1,7 +1,7 @@
 /**
  * Compiles every snippet the documentation includes, resolves every include,
  * checks that every symbol the pages name is one the kit exports, and that
- * every reference page is generated or a listed hand page.
+ * every reference page is generated.
  *
  * The published client pass always runs. The source pass needs a gonogo
  * checkout, and the mod half needs `Sitrep.Contract.dll` via

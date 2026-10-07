@@ -99,11 +99,10 @@ export const FLOORS = {
   referencePages: 15,
   templateSources: 10,
   /*
-   * Claims come from hand pages and the template. Each hand reference page a
-   * generated page replaces takes its claims to TypeDoc, which resolves every
-   * name on a generated page, so this census falls as hand pages go. The floor
-   * only has to sit well under it; the planted dead and live pages are what
-   * prove the scan is not blind.
+   * Claims come from the guide pages and the template. Reference pages are
+   * generated and TypeDoc resolves every name on them, so they carry none. The
+   * floor only has to sit well under the census; the planted dead and live
+   * pages are what prove the scan is not blind.
    */
   claims: 40,
   internalLinks: 15,

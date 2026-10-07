@@ -146,9 +146,9 @@ away.
   has nothing to mount
 
 To change a generated page, change the doc comment it comes from, its example
-file, or its module. A page under `docs/reference/` is either generated or on
-the shrink-only list in `scripts/hand-pages-debt.mjs`, and the build fails on a
-generated page that is committed or edited by hand (`npm run check:pages`).
+file, or its module. Every page under `docs/reference/` is generated: the build
+fails on a hand-written page there, and on a generated page that is committed
+or edited by hand (`npm run check:pages`).
 
 ### Adding a page
 

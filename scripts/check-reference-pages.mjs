@@ -1,15 +1,14 @@
 /**
- * Fails on a reference page that is neither generated nor a listed hand page,
- * on a generated page that was committed or edited by hand, and on a widget
+ * Fails on a reference page that is not generated, on a generated page that
+ * was committed or edited by hand, and on a widget
  * page whose header is not the one its record in the packed
  * `@ksp-gonogo/uplink-tools/widgets.json` writes.
  *
- * Every page under `docs/reference/` is one of two things: written by
- * `npm run reference` from a module under `reference/pages/`, or a hand page
- * on the shrink-only list in `hand-pages-debt.mjs`. A generated page is build
- * output, so it is never tracked by git, and its content is what the generator
- * last wrote. The guide pages a module generates are held to the second rule
- * too.
+ * Every page under `docs/reference/` is written by `npm run reference` from a
+ * module under `reference/pages/`; there is no hand page and no list that
+ * could admit one. A generated page is build output, so it is never tracked
+ * by git, and its content is what the generator last wrote. The guide pages a
+ * module generates are held to the same rules.
  *
  * Before grading the tree it grades a planted one holding each fault, and
  * fails as BLIND unless it finds every one.
@@ -20,7 +19,6 @@ import { execFileSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { relative, resolve } from "node:path";
 import { PAGES } from "../reference/pages.mjs";
-import { HAND_PAGES } from "./hand-pages-debt.mjs";
 import { DOCS, GENERATED_HASHES, hashOf, ROOT } from "./reference/paths.mjs";
 import { loadWidgetRecords, opensWithHeader, WIDGET_RECORDS, widgetHeaderMd } from "./reference/widgets.mjs";
 
@@ -38,7 +36,7 @@ const REFERENCE = resolve(DOCS, "reference");
  * - `widgets`: each widget page's path, with its record from the packed `widgets.json` or null when it has none
  * - `read`: a file's text, or null when it does not exist
  */
-export function pageFaults({ onDisk, generated, tracked, written, hand, hash, isGeneratedText, widgets, read }) {
+export function pageFaults({ onDisk, generated, tracked, written, hash, isGeneratedText, widgets, read }) {
   const faults = [];
   for (const path of generated) {
     if (tracked.has(path)) faults.push(["committed", path, "is generated, so it is build output: git rm --cached it"]);
@@ -48,9 +46,7 @@ export function pageFaults({ onDisk, generated, tracked, written, hand, hash, is
   for (const path of onDisk) {
     if (generated.has(path)) continue;
     if (isGeneratedText(path)) faults.push(["orphan", path, "says it is generated, but no module under reference/pages/ writes it: delete it"]);
-    else if (!hand.includes(path)) {
-      faults.push(["unlisted", path, "is a hand page. A reference page is a module under reference/pages/, generated from doc comments"]);
-    }
+    else faults.push(["unlisted", path, "is a hand page. A reference page is a module under reference/pages/, generated from doc comments"]);
   }
   for (const [path, record] of widgets) {
     const markdown = read(path);
@@ -58,10 +54,6 @@ export function pageFaults({ onDisk, generated, tracked, written, hand, hash, is
     else if (markdown !== null && !opensWithHeader(markdown, record)) {
       faults.push(["header", path, `does not open with the header its record in ${WIDGET_RECORDS} writes: run npm run reference`]);
     }
-  }
-  for (const path of hand) {
-    if (generated.has(path)) faults.push(["listed", path, "is generated now: delete its entry in scripts/hand-pages-debt.mjs"]);
-    else if (!onDisk.has(path)) faults.push(["listed", path, "is gone: delete its entry in scripts/hand-pages-debt.mjs"]);
   }
   return faults;
 }
@@ -86,7 +78,6 @@ const PLANTED = {
   generated: new Set(["docs/reference/generated.md", "docs/reference/edited.md", "docs/reference/never-run.md"]),
   tracked: new Set(["docs/reference/generated.md"]),
   written: { "docs/reference/generated.md": "a", "docs/reference/edited.md": "b" },
-  hand: ["docs/reference/deleted.md"],
   hash: (path) => (path === "docs/reference/edited.md" ? "changed" : "a"),
   isGeneratedText: (path) => path === "docs/reference/left-over.md",
   widgets: new Map([
@@ -95,7 +86,7 @@ const PLANTED = {
   ]),
   read: () => `---\ngenerated: npm run reference\n---\n\n${widgetHeaderMd({ ...PLANTED_RECORD, name: "Renamed by hand" })}\n\n## Example\n`,
 };
-const PLANTED_KINDS = ["committed", "unwritten", "edited", "unlisted", "orphan", "listed", "unrecorded", "header"];
+const PLANTED_KINDS = ["committed", "unwritten", "edited", "unlisted", "orphan", "unrecorded", "header"];
 
 function markdownUnder(dir) {
   if (!existsSync(dir)) return [];
@@ -126,7 +117,6 @@ export function checkReferencePages() {
     generated: new Set(PAGES.map((page) => `docs/${page.path}`)),
     tracked: new Set(execFileSync("git", ["ls-files", "docs"], { cwd: ROOT, encoding: "utf8" }).split("\n").filter(Boolean)),
     written: existsSync(GENERATED_HASHES) ? JSON.parse(readFileSync(GENERATED_HASHES, "utf8")) : null,
-    hand: HAND_PAGES,
     hash: (path) => (existsSync(resolve(ROOT, path)) ? hashOf(resolve(ROOT, path)) : null),
     isGeneratedText: (path) => /^---\ngenerated:/.test(readFileSync(resolve(ROOT, path), "utf8")),
     widgets: widgetPages(),
@@ -135,11 +125,11 @@ export function checkReferencePages() {
   const faults = pageFaults(tree);
   if (faults.length === 0) {
     console.log(
-      `Reference pages: ${tree.generated.size} generated, ${HAND_PAGES.length} listed hand pages, none committed or edited, ${tree.widgets.size} widget pages headed by their records (planted faults found: ${PLANTED_KINDS.length}).`,
+      `Reference pages: ${tree.generated.size} generated, no hand page, none committed or edited, ${tree.widgets.size} widget pages headed by their records (planted faults found: ${PLANTED_KINDS.length}).`,
     );
     return [];
   }
-  console.log("A reference page is generated from doc comments, or a hand page waiting to be replaced:");
+  console.log("Every reference page is generated from doc comments:");
   for (const [, path, message] of faults) console.log(`  ${path} ${message}`);
   return ["reference pages"];
 }
