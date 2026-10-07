@@ -1,0 +1,40 @@
+{
+  "_meta": {
+    "notes": "The scene every Action Group example renders on. Its vessel.flight value comes from reference/examples/action-group/flight.ts, which the top example shows."
+  },
+  "_stream": {
+    "emits": [
+      {
+        "channel": "vessel.control",
+        "value": {
+          "sas": false,
+          "rcs": false,
+          "gear": false,
+          "brakes": false,
+          "lights": false,
+          "abort": false,
+          "precisionControl": false,
+          "actionGroups": [
+            {
+              "index": 1,
+              "name": "AG1",
+              "state": true
+            }
+          ]
+        }
+      },
+      {
+        "channel": "time.warp",
+        "value": {
+          "paused": false
+        }
+      },
+      {
+        "channel": "comms.link",
+        "value": {
+          "connected": true
+        }
+      }
+    ]
+  }
+}
