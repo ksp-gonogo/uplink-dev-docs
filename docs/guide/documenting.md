@@ -10,8 +10,10 @@ An Uplink is documented in two places, both written next to the code: its genera
 | --- | --- |
 | The opening paragraph | `description` in `defineUplinkClient`, in `src/uplink.ts` |
 | The id and version | `id` and `version` in `defineUplinkClient` |
+| Built against | The packages the client was built with: the contract version (the `Major.Minor` of `KspGonogo.Sitrep.Contract`) and the extension API version of the sdk and kit, the two versions Gonogo checks an Uplink against when it loads one |
 | The Wire table | The plugin's manifest: each channel's Topic, payload type, delivery and delay |
-| Each widget's heading, paragraph and facts | Its `registerComponent` call: `name`, `description`, `channels`, `defaultSize` |
+| The Commands tables | The contract slice's `SitrepCommandAttribute` classes, through the command map `codegen` writes: each command, its arguments type and its result, then each arguments type's fields |
+| Each widget's heading, paragraph and facts | Its `registerComponent` call: `name`, `description`, `channels`, `defaultSize`, and the number of its fixtures as Scenes |
 | Each widget's pictures | Its fixtures, with `_scene.caption` as the picture's description |
 | The Models table | Every reckoner the client registers |
 

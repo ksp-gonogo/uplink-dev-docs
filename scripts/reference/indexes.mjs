@@ -168,9 +168,34 @@ function idTablesMd(ids, columns, level) {
   return out.join("\n\n");
 }
 
-/** Every Topic the sdk declares, grouped by prefix, with the type of its payload. */
+/**
+ * What each entry of a map carries, in one sentence: the entry's own doc
+ * comment where it has one, otherwise the opening sentence of the payload
+ * type it names.
+ */
+function mapDescriptions(project, name, index) {
+  const map = project.getChildByName(name);
+  const sentence = (summary) => (summary?.length ? cellSafe(firstSentence(partsMd(summary, index))).replace(/(?<!\\)\|/g, "\\|") : "");
+  return new Map(
+    (map.children ?? []).map((m) => {
+      const own = sentence(m.comment?.summary);
+      const target = m.type?.type === "array" ? m.type.elementType : m.type;
+      const payload = target?.type === "reference" ? sentence(target.reflection?.comment?.summary) : "";
+      return [m.name, own || payload];
+    }),
+  );
+}
+
+/** Every Topic the sdk declares, grouped by prefix, with the type of its payload and what it carries. */
 export function topicListMd(sdk, index, level = 2) {
-  return idTablesMd(tupleOf(sdk, "TOPIC_IDS"), [["Payload", mapTypes(sdk, "TopicPayloadMap", index)]], level);
+  return idTablesMd(
+    tupleOf(sdk, "TOPIC_IDS"),
+    [
+      ["Payload", mapTypes(sdk, "TopicPayloadMap", index)],
+      ["What it carries", mapDescriptions(sdk, "TopicPayloadMap", index)],
+    ],
+    level,
+  );
 }
 
 /** Every command the sdk declares, grouped by prefix, with what it takes and what it replies with. */

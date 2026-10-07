@@ -22,7 +22,7 @@ import { AMBIGUOUS_SYMBOLS } from "../ambiguous-symbols.mjs";
 import { UNRESOLVED_LINK_DEBT } from "../symbol-link-debt.mjs";
 import { anchorOf, assertModulesStateNoRecordFacts, loadWidgetRecords, recordOf, widgetHeaderMd } from "./widgets.mjs";
 import { AMBIGUOUS_TERMS, CONCEPT_TERMS, termsOf } from "../concept-terms.mjs";
-import { GUIDE_LINK_LIST, SYMBOL_INDEX } from "../symbol-links.mjs";
+import { CSHARP_SYMBOL_INDEX, GUIDE_LINK_LIST, MEMBER_ANCHORS, pageOf, SYMBOL_INDEX } from "../symbol-links.mjs";
 import {
   categoryDescriptionMd,
   categoryMembers,
@@ -36,7 +36,7 @@ import {
   isFunction,
   loadPackage,
   partsMd,
-  propsOf,
+  propsListOf,
   readingOrder,
   remarksMd,
   SymbolIndex,
@@ -112,7 +112,13 @@ function examplesMd(page, widgetName) {
   if (examples.length === 0) return "";
   const label = (e) =>
     page.kind === "widget" ? `The ${widgetName} widget on the ${sceneName(e.scene ?? page.scene)} scene` : undefined;
-  const one = (e) => demoMd(page, e.id, e.file, { code: page.kind !== "widget", label: label(e) });
+  // A built-in widget is drawn from its tile's settings, which are what the example shows when it has any.
+  const settings = (e) => {
+    const config = (e.scene ?? page.scene)?.config;
+    if (page.kind !== "widget" || !config || Object.keys(config).length === 0) return "";
+    return `\n\nThe settings the tile has in this example, which an operator changes in the widget's settings:\n\n\`\`\`json\n${JSON.stringify(config, null, 2)}\n\`\`\``;
+  };
+  const one = (e) => `${demoMd(page, e.id, e.file, { code: page.kind !== "widget", label: label(e) })}${settings(e)}`;
   if (examples.length === 1) {
     const [e] = examples;
     return `## ${e.title ?? "Example"} {#example}\n\n${one(e)}`;
@@ -192,6 +198,20 @@ function storyExports(root, file) {
 const storyTitle = (shown) => shown.charAt(0).toUpperCase() + shown.slice(1).replace(/-/g, " ");
 
 /**
+ * The install profile a story is drawn against, from its name: one fixture
+ * drawn against several installs is one story per install, named
+ * `<scene> @ <profile>`, and every one of them carries the fixture's sentence.
+ */
+function profileOf(root, shown) {
+  const [scene, profile] = shown.split(" @ ");
+  if (!profile) return null;
+  const path = resolve(root, "../components/src/test/__profiles__", `${profile}.json`);
+  if (!existsSync(path)) throw new Error(`story ${shown} names install profile ${profile}, which has no ${path}`);
+  const { name, description } = JSON.parse(readFileSync(path, "utf8"));
+  return { scene, name, description };
+}
+
+/**
  * The stories a widget page shows: each of the widget's own as one of its
  * states, and for each slot the story that renders its scaffolding. None
  * without a Storybook checkout, like the other live examples.
@@ -200,15 +220,18 @@ function storiesOf(page) {
   const root = storybookRoot();
   if (!page.stories || root === null) return { states: [], extensions: new Map() };
   // A widget with no stories file of its own shows no states; its slots' stories still render.
-  const states = [...(page.stories.states ? storyExports(root, page.stories.states) : [])].map(([name, { shown, scene, description }]) => ({
-    // A story name can hold spaces and " @ " (`pre-launch-mixed @ stock-career`); an id and an anchor cannot.
-    id: `${page.widget}--${shown.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`,
-    story: page.stories.states,
-    export: name,
-    title: storyTitle(shown),
-    scene,
-    description,
-  }));
+  const states = [...(page.stories.states ? storyExports(root, page.stories.states) : [])].map(([name, { shown, scene, description }]) => {
+    const profile = profileOf(root, shown);
+    return {
+      // A story name can hold spaces and " @ " (`pre-launch-mixed @ stock-career`); an id and an anchor cannot.
+      id: `${page.widget}--${shown.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`,
+      story: page.stories.states,
+      export: name,
+      title: profile ? `${storyTitle(profile.scene)}: ${profile.name.charAt(0).toLowerCase()}${profile.name.slice(1)}` : storyTitle(shown),
+      scene,
+      description: profile ? [description, `Installed: ${profile.description}`].filter(Boolean).join("\n\n") : description,
+    };
+  });
   const extensions = new Map();
   for (const [slot, ref] of Object.entries(page.stories.extensions ?? {})) {
     const [file, name] = ref.split("#");
@@ -317,7 +340,7 @@ function categoryPage(page, project, index) {
   const lead = members.find((m) => m.name === page.lead);
   if (!lead) throw new Error(`${page.lead} is not in @category ${page.category}`);
   // A component's props are rendered under the component, so they are not listed again as a type.
-  const props = new Set(members.map((m) => propsOf(m, project)).filter(Boolean));
+  const props = new Set(members.flatMap((m) => propsListOf(m, project)));
   const rest = readingOrder(members, lead).slice(1).filter((m) => !props.has(m));
   const leadIsTitle = page.title === lead.name;
   return [
@@ -367,7 +390,7 @@ function guidePage(page, project, index) {
     placed.add(name);
     return symbolMd(member, project, index, { level: 3, omitRemarks: remarksPlaced.has(name) });
   });
-  const props = new Set([...members.values()].map((m) => propsOf(m, project)).filter(Boolean));
+  const props = new Set([...members.values()].flatMap((m) => propsListOf(m, project)));
   const rest = [...members.values()].filter((m) => !placed.has(m.name) && !props.has(m));
   const restPlaced = REST.test(body);
   const placedBody = body.replace(REST, () => groupedMd(rest, project, index).join("\n\n"));
@@ -482,9 +505,11 @@ function widgetPage(page, record, sdk, kit, index) {
     if (unshown.length > 0) console.log(`${page.path}: no scaffolding story for ${unshown.join(", ")}`);
   }
   const cell = (text) => text.trim().replace(/\n+/g, " ").replace(/\|/g, "\\|");
+  // A standard slot's doc comment names its id with a placeholder, written here as this widget's own.
+  const docOf = (point) => partsMd(point.doc?.summary, index).replace(/<widget-id>|&lt;widget-id&gt;/g, record.id);
   const rows = points.map((p) => {
     const shape = noProps(p.type) ? "none" : cellSafe(typeMd(p.type, index));
-    return `| [${code(p.id)}](#${anchorOf(p.id)}) | ${p.kind} | ${p.standard ? "yes" : ""} | ${shape} | ${cell(partsMd(p.doc?.summary, index))} |`;
+    return `| [${code(p.id)}](#${anchorOf(p.id)}) | ${p.kind} | ${p.standard ? "yes" : ""} | ${shape} | ${cell(docOf(p))} |`;
   });
   const stories = storiesOf(page);
   const stateMd = (story) => {
@@ -503,7 +528,7 @@ function widgetPage(page, record, sdk, kit, index) {
   ];
   const shown = new Set();
   for (const point of points) {
-    out.push(`### ${code(point.id)} {#${anchorOf(point.id)}}`, partsMd(point.doc?.summary, index).trim(), howToMd(point, index));
+    out.push(`### ${code(point.id)} {#${anchorOf(point.id)}}`, docOf(point).trim(), howToMd(point, index));
     const { file } = extensionOf(page, point.id);
     if (file) {
       const label = `The ${record.name} widget with ${file.split("/").pop()} filling ${point.id}`;
@@ -514,7 +539,9 @@ function widgetPage(page, record, sdk, kit, index) {
       out.push(`#### Where it renders {#${story.id}}`, demoMd(page, story.id, undefined, { label: `Where ${point.id} renders on the ${record.name} widget` }));
     }
     const name = point.type?.type === "reference" && !noProps(point.type) ? point.type.name : null;
-    if (name && !shown.has(name)) {
+    // A standard slot's type is the same on every widget, so it is linked to its one definition rather than printed again.
+    const elsewhere = point.standard && name && !String(index.url(name) ?? "").startsWith("/reference/widgets/");
+    if (name && !shown.has(name) && !elsewhere) {
       shown.add(name);
       const { reflection, project } = exported([sdk, kit], name, `the ${page.widget} page documents it`);
       out.push(symbolMd(reflection, project, index, { level: 4 }));
@@ -685,8 +712,7 @@ export async function generate({ install = true } = {}) {
       const project = projects[specifierOf(page)];
       for (const m of pageMembers(page, project)) {
         index.add(m.name, m.name === page.title ? url : `${url}#${m.name}`);
-        const props = propsOf(m, project);
-        if (props) index.add(props.name, `${url}#${props.name}`);
+        for (const props of propsListOf(m, project)) index.add(props.name, `${url}#${props.name}`);
       }
     }
     if (page.kind === "contract") {
@@ -700,6 +726,7 @@ export async function generate({ install = true } = {}) {
     }
   }
   writeFileSync(SYMBOL_INDEX, `${JSON.stringify(index, null, 2)}\n`);
+  writeFileSync(CSHARP_SYMBOL_INDEX, `${JSON.stringify(contractIndex, null, 2)}\n`);
   assertStillAmbiguous(Object.values(projects), index);
 
   // Every concept written in the packages is on exactly the page that names it, and no page names one that is not written.
@@ -749,6 +776,7 @@ export async function generate({ install = true } = {}) {
 
   const undescribed = PAGES.filter((p) => (p.kind === "category" || (p.kind === "contract" && p.category)) && !describedOf(p));
   const written = [];
+  const memberAnchors = {};
   for (const page of PAGES) {
     let sections;
     if (page.kind === "index") {
@@ -762,9 +790,13 @@ export async function generate({ install = true } = {}) {
     else sections = contractPage(page, contractIndex);
     const file = resolve(DOCS, page.path);
     mkdirSync(dirname(file), { recursive: true });
-    writeFileSync(file, `${frontmatter(page)}\n${vueSafe(sections.filter(Boolean).join("\n\n"))}\n`);
+    const markdown = vueSafe(sections.filter(Boolean).join("\n\n"));
+    writeFileSync(file, `${frontmatter(page)}\n${markdown}\n`);
     written.push(relative(ROOT, file));
+    const members = [...markdown.matchAll(/(?:\sid="|\{#)([A-Za-z_$][\w$]*\.[A-Za-z_$][\w$]*)[}"]/g)].map((m) => m[1]);
+    if (members.length > 0) memberAnchors[pageOf(urlOf(page))] = [...new Set(members)];
   }
+  writeFileSync(MEMBER_ANCHORS, `${JSON.stringify(memberAnchors, null, 2)}\n`);
   mkdirSync(dirname(INCLUDES.topics), { recursive: true });
   writeFileSync(INCLUDES.topics, `${topicListMd(projects[SDK], index, 3)}\n`);
   writeFileSync(INCLUDES.commands, `${commandListMd(projects[SDK], index, 3)}\n`);

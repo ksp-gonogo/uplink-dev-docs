@@ -23,6 +23,7 @@ uplink.registerContribution({
       const low = ore.amount.lessThan(ore.maxAmount.scaled(LOW_ORE));
       return [
         {
+          // A part's id is its flightID as a string, which is what ties the entry to the part.
           partId: part.id,
           resource: "Ore",
           displayName: "Ore",

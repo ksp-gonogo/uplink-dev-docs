@@ -25,6 +25,7 @@ uplink.registerContribution({
           label: "Engine",
           kind: "text",
           text: flameout ? "Flamed out" : "Burning",
+          // Every entry names a tone, but only a "ratio" row draws it, as its meter's colour; a text row is drawn plain.
           tone: flameout ? "nogo" : "go",
         },
       ];

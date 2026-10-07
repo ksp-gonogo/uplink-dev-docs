@@ -13,6 +13,7 @@ const uplink = defineUplinkClient({
 
 function Pilots() {
   const crew = useTelemetry("vessel.crew");
+  // Plain text carries no held mark, so a list that stopped updating is left out rather than drawn as if current.
   if (crew.state !== "observed") return null;
   const pilots = crew.value.crew.filter((kerbal) => kerbal.trait === "Pilot");
   return (

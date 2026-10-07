@@ -11,29 +11,22 @@ const uplink = defineUplinkClient({
   name: "Engine Stages",
 });
 
-function EngineStages({
-  parts,
-  width,
-  height,
-  bounds,
-  baseScale,
-}: SlotProps<"ship-map.overlay">) {
-  return parts
-    .filter((part) => part.type === "engine")
-    .map((part) => (
-      <Box
-        key={part.flightId}
-        style={{
-          position: "absolute",
-          left: width / 2 + (part.lat - bounds.cx) * baseScale,
-          top: height / 2 - (part.axial - bounds.cy) * baseScale,
-        }}
-      >
-        <Badge tone="info" size="sm">
-          Stage {part.stage}
-        </Badge>
-      </Box>
-    ));
+/**
+ * One mark for the whole diagram: how many stages still hold an engine, in
+ * the corner. The overlay does not follow the operator's zoom or pan, so a
+ * mark belongs to the diagram as a whole; one tied to a part is a
+ * `ship-map.part-meters` or `ship-map.part-meta` contribution instead.
+ */
+function EngineStages({ parts }: SlotProps<"ship-map.overlay">) {
+  const stages = new Set(parts.filter((part) => part.type === "engine").map((part) => part.stage));
+  if (stages.size === 0) return null;
+  return (
+    <Box style={{ position: "absolute", top: 8, right: 8 }}>
+      <Badge tone="info" size="sm">
+        {stages.size === 1 ? "1 engine stage" : `${stages.size} engine stages`}
+      </Badge>
+    </Box>
+  );
 }
 
 registerAugment({

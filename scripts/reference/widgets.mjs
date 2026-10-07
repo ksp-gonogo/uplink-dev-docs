@@ -107,6 +107,12 @@ export const slotsOf = (record) =>
 /** A slot's anchor on its widget's page. */
 export const anchorOf = (slot) => slot.replace(/\./g, "-");
 
+/** A header row's label, linked to the `ComponentDefinition` member that fills it. */
+const definitionLink = (label, member) => `[${label}](/reference/client/registering#ComponentDefinition.${member})`;
+
+/** What each `ComponentRequirement` asks of the game, in the words its doc comment gives. */
+const REQUIREMENT_WORDS = { flight: "a vessel in flight", career: "a career or science save" };
+
 /**
  * The top of a widget page: its name, its description and a table of every
  * other fact the record carries, rows with nothing to say left out. It takes
@@ -114,15 +120,21 @@ export const anchorOf = (slot) => slot.replace(/\./g, "-");
  * from the packed `widgets.json` and compare.
  */
 export function widgetHeaderMd(record) {
-  const reads = record.channels.length > 0 ? record.channels : record.dataRequirements;
+  const flatKeys = record.channels.length === 0 && record.dataRequirements.length > 0;
   const slots = slotsOf(record);
   const rows = [
     ["Widget id", `\`${record.id}\``],
-    ["Reads", reads.length > 0 ? codeList(reads) : ""],
-    ["Uses if present", codeList(record.optionalChannels)],
-    ["Actions", record.actions.map((a) => `${text(a.label).replace(/\|/g, "\\|")} (\`${a.id}\`)`).join(", ")],
+    flatKeys
+      ? [definitionLink("Reads, as flat keys", "dataRequirements"), codeList(record.dataRequirements)]
+      : [definitionLink("Reads", "channels"), codeList(record.channels)],
+    [definitionLink("Draws only", "fields"), codeList(record.fields ?? [])],
+    [definitionLink("Also reads, if published", "optionalChannels"), codeList(record.optionalChannels)],
+    [
+      definitionLink("Actions to bind", "actions"),
+      record.actions.map((a) => `${text(a.label).replace(/\|/g, "\\|")} (\`${a.id}\`)`).join(", "),
+    ],
     ["Slots", slots.map((slot) => `[\`${slot}\`](#${anchorOf(slot)})`).join(", ")],
-    ["Only while present", codeList(record.requires)],
+    [definitionLink("Needs", "requires"), record.requires.map((need) => REQUIREMENT_WORDS[need] ?? `\`${need}\``).join(", ")],
     ["Replaces", record.replaces ? `\`${record.replaces}\`` : ""],
     ["Default size", record.defaultSize ? `${record.defaultSize.w} × ${record.defaultSize.h}` : ""],
   ].filter(([, value]) => value !== "");

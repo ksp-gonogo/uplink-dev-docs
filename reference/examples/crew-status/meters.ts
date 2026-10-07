@@ -12,7 +12,7 @@ uplink.registerContribution({
   id: "experience-meters",
   contributes: "crew-status.meters",
   deps: ["vessel.crew"],
-  // The widget's own meters sit at priority 0, and only the highest priority in a slot draws, so 0 draws beside them.
+  // Only the highest priority band in a slot draws, with every contribution in it. The widget's own meters are in band 0 and the default is 1, which would replace them, so 0 draws beside them.
   priority: 0,
   compute: (topics) => {
     const crew = topics["vessel.crew"]?.crew ?? [];

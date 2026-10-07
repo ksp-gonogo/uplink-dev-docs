@@ -37,11 +37,20 @@ A widget rendered alone has no data, which is the waiting state, and worth a tes
 
 A fixture is a scene the render harness draws a widget in: `_scene` names the widget, its picture's `caption` and the modes to draw it in, and `_stream` says what is on the wire. The `min` mode draws the widget at its `minSize`, and exists only while `minSize` is smaller than `defaultSize`: make them equal and a fixture naming `min` fails with a message naming the fixture, saying the widget has no separate smallest size, so take `min` out of `modes` or give the widget a smaller `minSize`. `npm run render` draws every fixture to `client/renders/` in a real browser, and `npm run docs` draws them into the generated page, so a fixture is both a picture to look at and the page's illustration. Rendering needs Chromium, installed once with `npx playwright install chromium`.
 
-Beside `pinnedUt` and `emits`, `_stream` takes `delaySeconds`, which stages a signal delay so the scene shows modelled values beside received ones, and `stopsArriving`, which draws every figure held. The [`@ksp-gonogo/uplink-tools` README](https://www.npmjs.com/package/@ksp-gonogo/uplink-tools) documents each field.
+`_stream` takes four fields:
+
+| Field | Type | What it does |
+| --- | --- | --- |
+| `emits` | a list of `{ topic, payload, validAt? }` | replayed in order once the scene has subscribed; `validAt` is the game time each was sent, `pinnedUt` when it names none |
+| `pinnedUt` | number, game seconds | the operator's view time; it defaults to `1000000` |
+| `delaySeconds` | number, seconds | a one-way light time between the craft and the screen, so the scene shows modelled values beside received ones |
+| `stopsArriving` | boolean | drops the link once every emit has landed, so every figure is drawn held |
+
+The [`@ksp-gonogo/uplink-tools` README](https://www.npmjs.com/package/@ksp-gonogo/uplink-tools) has the detail of each.
 
 ## The plugin's tests
 
-`mod-tests/` is an xunit project that compiles the plugin's own sources, so a test constructs the plugin class and calls it directly: its manifest, its sample function, its command handlers. On a test project the `KspGonogo.Sitrep.Contract` package also brings `Sitrep.Contract.TestSupport`, with fake hosts and checks of the rules a manifest must follow. Run them with `dotnet test ../mod-tests` from `client/`.
+`mod-tests/` is an xunit project that compiles the plugin's own sources, so a test constructs the plugin class and calls it directly: its manifest, its sample function, its command handlers. On a test project the `KspGonogo.Sitrep.Contract` package also brings `Sitrep.Contract.TestSupport`, with fake hosts and checks of the rules a manifest must follow, among them `CommandRegistrationAssertion` (every handler and publisher the plugin registers is one its manifest declares), `UnitCoverageAssertion` (every field of the contract slice names its unit), `ReckonabilityAssertion` (a field marked reckonable publishes what its model needs), `WirePayload` (a payload serialised the way the Gonogo mod writes it) and `ClockedUplinkHost` (a host that records what the plugin publishes). The Reference has no page for them yet; their doc comments are in the package. Run them with `dotnet test ../mod-tests` from `client/`.
 
 A plugin that references KSP's or a mod's assemblies has code the test project cannot compile, since it has no KSP. Keep that code in a file of its own, and leave that file out in `mod-tests/GonogoExampleUplink.Tests.csproj`, beside the line that compiles the plugin's sources:
 
@@ -49,6 +58,8 @@ A plugin that references KSP's or a mod's assemblies has code the test project c
 <Compile Include="..\mod\*.cs" />
 <Compile Remove="..\mod\KspReads.cs" />
 ```
+
+`KspReads.cs` stands for your own file's name.
 
 A plugin that reaches the game or a mod only by reflection names no KSP type, so the test project compiles all of it and needs no such line ([Wrapping a mod](/guide/wrapping-a-mod#testing-without-the-mod)).
 

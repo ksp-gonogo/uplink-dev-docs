@@ -6,7 +6,7 @@ What to install before running `uplink-tools new`, and what an Uplink may depend
 
 - **Node 20 or later**, with npm. The client's test runner needs it
 - **The .NET SDK 10 or later.** The plugin targets `net48`, which KSP loads, and the scaffold brings in the .NET Framework reference assemblies as a package, so it builds on macOS and Linux with no Mono install. The plugin's tests run on `net10.0`
-- **Chromium for Playwright**, only to draw your widget's pictures (`npm run render` and `npm run docs`): `npx playwright install chromium`, a download of about 100 MB, once per machine. Nothing else in the Guide needs a browser
+- **Chromium for Playwright**, only to draw your widget's pictures (`npm run render` and `npm run docs`): `npx playwright install chromium`, a download of about 100 MB, once per machine. No other command in the Guide needs a browser
 - **KSP, the Gonogo mod and the Gonogo app**, only to try the Uplink in the game ([Start here](/guide/#what-else-you-need) says where to get them). Nothing before [Releasing and installing](/guide/release) needs them
 
 No clone of any repository is needed, and no KSP assembly unless your plugin calls the game directly ([The plugin class](/guide/plugin#calling-the-game)).
@@ -30,8 +30,10 @@ All four are published at the same version, and the scaffold pins them exactly, 
 
 | Half | Allowed | Not allowed |
 | --- | --- | --- |
-| Plugin | `Sitrep.Contract`, the Uplink's own contract slice, KSP and Unity assemblies, the mod it integrates | Any other Gonogo assembly |
-| Client | `@ksp-gonogo/sitrep-sdk`, `@ksp-gonogo/ui-kit`, React 18, styled-components, any other npm package | Any other `@ksp-gonogo/*` package |
+| Plugin | `Sitrep.Contract`, the Uplink's own contract slice (the assembly of its wire types, [Your first Uplink](/guide/first-uplink#what-it-writes)), KSP and Unity assemblies, the mod it integrates | Any other Gonogo assembly |
+| Client source | `@ksp-gonogo/sitrep-sdk`, `@ksp-gonogo/ui-kit`, React 18, styled-components, any other npm package | Any other `@ksp-gonogo/*` package |
+
+The table is about what the client's source imports. `@ksp-gonogo/uplink-tools` is a devDependency that runs the commands and is never imported.
 
 Nothing else of Gonogo is published, so code that reaches for it does not build outside Gonogo's own repository. The client uses React 18: the kit does not install beside React 19. The plugin never ships its own copy of `Sitrep.Contract.dll`: the Gonogo mod provides it in the game, and the scaffold's project files compile against it without copying it.
 

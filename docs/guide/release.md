@@ -12,11 +12,11 @@ npm run release
 
 `release` runs five steps, in an order that matters:
 
-1. **Bundle** the client into `client/dist/example/example.client.js`, with `gonogo-uplink.json` beside it
-2. **Bake** into the plugin's generated files where the bundle will be hosted and the bundle's hash, a SHA-256 written `sha256-<hex>`
+1. **Bundle** (`uplink-tools bundle`) the client into `client/dist/example/example.client.js`, with `gonogo-uplink.json` beside it
+2. **Bake** (`uplink-tools bake`) into the plugin's generated files where the bundle will be hosted and the bundle's hash, a SHA-256 written `sha256-<hex>`
 3. **Compile** the plugin in Release
 4. **Check** that the compiled plugin carries the URL and hash that were baked
-5. **Package** the plugin as `dist/GonogoExampleUplink.zip`, holding `GameData/GonogoExampleUplink/Plugins/` with the plugin and its contract slice, and nothing else, with the netkan beside it
+5. **Package** (`uplink-tools package`) the plugin as `dist/GonogoExampleUplink.zip`, holding `GameData/GonogoExampleUplink/Plugins/` with the plugin and its contract slice, and nothing else, with the netkan beside it
 
 The app loads a client only when the plugin vouches for the exact bundle it fetched, so the bundle must be built and hashed before the plugin is compiled. A plugin compiled first builds and passes its tests, and the app shows none of its widgets. `release` refuses to run while `client.url` in `uplink.json` is still the placeholder `new` writes without a repository, and while the version's three places disagree ([A new version](#a-new-version)).
 
@@ -46,7 +46,7 @@ cd ../example-releases
 git add releases && git commit -m "Release example 0.0.1" && git push -u origin releases
 ```
 
-For a later version, `git worktree add ../example-releases releases` checks the branch out again, and the files go in that version's folder. Keep `gonogo-uplink.json` beside the bundle under exactly that name: the app finds it from the bundle's own URL.
+In PowerShell, `mkdir -p` and `cp` are `New-Item -ItemType Directory -Force` and `Copy-Item` ([Known limits](/guide/limits#the-tools)). For a later version, `git worktree add ../example-releases releases` checks the branch out again, and the files go in that version's folder. Keep `gonogo-uplink.json` beside the bundle under exactly that name: the app finds it from the bundle's own URL.
 
 `new` writes this URL only when it knows the repository, from `--repo` or this directory's GitHub remote. With `--no-repo` it writes a placeholder, and `release` refuses to run until you set `repo` and `client.url` in `uplink.json` to where the bundle will really be published ([uplink.json](/guide/uplink-json#what-release-refuses)).
 
@@ -71,7 +71,7 @@ KSP/GameData/GonogoExampleUplink/Plugins/GonogoExampleUplink.dll
 KSP/GameData/GonogoExampleUplink/Plugins/GonogoExampleUplink.Contract.dll
 ```
 
-Never put it inside `GameData/Gonogo/`, and never add a copy of `Sitrep.Contract.dll`: the Gonogo mod provides it. Start the game and connect the app ([Start here](/guide/#what-else-you-need) says where to get both).
+Never put it inside `GameData/Gonogo/`, and never add a copy of `Sitrep.Contract.dll`: the Gonogo mod provides it. Start the game and connect the app ([Start here](/guide/#what-else-you-need) says where to get both). With KSP on the same computer the app connects to `localhost` on port 8090 with nothing to set; for another computer, set its address in the app's **Settings**, **Connection** tab, **Telemetry stream** row ([Connecting the dashboard to KSP](https://github.com/ksp-gonogo/gonogo/blob/main/docs/KSP-SETUP.md#connecting-the-dashboard-to-ksp)).
 
 ## Checking it loaded
 
@@ -105,7 +105,9 @@ A plugin with a development URL and no hash vouches for nothing, so the app load
 
 ## CKAN and SpaceDock
 
-`release` writes `dist/GonogoExampleUplink.netkan` beside the zip: the metadata CKAN indexes a mod from, naming `GonogoCore`, the Gonogo mod's CKAN identifier, as a dependency, and installing the zip's `GameData/GonogoExampleUplink` folder. If your Uplink integrates another mod, add that mod to `mod/GonogoExampleUplink.netkan`'s `depends` (or `recommends`, when the Uplink is useful without it). Submitting follows CKAN's own process:
+`release` writes `dist/GonogoExampleUplink.netkan` beside the zip: the metadata CKAN indexes a mod from, naming `GonogoCore`, the Gonogo mod's CKAN identifier, as a dependency, and installing the zip's `GameData/GonogoExampleUplink` folder. If your Uplink integrates another mod, add that mod to `mod/GonogoExampleUplink.netkan`'s `depends` (or `recommends`, when the Uplink is useful without it).
+
+The netkan `new` writes has no `$kref`, the line telling CKAN where each release's zip is downloaded from, and CKAN needs one. Attach the zip to a release on your repository and add `"$kref": "#/ckan/github/<owner>/<repo>"`, or upload it to SpaceDock and add `"$kref": "#/ckan/spacedock/<mod id>"`. Submitting follows CKAN's own process:
 
 - [CKAN's guide to adding a mod](https://github.com/KSP-CKAN/CKAN/wiki/Adding-a-mod-to-the-CKAN)
 - [SpaceDock](https://spacedock.info/), which hosts a mod's zip and which CKAN can index from

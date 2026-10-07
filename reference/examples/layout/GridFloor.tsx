@@ -1,5 +1,4 @@
-import { Box, Stack, Text } from "@ksp-gonogo/ui-kit";
-import { gridToPixels } from "@ksp-gonogo/ui-kit/grid";
+import { Box, gridToPixels, Stack, Text } from "@ksp-gonogo/ui-kit";
 
 export function GridFloor() {
   const { pxW, pxH } = gridToPixels(6, 4);

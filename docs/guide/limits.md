@@ -1,6 +1,6 @@
 # Known limits
 
-What the published packages, at the <Published field="name" /> <Published field="version" />, do not do, and what to do instead.
+At the <Published field="name" /> <Published field="version" />, the published packages do not do the following, and each item says what to do instead.
 
 ## The plugin
 
@@ -18,4 +18,4 @@ What the published packages, at the <Published field="name" /> <Published field=
 ## The tools
 
 - **The version is in three places**: `client/package.json`, `UPLINK_VERSION` in `client/src/uplink.ts`, and the folder in `client.url`. `release` refuses while they disagree, but changing them is yours ([Releasing and installing](/guide/release#a-new-version))
-- **`new` is tested on macOS and Linux**, not on Windows
+- **`new` is tested on macOS and Linux**, not on Windows. Its commands need only Node and the .NET SDK, but nothing checks them there; under WSL they run in Linux, the tested setup. The shell lines in this Guide are POSIX: in PowerShell, `mkdir -p <dir>` is `New-Item -ItemType Directory -Force <dir>` and `cp` is `Copy-Item`

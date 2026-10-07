@@ -19,14 +19,14 @@ With Node and the .NET SDK installed ([Prerequisites](/guide/prerequisites)), ma
 mkdir myuplink && cd myuplink
 npx @ksp-gonogo/uplink-tools@rc new
 cd client
-npm test                     # the client's tests, including the page check
+npm test                     # the client's tests, and the check that the generated page is current
 dotnet test ../mod-tests     # the plugin's tests
 npm run release              # build both halves and zip the plugin
 ```
 
 On a terminal, `new` asks seven questions, such as the Uplink's id and your name ([Your first Uplink](/guide/first-uplink#scaffold) lists them). Every answer is also a flag, so a script or an agent with no terminal passes them instead.
 
-That is a working Uplink: a plugin that publishes a heartbeat and a widget that shows it. `release` builds the client, writes what the plugin needs to know about it (`bake`), compiles the plugin, checks the two agree and zips the plugin. Every later page changes something in the Uplink and says which command to run after.
+That is a working Uplink: a plugin that publishes a heartbeat and a widget that shows it. `release` builds the client, writes the plugin's generated files describing it (`bake`), compiles the plugin, checks the two agree and zips the plugin. Every later page changes something in the Uplink and says which command to run after.
 
 ## What else you need
 

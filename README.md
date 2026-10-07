@@ -93,7 +93,14 @@ span naming a documented symbol must link to its reference entry, and every
 such link, anchor included, must land. The Markdown pass in
 `docs/.vitepress/symbolLinks.mts` writes those links on every page from the
 index `npm run reference` writes, so prose links a symbol by naming it in
-backticks. A `{@link}` in a doc comment to a symbol with no reference entry
+backticks. On a C# page (the mod reference, and the Guide's plugin, topics,
+commands and wrapping pages, `CSHARP_PAGES` in `scripts/symbol-links.mjs`) a
+name the contract shares with the sdk's TypeScript mirror links to the C#
+type. The same pass links a member span (`CommandResult.detail`) to its row,
+or to its owner where the owner's page has no row for it, an `uplink-tools`
+command to its section of the command line page, and `uplink.json` to its
+Guide page, and drops a link that would only reach the top of the page it is
+on. A `{@link}` in a doc comment to a symbol with no reference entry
 fails `npm run reference`, bar the ceiling in `scripts/symbol-link-debt.mjs`.
 
 ## The generated reference
@@ -168,7 +175,9 @@ or edited by hand (`npm run check:pages`).
   page shows and on a page whose concept no comment writes. Every symbol
   carrying the tag links to the page, and the first use of each term in the
   concept's name on any page links there too (`docs/.vitepress/conceptLinks.mts`),
-  bar the terms `scripts/concept-terms.mjs` lists as ambiguous
+  bar the terms `scripts/concept-terms.mjs` lists as ambiguous, text inside
+  a generated `<code>` cell, and a capitalised term beside another
+  capitalised word, which is a proper noun such as "Kerbin Station"
 - **A link from a reference entry to the Guide**: a `@guide <page>#<anchor>`
   tag in the symbol's doc comment (`@guide extensions#augments`). Generation
   fails when the Guide page does not exist, and `npm run check:links` when

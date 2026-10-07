@@ -132,7 +132,8 @@ for (const url of guideLinks) {
   if (!ids || (anchor && !ids.has(anchor))) faults.push(`@guide link ${url} is not on the built site`);
 }
 for (const file of files) {
-  for (const fault of grade(pageOfHtml(file), readFileSync(file, "utf8"), index, site)) {
+  const page = pageOfHtml(file);
+  for (const fault of grade(page, readFileSync(file, "utf8"), loadSymbolIndex(page), site)) {
     faults.push(`${relative(DIST, file)}: ${fault}`);
   }
 }

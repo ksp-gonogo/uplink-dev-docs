@@ -36,7 +36,7 @@ An **action** is something a widget can be told to do, such as step a value, whi
 
 ## Domains and seats
 
-Some widgets and extensions only make sense while a mod is present, such as one integrating a science mod. A **Domain** is that presence: an Uplink's extension names one in `requires`, and is mounted only while it is present. A **seat** is where the operator sits, at mission control or aboard the craft as its pilot, and a widget reading a Topic about the ground, such as the space centre or the career, stays at mission control, while every other widget, one reading an Uplink's own Topics included, is offered aboard as well. See [Domain and seat](/reference/concepts/domain-and-seat).
+Some widgets and extensions only make sense while a mod is present, such as one integrating a science mod. A **Domain** is that presence: an Uplink's extension names one in its [`requires`](/guide/extensions#AugmentDefinition.requires), and is mounted only while it is present, which starts with the first value its `<id>.available` Topic publishes, `true` or `false`. A **seat** is where the operator sits, at mission control or aboard the craft as its pilot, and a widget reading a Topic about the ground, such as the space centre or the career, stays at mission control, while every other widget, one reading an Uplink's own Topics included, is offered aboard as well. See [Domain and seat](/reference/concepts/domain-and-seat).
 
 ## The main screen and stations
 

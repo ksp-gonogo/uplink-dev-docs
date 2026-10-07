@@ -129,8 +129,8 @@ export function typeMd(type, index) {
   const t = (x) => typeMd(x, index);
   switch (type.type) {
     case "reference": {
-      // A type parameter such as `Unit` in `Value<Unit>` is named by its declaration, never by an export that shares its name.
-      if (type.refersToTypeParameter) return code(type.name);
+      // A type parameter such as `Unit` in `Value<Unit>` is named by its declaration, never by an export that shares its name, so it is marked as a name no link pass touches.
+      if (type.refersToTypeParameter) return memberName(type.name);
       // A named union of literals is shown as its values, which is what an author has to write.
       const alias = type.reflection?.kind === ReflectionKind.TypeAlias ? type.reflection.type : undefined;
       if (!index.url(type.name) && alias?.type === "union" && alias.types.every((m) => m.type === "literal")) {
@@ -147,6 +147,18 @@ export function typeMd(type, index) {
       return type.types.map(t).join(" & ");
     case "array":
       return `${t(type.elementType)}[]`;
+    case "typeOperator":
+      return `${type.operator} ${t(type.target)}`;
+    case "tuple":
+      return `[${(type.elements ?? []).map(t).join(", ")}]`;
+    case "reflection": {
+      // An object type written inline: whole where it is short, by its member names where it is not.
+      const children = type.declaration.children ?? [];
+      const whole = type.toString();
+      if (children.length === 0 || whole.length <= 80) return code(whole);
+      const names = children.map((c) => `${c.name}${c.flags.isOptional ? "?" : ""}`);
+      return code(`{ ${names.slice(0, 6).join("; ")}${names.length > 6 ? "; ..." : ""} }`);
+    }
     case "intrinsic":
     case "literal":
       return code(type.toString());
@@ -164,6 +176,22 @@ function declarationText(type) {
     return `\n  | ${type.types.map((m) => m.toString()).join("\n  | ")}`;
   }
   return ` ${type.toString()}`;
+}
+
+/**
+ * An object type as it is declared, one member per line, nested objects
+ * indented: the shape an author reads a constant object's members off.
+ * Below `depth` a nested object is written `{ ... }`.
+ */
+function objectText(declaration, depth = 2, pad = "") {
+  const lines = (declaration.children ?? []).map((c) => {
+    const name = /^[A-Za-z_$][\w$]*$/.test(c.name) ? c.name : JSON.stringify(c.name);
+    const head = `${pad}  ${c.flags.isReadonly ? "readonly " : ""}${name}${c.flags.isOptional ? "?" : ""}: `;
+    const nested = c.type?.type === "reflection" && c.type.declaration.children?.length;
+    if (!nested) return `${head}${c.type?.toString() ?? "unknown"};`;
+    return `${head}${depth > 1 ? objectText(c.type.declaration, depth - 1, `${pad}  `) : "{ ... }"};`;
+  });
+  return `{\n${lines.join("\n")}\n${pad}}`;
 }
 
 /** A comment's own headings sit under the symbol's: `##` in a comment is rendered at `level`. */
@@ -379,8 +407,20 @@ function examplesMd(comment, index, level) {
 function defaultOf(reflection) {
   const tag = reflection.comment?.blockTags.find((t) => t.tag === "@defaultValue");
   if (!tag) return "";
-  return tag.content.map((p) => p.text).join("").trim().replace(/^```\w*\n?|\n?```$/g, "").replace(/^`|`$/g, "");
+  return tag.content.map((p) => p.text).join("").trim().replace(/^```\w*\n?|\n?```$/g, "");
 }
+
+/** A default's cell: a value that is one code span is shown as code, one with words around it as written. */
+function defaultCell(reflection) {
+  const value = defaultOf(reflection);
+  if (!value) return "";
+  const span = /^`([^`]*)`$/.exec(value);
+  if (span) return code(span[1]);
+  return value.includes("`") ? cellSafe(value.replace(/\n+/g, " ")) : code(value);
+}
+
+/** An accessor's type and comment live on its getter. */
+const typeOfMember = (member) => member.type ?? member.getSignature?.type;
 
 /* ------------------------------------------------------------------ *
  * Declarations.
@@ -408,24 +448,36 @@ export const cellSafe = (md) => md.replace(/`[^`]*`/g, (span) => span.replace(/(
 export function propertiesMd(reflection, index) {
   const { own, dropped } = ownMembers(reflection);
   if (own.length === 0) return "";
+  const rest = dropped > 0 ? `\n\nEvery other prop is passed to the element it renders, as React's ${code(heritageOf(reflection))}.` : "";
+  return `${memberTable(own, index)}${rest}`;
+}
+
+/** One row per member: its name, its type, its default where any member has one, and its description. */
+function memberTable(own, index) {
+  if (own.length === 0) return "";
   const withDefaults = own.some((member) => defaultOf(member));
   const rows = own.map((member) => {
     const optional = member.flags.isOptional ? "?" : "";
-    const type = member.type
-      ? cellSafe(typeMd(member.type, index))
+    const type = typeOfMember(member)
+      ? cellSafe(typeMd(typeOfMember(member), index))
       : member.signatures
         ? cellSafe(code(methodText(member.signatures[0])))
         : "";
     const cells = [memberName(`${member.flags.isStatic ? "static " : ""}${member.name}${optional}`, memberAnchor(member)), type];
-    if (withDefaults) cells.push(defaultOf(member) ? code(defaultOf(member)) : "");
-    cells.push(cellMd(commentOf(member)?.summary, index));
+    if (withDefaults) cells.push(defaultCell(member));
+    cells.push(cellMd((commentOf(member) ?? member.getSignature?.comment)?.summary, index));
     return `| ${cells.join(" | ")} |`;
   });
   const head = withDefaults
     ? "| Name | Type | Default | Description |\n| --- | --- | --- | --- |"
     : "| Name | Type | Description |\n| --- | --- | --- |";
-  const rest = dropped > 0 ? "\n\nEvery other prop is passed to the element it renders, as React's `HTMLAttributes`." : "";
-  return `${head}\n${rows.join("\n")}${rest}`;
+  return `${head}\n${rows.join("\n")}`;
+}
+
+/** What an interface whose inherited members are not listed extends, as it declares it. */
+function heritageOf(reflection) {
+  const declared = (reflection.extendedTypes ?? []).map(String);
+  return declared.length > 0 ? declared.join(", ") : "HTMLAttributes<HTMLElement>";
 }
 
 /** A method member as the function type an author would write for it: `<T>(a: A, b?: B) => R`. */
@@ -445,7 +497,7 @@ function typeParamsText(params) {
 /** The whole interface or class as it is declared, members typed, their docs left to the table. */
 function interfaceText(reflection) {
   const { own, dropped } = ownMembers(reflection);
-  const heritage = dropped > 0 ? " extends HTMLAttributes<HTMLElement>" : "";
+  const heritage = dropped > 0 ? ` extends ${heritageOf(reflection)}` : "";
   const keyword = reflection.kind === ReflectionKind.Class ? "class" : "interface";
   const name = (m) => (/^[A-Za-z_$][\w$]*$/.test(m.name) ? m.name : JSON.stringify(m.name));
   const params = (sig) => (sig.parameters ?? []).map((p) => `${p.name}${p.flags.isOptional ? "?" : ""}: ${p.type}`).join(", ");
@@ -459,6 +511,7 @@ function interfaceText(reflection) {
     if (!m.type && m.signatures) {
       return m.signatures.map((sig) => `  ${modifiers}${name(m)}${optional}${typeParamsText(sig.typeParameters)}(${params(sig)}): ${sig.type};`);
     }
+    if (!m.type && m.getSignature) return [`  ${m.setSignature ? "" : "readonly "}${name(m)}: ${m.getSignature.type};`];
     return [`  ${modifiers}${name(m)}${optional}: ${m.type?.toString() ?? "unknown"};`];
   });
   return `${keyword} ${reflection.name}${typeParamsText(reflection.typeParameters)}${heritage} {\n${[...constructors, ...lines].join("\n")}\n}`;
@@ -492,15 +545,97 @@ function parametersMd(signature, index, level) {
   return `${"#".repeat(level)} Parameters\n\n| Name | Type | Description |\n| --- | --- | --- |\n${rows.join("\n")}`;
 }
 
-/** The props interface a component is drawn from, when there is exactly one. */
-export function propsOf(reflection, project) {
-  if (reflection.kind !== ReflectionKind.Function || !isComponent(reflection)) return undefined;
-  const params = reflection.signatures?.[0]?.parameters ?? [];
-  if (params.length !== 1 || params[0].type?.type !== "reference") return undefined;
-  // `Readonly<DialProps<Unit>>` is drawn from DialProps.
-  const type = params[0].type.name === "Readonly" && params[0].type.typeArguments?.[0]?.type === "reference" ? params[0].type.typeArguments[0] : params[0].type;
-  const props = project.getChildByName(type.name);
-  return props?.kind === ReflectionKind.Interface ? props : undefined;
+/**
+ * The props a component is drawn from: an interface, or a type alias built of
+ * object types, one per distinct call signature, so an overloaded component
+ * lists the props of each.
+ */
+export function propsListOf(reflection, project) {
+  if (!isComponent(reflection)) return [];
+  const assigned = assignedRootOf(reflection);
+  if (assigned) {
+    const props = project.getChildByName(`${reflection.name}Props`);
+    return props?.kind === ReflectionKind.Interface ? [props] : [];
+  }
+  if (reflection.kind !== ReflectionKind.Function) return [];
+  const found = [];
+  for (const signature of reflection.signatures ?? []) {
+    const params = signature.parameters ?? [];
+    if (params.length !== 1 || params[0].type?.type !== "reference") continue;
+    // `Readonly<DialProps<Unit>>` is drawn from DialProps.
+    const type = params[0].type.name === "Readonly" && params[0].type.typeArguments?.[0]?.type === "reference" ? params[0].type.typeArguments[0] : params[0].type;
+    const props = project.getChildByName(type.name);
+    const usable = props?.kind === ReflectionKind.Interface || (props?.kind === ReflectionKind.TypeAlias && aliasParts(props).length > 0);
+    if (usable && !found.includes(props)) found.push(props);
+  }
+  return found;
+}
+
+/** The first of {@link propsListOf}. */
+export const propsOf = (reflection, project) => propsListOf(reflection, project)[0];
+
+/**
+ * The object types a type alias is built of: each arm of an intersection, an
+ * exported interface by its members and an object literal by its own. A
+ * union of object types is one part whose arms are alternatives. A part the
+ * package does not export has no members to read, so it is named instead.
+ */
+function aliasParts(alias) {
+  const arms = alias.type?.type === "intersection" ? alias.type.types : [alias.type];
+  const parts = [];
+  for (const arm of arms) {
+    if (arm?.type === "reflection" && arm.declaration.children?.length) parts.push({ members: arm.declaration.children });
+    else if (arm?.type === "reference" && arm.reflection?.kind === ReflectionKind.Interface) parts.push({ members: ownMembers(arm.reflection).own, from: arm.reflection });
+    else if (arm?.type === "reference") parts.push({ unread: arm.name });
+    else if (arm?.type === "union" && arm.types.every((t) => t.type === "reflection")) {
+      parts.push({ choices: arm.types.map((t) => (t.declaration.children ?? []).filter((c) => String(c.type) !== "never")) });
+    }
+  }
+  return parts.some((part) => !part.unread) ? parts : [];
+}
+
+/** The props table of a type alias built of object types, with what it cannot list said in words. */
+function aliasPropsMd(alias, index) {
+  const parts = aliasParts(alias);
+  if (parts.length === 0) return "";
+  const members = parts.flatMap((part) => part.members ?? part.choices?.flat() ?? []);
+  const unique = [...new Map(members.map((m) => [m.name, m])).values()];
+  const notes = [];
+  for (const part of parts) {
+    if (part.unread) notes.push(`It also takes every prop of ${code(part.unread)}, which the package does not export.`);
+    if (part.choices) {
+      const sets = part.choices.map((arm) => arm.map((m) => code(m.name)).join(" and "));
+      notes.push(`Pass exactly one of ${sets.join(" or ")}.`);
+    }
+  }
+  return [memberTable(unique, index), ...notes].filter(Boolean).join("\n\n");
+}
+
+/**
+ * A constant made by `Object.assign(Root, { Part, ... })`: a component with
+ * sub-components as its properties. Its type is `typeof Root & { ... }`.
+ */
+function assignedRootOf(reflection) {
+  if (reflection.kind !== ReflectionKind.Variable || reflection.type?.type !== "intersection") return undefined;
+  const [root, parts] = reflection.type.types;
+  return root?.type === "query" && parts?.type === "reflection" ? { root, parts: parts.type === "reflection" ? parts.declaration.children ?? [] : [] } : undefined;
+}
+
+/** A member's type in a declaration, a styled component's library generics read down to the element it renders. */
+function shortTypeText(type) {
+  const text = String(type);
+  const element = styledElementOf(text);
+  return element ? `StyledComponent<"${element.tag}">` : text;
+}
+
+/** The members of a styled component's own `$` props, read out of its inferred type. */
+function styledProps(type, found = new Map(), depth = 0) {
+  if (!type || depth > 8) return found;
+  for (const child of type.declaration?.children ?? []) {
+    if (child.name.startsWith("$") && !found.has(child.name)) found.set(child.name, child);
+  }
+  for (const next of [...(type.typeArguments ?? []), ...(type.types ?? [])]) styledProps(next, found, depth + 1);
+  return found;
 }
 
 /**
@@ -555,7 +690,7 @@ export function symbolMd(reflection, project, index, { level = 3, title = true, 
   if (title) out.push(`${h(level)} ${reflection.name} {#${reflection.name}}`);
 
   if (callSignatures(reflection).length > 0) {
-    const props = propsOf(reflection, project);
+    const props = propsListOf(reflection, project);
     const signatures = callSignatures(reflection);
     // A constant's doc comment sits on the constant, not on its signature.
     const comments = distinctComments(signatures);
@@ -566,8 +701,11 @@ export function symbolMd(reflection, project, index, { level = 3, title = true, 
     out.push(...comments.map((c) => returnsMd(c, index)));
     out.push(crossLinksMd(comments, reflection.name));
     out.push(typeParamsMd(signatures[0]?.typeParameters, index));
-    if (props) {
-      out.push(`${h(inner)} Props {#${props.name}}`, propertiesMd(props, index));
+    if (props.length > 0) {
+      for (const one of props) {
+        const table = one.kind === ReflectionKind.TypeAlias ? aliasPropsMd(one, index) : propertiesMd(one, index);
+        out.push(`${h(inner)} ${props.length > 1 ? `Props: ${one.name}` : "Props"} {#${one.name}}`, table);
+      }
     } else {
       out.push(parametersMd(signatures[0], index, inner));
     }
@@ -594,12 +732,13 @@ export function symbolMd(reflection, project, index, { level = 3, title = true, 
     out.push(summaryMd(reflection.comment, index, inner, { omitRemarks }));
     out.push(crossLinksMd([reflection.comment], reflection.name));
     out.push(typeParamsMd(reflection.typeParameters, index));
+    if (reflection.type?.type === "intersection") out.push(aliasPropsMd(reflection, index));
     out.push(examplesMd(reflection.comment, index, inner));
   } else if (reflection.type?.type === "reflection" && reflection.type.declaration.children?.length) {
     // A constant object such as `CommandErrorCode`: its members are the values an author uses, so they are a table.
     const twin = typeTwinOf(reflection);
     const alias = twin ? `\ntype ${twin.name}${typeParamsText(twin.typeParameters)} =${declarationText(twin.type)};` : "";
-    out.push(`\`\`\`ts\nconst ${reflection.name}: { ... };${alias}\n\`\`\``);
+    out.push(`\`\`\`ts\nconst ${reflection.name}: ${objectText(reflection.type.declaration)};${alias}\n\`\`\``);
     const summary = summaryMd(reflection.comment, index, inner, { omitRemarks });
     out.push(summary);
     out.push(crossLinksMd([reflection.comment, twin?.comment], reflection.name));
@@ -609,15 +748,30 @@ export function symbolMd(reflection, project, index, { level = 3, title = true, 
     out.push(examplesMd(reflection.comment, index, inner));
   } else {
     const declared = reflection.type?.toString() ?? "";
-    const element = styledElementOf(declared);
-    // A styled component's inferred type is hundreds of characters of library generics, and says nothing.
-    if (element) {
-      out.push(`Renders a ${code(`<${element.tag}>`)} and takes every prop the element does, as React's ${code(element.attributes)}.`);
+    const assigned = assignedRootOf(reflection);
+    const element = assigned ? undefined : styledElementOf(declared);
+    const own = element ? [...styledProps(reflection.type).values()] : [];
+    if (assigned) {
+      const parts = assigned.parts.map((part) => `  ${part.name}: ${shortTypeText(part.type)};`);
+      out.push(`\`\`\`ts\nconst ${reflection.name}: ${assigned.root} & {\n${parts.join("\n")}\n};\n\`\`\``);
+    } else if (element) {
+      // A styled component's inferred type is hundreds of characters of library generics, and says nothing.
+      const extra = own.length > 0 ? `, and the props below` : "";
+      out.push(`Renders a ${code(`<${element.tag}>`)} and takes every prop the element does, as React's ${code(element.attributes)}${extra}.`);
     } else if (declared && declared.length <= 120) {
       out.push(`\`\`\`ts\nconst ${reflection.name}: ${declared};\n\`\`\``);
+    } else if (reflection.type?.type === "typeOperator" && reflection.type.target?.type === "tuple") {
+      // A long tuple reads as its entries, one per line.
+      const entries = reflection.type.target.elements.map((e) => `  ${e},`).join("\n");
+      out.push(`\`\`\`ts\nconst ${reflection.name}: ${reflection.type.operator} [\n${entries}\n];\n\`\`\``);
     }
     out.push(summaryMd(reflection.comment, index, inner, { omitRemarks }));
     out.push(crossLinksMd([reflection.comment], reflection.name));
+    if (own.length > 0) out.push(memberTable(own, index));
+    if (assigned) {
+      const props = propsListOf(reflection, project)[0];
+      if (props) out.push(`${h(inner)} Props {#${props.name}}`, propertiesMd(props, index));
+    }
     out.push(examplesMd(reflection.comment, index, inner));
   }
   return out.filter(Boolean).join("\n\n");
