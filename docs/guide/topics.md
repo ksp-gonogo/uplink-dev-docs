@@ -31,7 +31,7 @@ cd client
 npm run codegen
 ```
 
-It writes `client/src/__generated__/`: `contract.ts` with an interface per wire type, and `units.ts` and `units.json` with each field's unit, which `src/topics.ts` registers. It also writes `topic-map.ts`, the slice's Topics and their payload types, which the page generator reads and your code does not. What types `useTelemetry("example.heartbeat")` is the declaration in `src/topics.ts`, which you extend by hand for each Topic ([A widget](/guide/client-widget#the-topics-typed)). `npm run codegen:check` fails when the committed files no longer match the slice, which is the command to run in CI.
+It writes `client/src/__generated__/`: `contract.ts` with an interface per wire type, and `units.ts` and `units.json` with each field's unit, which `src/topics.ts` registers. It also writes `topic-map.ts`, the slice's Topics and their payload types, which the page generator reads, and `command-map.ts`, the slice's commands ([Sending a command](/guide/client-commands)). What types `useTelemetry("example.heartbeat")` is the declaration in `src/topics.ts`, which you extend by hand for each Topic ([A widget](/guide/client-widget#the-topics-typed)). `npm run codegen:check` fails when the committed files no longer match the slice, which is the command to run in CI.
 
 ## Declaring the Topic
 

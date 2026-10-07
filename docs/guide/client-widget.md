@@ -57,9 +57,15 @@ The widget itself, `client/src/Heartbeat/index.tsx`:
 | `"absent"` | The game confirmed there is no value, such as no target set |
 | `"unowned"` | Nothing will ever publish this Topic: no installed Uplink declares it |
 
-The widget draws the values while the reading is observed or held, and says which of the other three it is otherwise, never a zero: a value you have not received is not a value of zero, and the two mean opposite things to an operator.
+The widget `new` writes draws the values while the reading is observed or held, and says which of the other three it is otherwise, never a zero: a value you have not received is not a value of zero, and the two mean opposite things to an operator. The example adds the modelled count and the reset button to it.
 
 Each payload field is also on the reading as a `Reading` of its own, `heartbeat.ticks` beside `heartbeat.value.ticks`. Hand that to `Unit`, never the bare value: the field reading carries its own state, so `Unit` draws a held value with the held mark, and the null token when there is no value. `ModelledAlongside` and the `reckoning` lines draw this Uplink's model beside the count received ([Writing a reckoner](/guide/reckoners)), and the reset button is [Sending a command](/guide/client-commands).
+
+## A text field
+
+`Unit` draws quantities only: a field the contract slice tags `Units.Text` arrives as a `Reading` of a string, which `Unit` does not take. Draw it with the same care by hand: the null token with no value, and the held mark on a value that stopped updating, which `derivedMarking` reads off the reading and `HeldFigure` draws.
+
+<<< ../../reference/examples/guide/VesselName.tsx
 
 ## Drawing it
 

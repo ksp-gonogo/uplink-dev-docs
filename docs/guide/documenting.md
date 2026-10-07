@@ -51,8 +51,4 @@ These comments are the ones that travel: `codegen` copies them into `client/src/
 
 The same rules apply as for the descriptions: what it is, not why it came to be that way.
 
-## uplink.md
-
-`new` also writes `client/uplink.md`, and its closing message suggests describing the Uplink there. Nothing reads that file: the page's opening paragraph is the `description` in `src/uplink.ts`. Leave it or delete it.
-
 Next: [Releasing and installing](/guide/release).

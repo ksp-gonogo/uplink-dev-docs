@@ -8,7 +8,7 @@ In `client/src/topics.ts`, the same `declare module` block as the Topics':
 
 <<< ../../example/client/src/topics.ts#maps
 
-The SDK types every core command's arguments in `CommandArgsMap` and its reply in `CommandReplyMap`. Your commands join them as your Topics join `TopicPayloadMap`: the arguments type is the one `codegen` generated from the contract slice, and the reply is `CommandResult` for a handler that returns `CommandResult`, or `CommandResultOf` the payload type for one that returns data. `codegen` does not write these lines for you, unlike the types they name.
+The SDK types every core command's arguments in `CommandArgsMap` and its reply in `CommandReplyMap`. Your commands join them through the two maps `codegen` writes into `client/src/__generated__/command-map.ts`, one row per `SitrepCommandAttribute` in the contract slice: the arguments type it generated, and the reply, `CommandResult` for a handler that returns `CommandResult` or `CommandResultOf` the payload type for one that returns data. A command you add to the slice is typed after `npm run codegen`, with no line of yours to add.
 
 ## The command, known at runtime
 
@@ -16,7 +16,7 @@ Further down `client/src/topics.ts`:
 
 <<< ../../example/client/src/topics.ts#command
 
-The declaration types the command; `registerUplinkCommand` makes the app know it exists at runtime. Its second argument, a `CommandRail`, says how the command travels, and must agree with the plugin: `delayed` is `false` for a `TrueNow` command and `true` for a `Delayed` one, and `replies` is `true` for a handler that returns a result. The app uses it to show the operator whether a sent command is still crossing the signal delay. The reference describes the rail as a row from an Uplink's generated command map; `codegen` writes no such map yet, so write the rail by hand as here ([Known limits](/guide/limits#the-client)).
+The declaration types the command; `registerUplinkCommand` makes the app know it exists at runtime. Its second argument, a `CommandRail`, says how the command travels: whether it waits for the signal delay (`delayed`) and whether a reply comes back (`replies`). The generated map's rail is read off the same attribute the plugin's host dispatches by, so the two always agree. The app uses it to show the operator whether a sent command is still crossing the signal delay.
 
 Forget the call and nothing fails: the command still sends, but the app does not know how it travels and draws it as a single command that gets a reply.
 

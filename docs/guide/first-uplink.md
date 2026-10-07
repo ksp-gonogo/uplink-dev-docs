@@ -4,7 +4,7 @@ How to scaffold an Uplink, what each file `new` writes is for, and the two comma
 
 ## Scaffold
 
-In an empty directory named after the Uplink, run `new`. It writes into that directory.
+In an empty directory named after the Uplink, run `new`. It writes into that directory, and takes the id from the directory's name unless you give one.
 
 ```bash
 mkdir example && cd example
@@ -36,7 +36,7 @@ npx @ksp-gonogo/uplink-tools@rc new example --name Example --author "Your Name" 
 - **`--topics core`** makes an Uplink that publishes nothing of its own: its widget reads one of Gonogo's own Topics, and it has no contract slice. This Guide builds one with Topics of its own
 - **`--ksp`** writes your KSP folder into `ksp.local.props`, for a plugin that calls the game ([The plugin class](/guide/plugin#calling-the-game)). It is kept out of git
 
-`new` never overwrites a file. After writing the files it runs four steps: `bake`, `codegen` (which needs the .NET SDK), `npm install` in `client/`, and `npm run page`. A step that fails is reported with the command to run again, and the files stay in place. Its closing message also suggests describing the Uplink in `client/uplink.md`; nothing reads that file, so write the description where [Documenting your Uplink](/guide/documenting) says.
+`new` never overwrites a file. After writing the files it runs four steps: `bake`, `codegen` (which needs the .NET SDK), `npm install` in `client/`, and `npm run page`. A step that fails is reported with the command to run again, and the files stay in place. Its closing message names the next three things to do, starting with the `description` in `client/src/uplink.ts` ([Documenting your Uplink](/guide/documenting)).
 
 ## What it writes
 
@@ -62,7 +62,6 @@ example/
     ├── package.json
     ├── tsconfig.json, tsconfig.nodenext.json
     ├── vitest.config.ts            the test runner's settings
-    ├── uplink.md                   read by nothing
     ├── README.md                   the generated page
     ├── gonogo-uplink.json          what the app reads about the client
     ├── docs/widgets.json           a record of each widget

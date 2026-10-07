@@ -35,7 +35,7 @@ A widget rendered alone has no data, which is the waiting state, and worth a tes
 
 <<< ../../example/client/src/Heartbeat/__fixtures__/beating.json
 
-A fixture is a scene the render harness draws a widget in: `_scene` names the widget, its picture's `caption` and the modes to draw it in, and `_stream` says what is on the wire. `npm run render` draws every fixture to `client/renders/` in a real browser, and `npm run docs` draws them into the generated page, so a fixture is both a picture to look at and the page's illustration. Rendering needs Chromium, installed once with `npx playwright install chromium`.
+A fixture is a scene the render harness draws a widget in: `_scene` names the widget, its picture's `caption` and the modes to draw it in, and `_stream` says what is on the wire. The `min` mode draws the widget at its `minSize`, and exists only while `minSize` is smaller than `defaultSize`: make them equal and a fixture naming `min` fails every test, so take it out of `modes`. `npm run render` draws every fixture to `client/renders/` in a real browser, and `npm run docs` draws them into the generated page, so a fixture is both a picture to look at and the page's illustration. Rendering needs Chromium, installed once with `npx playwright install chromium`.
 
 Beside `pinnedUt` and `emits`, `_stream` takes `delaySeconds`, which stages a signal delay so the scene shows modelled values beside received ones, and `stopsArriving`, which draws every figure held. The [`@ksp-gonogo/uplink-tools` README](https://www.npmjs.com/package/@ksp-gonogo/uplink-tools) documents each field.
 
@@ -43,12 +43,14 @@ Beside `pinnedUt` and `emits`, `_stream` takes `delaySeconds`, which stages a si
 
 `mod-tests/` is an xunit project that compiles the plugin's own sources, so a test constructs the plugin class and calls it directly: its manifest, its sample function, its command handlers. On a test project the `KspGonogo.Sitrep.Contract` package also brings `Sitrep.Contract.TestSupport`, with fake hosts and checks of the rules a manifest must follow. Run them with `dotnet test ../mod-tests` from `client/`.
 
-Code that names a KSP type cannot be compiled into the test project, which has no KSP assemblies. Keep it in a file of its own, and leave that file out in `mod-tests/GonogoExampleUplink.Tests.csproj`, beside the line that compiles the plugin's sources:
+A plugin that references KSP's or a mod's assemblies has code the test project cannot compile, since it has no KSP. Keep that code in a file of its own, and leave that file out in `mod-tests/GonogoExampleUplink.Tests.csproj`, beside the line that compiles the plugin's sources:
 
 ```xml
 <Compile Include="..\mod\*.cs" />
 <Compile Remove="..\mod\KspReads.cs" />
 ```
+
+A plugin that reaches the game or a mod only by reflection names no KSP type, so the test project compiles all of it and needs no such line ([Wrapping a mod](/guide/wrapping-a-mod#testing-without-the-mod)).
 
 ## In CI
 
@@ -67,6 +69,10 @@ dotnet test ../mod-tests
 
 ## Checking the pictures
 
-`npm run docs:check` regenerates the page and its pictures in memory and fails when the committed ones differ, so it needs Chromium. As it draws each fixture it also checks the picture can be read, and prints a warning for a widget whose text is cut off or whose title is clipped at a size it draws, such as its `minSize`. The scaffold's heartbeat draws two such warnings at rc.14, at its default and its minimum size; they say the widget needs a bigger tile or less text, and the command does not fail on them.
+`npm run docs:check` regenerates the page and its pictures in memory and fails when the committed ones differ, so it needs Chromium. As it draws each fixture it also checks the picture can be read, and prints a warning for a widget whose text is cut off or whose title is clipped at a size it draws. A warning does not fail the command; it says the widget needs a bigger tile or less text, so raise its `minSize` or give its `Panel` a `compactTitle`. The scaffold's widget draws none.
+
+## When the page is out of date
+
+`npm test` includes the page check, so after a change to a registration it fails until the page is regenerated. `npm run page` regenerates it by running the tests, and refuses while they fail, including that one. Run `npm run docs` instead, which writes the page and the pictures without running the tests, then `npm test` again.
 
 Next: [Documenting your Uplink](/guide/documenting).

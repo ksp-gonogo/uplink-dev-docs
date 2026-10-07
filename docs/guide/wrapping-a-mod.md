@@ -45,14 +45,24 @@ A build server has no KSP install, so a plugin that references the game or a mod
 
 ## Saying the mod is missing
 
+<<< ../../reference/examples/mod/WrappingExample.cs#manifest{cs}
+
 <<< ../../reference/examples/mod/WrappingExample.cs#register{cs}
 
 <<< ../../reference/examples/mod/WrappingExample.cs#health{cs}
 
 - **Publish `<id>.available`** (here `clock.available`), a boolean the plugin answers whether or not the mod is there, declared `TrueNow` because it is a fact about this install. Most of the gonogo-uplinks Uplinks that publish Topics do. A client tells "the mod is not installed" (`false`) from "nothing has arrived yet" (pending)
 - **Return early from `Register`** when the mod is missing, after `IUplinkHost.SetAvailability` with the reason, so no source runs against a mod that is not there
-- **Report it from `Health`**, with the same reason: the app draws it in place of the Uplink's widgets
+- **Report it from `Health`**, with the same reason as the `UplinkHealth`'s `Detail`, its second argument: the app draws it in place of the Uplink's widgets
 - **Declare commands only when the mod is there.** TestFlight's manifest lists its repair command only when TestFlight loaded, so on an install without it the command does not exist rather than failing when sent
+
+### Declaring `<id>.available`
+
+Its payload is a bare boolean, so it needs no wire type in the contract slice: the plugin declares only its channel, as the manifest above declares `clock.available`, and publishes `true` or `false`. The client types it and registers it by hand, in `client/src/topics.ts` beside the generated Topics:
+
+<<< ../../reference/examples/guide/clockTopics.ts
+
+`registerBarePrimitiveTopic` makes the id known at runtime, the way the generated Topics are; [`registerBarePrimitiveTopic`](/reference/client/reading-telemetry#registerBarePrimitiveTopic) has the detail.
 
 `<id>.available` also makes the Uplink's id a [Domain](/reference/concepts/domain-and-seat): a client's augment that names it in `requires` mounts once the Topic has published anything, `true` or `false`, which says the Uplink is installed. Read its value for whether the mod is.
 
