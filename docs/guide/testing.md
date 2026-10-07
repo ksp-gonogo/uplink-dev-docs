@@ -15,7 +15,7 @@ So a test needs nothing of its own to render a widget:
 - `PerfBudget`'s `installTestGate` fails a test that pushes one of Gonogo's performance budgets over its limit, such as a widget subscribing in a loop
 - `setQuantityLocale` fixes how numbers are written, so a test's expected text is the same on every machine
 
-The scaffold's `package.json` installs everything these import, `@testing-library/jest-dom` included. `render` and `screen` from `@ksp-gonogo/sitrep-sdk/testing` are Testing Library's, with the kit's theme mounted. `renderWidget` from `@ksp-gonogo/ui-kit/testing` renders a widget by its id inside the provider stack the dashboard puts around it, for a test of something the dashboard draws, such as a status badge on its panel.
+The scaffold's `package.json` installs everything these import, `@testing-library/jest-dom` included. [`render`](/reference/client/testing/rendering#render) and `screen` from `@ksp-gonogo/sitrep-sdk/testing` are Testing Library's, with the kit's theme mounted. `renderWidget` from `@ksp-gonogo/ui-kit/testing` renders a widget by its id inside the provider stack the dashboard puts around it, for a test of something the dashboard draws, such as a status badge on its panel.
 
 ## Feeding a widget
 

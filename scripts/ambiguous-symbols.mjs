@@ -11,4 +11,5 @@
 export const AMBIGUOUS_SYMBOLS = {
   value: "the value() constructor, and the field or parameter named value on dozens of types and props",
   Section: "ui-kit's Section component, and the Section prop the Objectives widget's slot passes",
+  render: "the testing render(), and the render member of a DataTable column and other render props",
 };
