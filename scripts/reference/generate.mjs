@@ -42,6 +42,25 @@ import {
 const frontmatter = (page) =>
   `---\ngenerated: npm run reference\noutline: [2, 3]\n${hasExamples(page) ? "pageClass: has-examples\n" : ""}---\n`;
 
+const htmlEscape = (text) => text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+/**
+ * VitePress compiles a page as a Vue template, and Vue reads `{{` in inline
+ * code as an interpolation. Fenced blocks are marked `v-pre` already; an
+ * inline code span holding `{{` becomes a `<code v-pre>` of its own.
+ */
+function vueSafe(md) {
+  let fenced = false;
+  return md
+    .split("\n")
+    .map((line) => {
+      if (/^\s*```/.test(line)) fenced = !fenced;
+      if (fenced || !line.includes("{{")) return line;
+      return line.replace(/`([^`]*\{\{[^`]*)`/g, (_, inner) => `<code v-pre>${htmlEscape(inner)}</code>`);
+    })
+    .join("\n");
+}
+
 /** Whether a page shows live examples, which widen its column on a wide screen. */
 const hasExamples = (page) => page.kind !== "contract" && (page.examples?.length > 0 || Object.keys(page.extensions ?? {}).length > 0);
 
@@ -598,7 +617,7 @@ export async function generate({ install = true } = {}) {
     else sections = contractPage(page, contractIndex);
     const file = resolve(DOCS, page.path);
     mkdirSync(dirname(file), { recursive: true });
-    writeFileSync(file, `${frontmatter(page)}\n${sections.filter(Boolean).join("\n\n")}\n`);
+    writeFileSync(file, `${frontmatter(page)}\n${vueSafe(sections.filter(Boolean).join("\n\n"))}\n`);
     written.push(relative(ROOT, file));
   }
   writeSidebar(PAGES, records);
