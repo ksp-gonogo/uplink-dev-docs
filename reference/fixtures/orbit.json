@@ -1,0 +1,25 @@
+{
+  "subscribed": ["vessel.orbit"],
+  "emits": [
+    {
+      "topic": "vessel.orbit",
+      "payload": {
+        "referenceBodyIndex": 1,
+        "sma": 720000,
+        "ecc": 0.0833,
+        "inc": 0.4,
+        "lan": 82,
+        "argPe": 17,
+        "meanAnomalyAtEpoch": 1.2,
+        "epoch": 5400,
+        "mu": 3.5316e12,
+        "timeToAp": 1480,
+        "timeToPe": 480,
+        "encounter": null,
+        "patches": [],
+        "horizon": { "kind": 0, "trajectoryKind": 0, "untilUt": null },
+        "meta": { "source": "ksp" }
+      }
+    }
+  ]
+}

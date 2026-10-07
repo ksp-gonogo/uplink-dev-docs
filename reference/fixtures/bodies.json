@@ -1,0 +1,42 @@
+{
+  "subscribed": ["vessel.identity", "system.bodies"],
+  "emits": [
+    {
+      "topic": "vessel.identity",
+      "payload": {
+        "vesselId": "kerbal-x",
+        "name": "Kerbal X",
+        "vesselType": 0,
+        "situation": 3,
+        "parentBodyIndex": 1,
+        "meta": { "source": "ksp" }
+      }
+    },
+    {
+      "topic": "system.bodies",
+      "payload": {
+        "bodies": [
+          {
+            "name": "Sun",
+            "index": 0,
+            "parentIndex": null,
+            "radius": 261600000,
+            "horizon": { "kind": 0, "trajectoryKind": 0, "untilUt": null },
+            "surfaceGravity": 17.1
+          },
+          {
+            "name": "Kerbin",
+            "index": 1,
+            "parentIndex": 0,
+            "radius": 600000,
+            "orbit": { "sma": 13599840256, "ecc": 0, "inc": 0, "lan": 0, "argPe": 0, "meanAnomalyAtEpoch": 3.14, "epoch": 0 },
+            "horizon": { "kind": 0, "trajectoryKind": 0, "untilUt": null },
+            "gravParameter": 3.5316e12,
+            "surfaceGravity": 1,
+            "isHome": true
+          }
+        ]
+      }
+    }
+  ]
+}
