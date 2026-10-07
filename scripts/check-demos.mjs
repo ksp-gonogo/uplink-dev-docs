@@ -11,6 +11,10 @@
  * - the "failed to load" or "No example is wired" note fails it
  * - a render with no text and no drawn graphic fails it
  *
+ * Each example that renders cleanly is also saved as a screenshot, under
+ * `demo-shots/` in the built site, which the page shows before any script
+ * runs (`Demo.vue`).
+ *
  * The ids graded are the ones the built pages name, so an id a page names and
  * the registry lacks fails as unwired. Before grading them it grades three
  * planted examples, one of each fault, and reports BLIND unless all three
@@ -23,13 +27,14 @@
  * that means the Storybook checkout went missing and it fails.
  */
 import { spawn } from "node:child_process";
-import { readdirSync, readFileSync } from "node:fs";
+import { mkdirSync, readdirSync, readFileSync } from "node:fs";
 import { createServer } from "node:net";
 import { join, resolve } from "node:path";
 import { chromium } from "playwright";
 import { PLANTED_DEMOS } from "./reference/paths.mjs";
 
 const DIST = resolve(import.meta.dirname, "../docs/.vitepress/dist");
+const SHOTS = resolve(DIST, "demo-shots");
 /** How long an example gets to draw before it counts as drawing nothing. */
 const RENDER_LIMIT_MS = 20_000;
 /** How long a drawn example is watched for an error that lands after it. */
@@ -124,32 +129,41 @@ function stageState() {
   return { drawn: text.length > 0 || graphic };
 }
 
-/** The faults one example shows, or an empty list when it drew and stayed quiet; never longer than the example limit. */
-async function grade(browser, url, id) {
+/** The render's own element, inside the stage's shadow root, which is what a screenshot shows. */
+function stageElement() {
+  const root = document.querySelector(".demo-stage__host")?.shadowRoot;
+  return root && [...root.children].find((el) => el.tagName !== "STYLE");
+}
+
+/**
+ * The faults one example shows, or an empty list when it drew and stayed quiet; never longer than the example limit.
+ * With `shoot`, a clean render is saved to `demo-shots/<id>.png`.
+ */
+async function grade(browser, url, id, shoot = false) {
   let timer;
   const limit = new Promise((done) => {
     timer = setTimeout(() => done([`did not finish within ${EXAMPLE_LIMIT_MS / 1000}s`]), EXAMPLE_LIMIT_MS);
   });
-  const faults = await Promise.race([gradeOnce(browser, url, id).catch((error) => [`could not be graded: ${error.message}`]), limit]);
+  const faults = await Promise.race([gradeOnce(browser, url, id, shoot).catch((error) => [`could not be graded: ${error.message}`]), limit]);
   clearTimeout(timer);
   return faults;
 }
 
 /** Every id graded, `PAGES_AT_ONCE` at a time, with its faults, in the order given. */
-async function gradeAll(browser, url, ids) {
+async function gradeAll(browser, url, ids, shoot = false) {
   const results = new Array(ids.length);
   let next = 0;
   const worker = async () => {
     while (next < ids.length) {
       const i = next++;
-      results[i] = await grade(browser, url, ids[i]);
+      results[i] = await grade(browser, url, ids[i], shoot);
     }
   };
   await Promise.all(Array.from({ length: Math.min(PAGES_AT_ONCE, ids.length) }, worker));
   return results;
 }
 
-async function gradeOnce(browser, url, id) {
+async function gradeOnce(browser, url, id, shoot) {
   const page = await browser.newPage({ viewport: { width: 1200, height: 800 } });
   await page.addInitScript(recordErrors);
   const faults = [];
@@ -167,6 +181,11 @@ async function gradeOnce(browser, url, id) {
   if (!settled) faults.push(`drew nothing within ${RENDER_LIMIT_MS / 1000}s`);
   await page.waitForTimeout(SETTLE_MS);
   faults.push(...(await page.evaluate(() => window.__demoErrors)));
+  if (shoot && faults.length === 0) {
+    const stage = (await page.evaluateHandle(stageElement)).asElement();
+    if (!stage) faults.push("has no element to screenshot");
+    else await stage.screenshot({ path: join(SHOTS, `${id}.png`), animations: "disabled" });
+  }
   await page.close().catch(() => {});
   return [...new Set(faults)];
 }
@@ -193,7 +212,8 @@ try {
     failed = true;
   } else {
     const entries = [...named];
-    const graded = await gradeAll(browser, server.url, entries.map(([id]) => id));
+    mkdirSync(SHOTS, { recursive: true });
+    const graded = await gradeAll(browser, server.url, entries.map(([id]) => id), true);
     const broken = entries.flatMap(([id, pages], i) =>
       graded[i].length === 0 ? [] : [`  ${id} (on ${pages.join(", ")})\n${graded[i].map((f) => `      ${f}`).join("\n")}`],
     );
@@ -201,7 +221,7 @@ try {
       console.error(`Live examples that do not render cleanly:\n${broken.join("\n")}`);
       failed = true;
     } else {
-      console.log(`Live examples: all ${named.size} render with no errors (planted faults found: ${PLANTED.length}).`);
+      console.log(`Live examples: all ${named.size} render with no errors, each saved as a screenshot (planted faults found: ${PLANTED.length}).`);
     }
   }
 } finally {

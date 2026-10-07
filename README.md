@@ -143,7 +143,8 @@ away.
   checkout, or `GONOGO_STORYBOOK`, whose stories are generated with
   `pnpm --filter @ksp-gonogo/storybook generate`. Storybook's UI is never
   loaded. Without a checkout the site still builds and each island says it
-  has nothing to mount
+  has nothing to mount. `npm run check:demos` saves a screenshot of each
+  render, which the page shows above its code before any script runs
 
 To change a generated page, change the doc comment it comes from, its example
 file, or its module. Every page under `docs/reference/` is generated: the build

@@ -9,12 +9,17 @@
  * the viewport and the page's frame queue gives it a turn. Until the frame
  * reports its first render, the pane shows a loading indicator; a frame that
  * errors or outlasts its turn shows a plain note instead.
+ *
+ * Served as static HTML, before any script runs, the block is the render's
+ * screenshot (taken by `check-demos.mjs` from the same frame), described by
+ * `label`, above the code, so a reader with no scripts and a search engine
+ * see what the example shows and the code that shows it.
  */
 import { withBase } from "vitepress";
 import { computed, onBeforeUnmount, onMounted, ref, useSlots } from "vue";
 import { takeTurn } from "./frameQueue";
 
-const props = defineProps<{ id: string; file?: string }>();
+const props = defineProps<{ id: string; file?: string; label?: string }>();
 const slots = useSlots();
 
 const MIN_HEIGHT = 200;
@@ -38,9 +43,12 @@ const tab = ref<Tab>("preview");
 const height = ref(0);
 const loading = ref(false);
 const status = ref<"pending" | "ready" | "failed">("pending");
+const mounted = ref(false);
 
 const hasCode = computed(() => slots.default !== undefined);
-const tabbed = computed(() => hasCode.value && !wide.value);
+const tabbed = computed(() => hasCode.value && mounted.value && !wide.value);
+const shot = computed(() => withBase(`/demo-shots/${props.id}.png`));
+const described = computed(() => props.label ?? (props.file ? `The render of ${props.file}` : "The rendered example"));
 const src = computed(() => (loading.value ? withBase(`/demo?id=${encodeURIComponent(props.id)}`) : undefined));
 const uid = computed(() => `demo-${props.id}`);
 
@@ -101,6 +109,7 @@ let observer: ResizeObserver | undefined;
 let nearby: IntersectionObserver | undefined;
 
 onMounted(() => {
+  mounted.value = true;
   window.addEventListener("message", onMessage);
   if (!root.value) return;
   observer = new ResizeObserver(([entry]) => {
@@ -149,15 +158,17 @@ onBeforeUnmount(() => {
     </div>
     <div class="demo__panels">
       <div v-show="shown('preview')" :id="`${uid}-panel-preview`" class="demo__preview" v-bind="panelAttrs('preview')">
+        <img v-if="!mounted" class="demo__shot" :src="shot" :alt="described" loading="lazy" />
         <iframe
+          v-if="mounted"
           ref="frame"
           class="demo__frame"
           :src="src"
-          :title="file ? `Live example of ${file}` : 'Live example'"
+          :title="label ?? (file ? `Live example of ${file}` : 'Live example')"
           :style="{ minHeight: `${Math.max(MIN_HEIGHT, height)}px` }"
           @error="fail"
         />
-        <div v-if="status !== 'ready'" class="demo__status" role="status">
+        <div v-if="mounted && status !== 'ready'" class="demo__status" role="status">
           <template v-if="status === 'pending'">
             <span class="demo__spinner" aria-hidden="true" />
             <span class="demo__status-label">Loading example</span>
@@ -220,6 +231,12 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   background: var(--vp-c-bg);
+}
+
+.demo__shot {
+  display: block;
+  max-width: 100%;
+  height: auto;
 }
 
 .demo__frame {

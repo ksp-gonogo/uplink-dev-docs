@@ -85,23 +85,30 @@ const versionOf = () => PUBLISHED.version;
  * One example: the render and the file that produces it, as one block. The
  * file is included by VitePress from `reference/examples/`, where the
  * examples gate typechecks it, so the code shown is the code rendered. With
- * `code: false` the block is the render alone.
+ * `code: false` the block is the render alone. `label` says what the render
+ * shows, for a reader who sees its screenshot or nothing.
  */
-function demoMd(page, id, file, { code = true } = {}) {
-  if (!file || !code) return `<Demo id="${id}" />`;
+function demoMd(page, id, file, { code = true, label } = {}) {
+  const described = label ? ` label="${htmlEscape(label).replace(/"/g, "&quot;")}"` : "";
+  if (!file || !code) return `<Demo id="${id}"${described} />`;
   const from = relative(dirname(resolve(DOCS, page.path)), resolve(ROOT, file));
-  return `<Demo id="${id}" file="${file.split("/").pop()}">\n\n<<< ${from}\n\n</Demo>`;
+  return `<Demo id="${id}" file="${file.split("/").pop()}"${described}>\n\n<<< ${from}\n\n</Demo>`;
 }
+
+/** A scene's name: its fixture's file name, `eva-suit-low-o2`. */
+const sceneName = (scene) => scene.fixture.split("/").pop().replace(/\.json$/, "");
 
 /**
  * The examples at the top of a page: one titled section, or one per example
  * under it. A widget page's are the built-in widget itself, which an author
  * writes no code to get, so they are renders alone.
  */
-function examplesMd(page) {
+function examplesMd(page, widgetName) {
   const examples = page.examples ?? [];
   if (examples.length === 0) return "";
-  const one = (e) => demoMd(page, e.id, e.file, { code: page.kind !== "widget" });
+  const label = (e) =>
+    page.kind === "widget" ? `The ${widgetName} widget on the ${sceneName(e.scene ?? page.scene)} scene` : undefined;
+  const one = (e) => demoMd(page, e.id, e.file, { code: page.kind !== "widget", label: label(e) });
   if (examples.length === 1) {
     const [e] = examples;
     return `## ${e.title ?? "Example"} {#example}\n\n${one(e)}`;
@@ -155,14 +162,26 @@ function extensionOf(page, slot) {
   return typeof entry === "string" ? { file: entry } : entry;
 }
 
-/** Every story a generated stories file exports, by export name, with the name Storybook shows. */
+/**
+ * Every story a generated stories file exports, by export name: the name
+ * Storybook shows, the scene its fixture is (by file name), and the story's
+ * own description (`parameters.docs.description.story`) where it has one.
+ */
 function storyExports(root, file) {
   const path = resolve(root, "dist/stories", file);
   if (!existsSync(path)) {
     throw new Error(`no ${file} under ${root}/dist/stories: run pnpm --filter @ksp-gonogo/storybook generate in the gonogo checkout`);
   }
   const source = readFileSync(path, "utf8");
-  return new Map([...source.matchAll(/^export const (\w+)(?::\s*\w+)? = \{\s*name: "([^"]+)"/gm)].map(([, name, shown]) => [name, shown]));
+  const imports = new Map([...source.matchAll(/^import (\w+) from "([^"]+)\.json";$/gm)].map(([, name, from]) => [name, from.split("/").pop()]));
+  const blocks = source.matchAll(/^export const (\w+)(?::\s*\w+)? = \{\s*name: "([^"]+)"([\s\S]*?)^\};/gm);
+  return new Map(
+    [...blocks].map(([, name, shown, body]) => {
+      const description = /description:\s*\{\s*story:\s*("(?:[^"\\]|\\.)*")/.exec(body)?.[1];
+      const scene = imports.get(/fixture:\s*(\w+)/.exec(body)?.[1]);
+      return [name, { shown, scene, description: description ? JSON.parse(description) : undefined }];
+    }),
+  );
 }
 
 /** A story's name as a heading: `eva-suit-low-o2` reads "Eva suit low o2". */
@@ -177,12 +196,14 @@ function storiesOf(page) {
   const root = storybookRoot();
   if (!page.stories || root === null) return { states: [], extensions: new Map() };
   // A widget with no stories file of its own shows no states; its slots' stories still render.
-  const states = [...(page.stories.states ? storyExports(root, page.stories.states) : [])].map(([name, shown]) => ({
+  const states = [...(page.stories.states ? storyExports(root, page.stories.states) : [])].map(([name, { shown, scene, description }]) => ({
     // A story name can hold spaces and " @ " (`pre-launch-mixed @ stock-career`); an id and an anchor cannot.
     id: `${page.widget}--${shown.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`,
     story: page.stories.states,
     export: name,
     title: storyTitle(shown),
+    scene,
+    description,
   }));
   const extensions = new Map();
   for (const [slot, ref] of Object.entries(page.stories.extensions ?? {})) {
@@ -455,13 +476,15 @@ function widgetPage(page, record, sdk, kit, index) {
     return `| [${code(p.id)}](#${anchorOf(p.id)}) | ${p.kind} | ${p.standard ? "yes" : ""} | ${shape} | ${cell(partsMd(p.doc?.summary, index))} |`;
   });
   const stories = storiesOf(page);
-  const states = stories.states.length === 0
-    ? []
-    : ["## States {#states}", ...stories.states.map((story) => `### ${story.title} {#${story.id}}\n\n${demoMd(page, story.id)}`)];
+  const stateMd = (story) => {
+    const label = story.scene ? `The ${record.name} widget on the ${story.scene} scene` : `The ${record.name} widget, ${story.title}`;
+    return [`### ${story.title} {#${story.id}}`, story.description ?? "", demoMd(page, story.id, undefined, { label })].filter(Boolean).join("\n\n");
+  };
+  const states = stories.states.length === 0 ? [] : ["## States {#states}", ...stories.states.map(stateMd)];
   const out = [
     widgetHeaderMd(record),
     `${code(SDK)} ${versionOf(SDK)} · ${code(KIT)} ${versionOf(KIT)} · ${code(TOOLS)} ${versionOf(TOOLS)}`,
-    examplesMd(page),
+    examplesMd(page, record.name),
     ...states,
     "## Extension points {#extension-points}",
     `Every slot an Uplink can fill on the ${record.name} widget. Standard slots are on every widget. [Extensions](/guide/extensions) explains augments and contributions.`,
@@ -471,9 +494,14 @@ function widgetPage(page, record, sdk, kit, index) {
   for (const point of points) {
     out.push(`### ${code(point.id)} {#${anchorOf(point.id)}}`, partsMd(point.doc?.summary, index).trim(), howToMd(point, index));
     const { file } = extensionOf(page, point.id);
-    if (file) out.push(demoMd(page, extensionDemoId(point.id), file));
+    if (file) {
+      const label = `The ${record.name} widget with ${file.split("/").pop()} filling ${point.id}`;
+      out.push(demoMd(page, extensionDemoId(point.id), file, { label }));
+    }
     const story = stories.extensions.get(point.id);
-    if (story) out.push(`#### Where it renders {#${story.id}}`, demoMd(page, story.id));
+    if (story) {
+      out.push(`#### Where it renders {#${story.id}}`, demoMd(page, story.id, undefined, { label: `Where ${point.id} renders on the ${record.name} widget` }));
+    }
     const name = point.type?.type === "reference" && !noProps(point.type) ? point.type.name : null;
     if (name && !shown.has(name)) {
       shown.add(name);
