@@ -257,7 +257,8 @@ const isOwn = (reflection) =>
  * several hundred attributes.
  */
 function ownMembers(reflection) {
-  const all = reflection.children ?? [];
+  // A class's constructor is shown in its declaration, not as a member row.
+  const all = (reflection.children ?? []).filter((c) => c.kind !== ReflectionKind.Constructor);
   const own = all.filter((c) => !c.inheritedFrom || isOwn(c));
   return { own, dropped: all.length - own.length };
 }
@@ -302,17 +303,26 @@ function typeParamsText(params) {
   return `<${params.map(one).join(", ")}>`;
 }
 
-/** The whole interface as it is declared, members typed, their docs left to the table. */
+/** The whole interface or class as it is declared, members typed, their docs left to the table. */
 function interfaceText(reflection) {
   const { own, dropped } = ownMembers(reflection);
   const heritage = dropped > 0 ? " extends HTMLAttributes<HTMLElement>" : "";
-  const lines = own.map((m) => {
+  const keyword = reflection.kind === ReflectionKind.Class ? "class" : "interface";
+  const name = (m) => (/^[A-Za-z_$][\w$]*$/.test(m.name) ? m.name : JSON.stringify(m.name));
+  const params = (sig) => (sig.parameters ?? []).map((p) => `${p.name}${p.flags.isOptional ? "?" : ""}: ${p.type}`).join(", ");
+  const constructors = (reflection.children ?? [])
+    .filter((c) => c.kind === ReflectionKind.Constructor)
+    .flatMap((c) => c.signatures ?? [])
+    .map((sig) => `  constructor(${params(sig)});`);
+  const lines = own.flatMap((m) => {
     const optional = m.flags.isOptional ? "?" : "";
     const readonly = m.flags.isReadonly ? "readonly " : "";
-    const type = m.type ? m.type.toString() : (m.signatures?.[0]?.toString() ?? "unknown");
-    return `  ${readonly}${/^[A-Za-z_$][\w$]*$/.test(m.name) ? m.name : JSON.stringify(m.name)}${optional}: ${type};`;
+    if (!m.type && m.signatures) {
+      return m.signatures.map((sig) => `  ${name(m)}${optional}${typeParamsText(sig.typeParameters)}(${params(sig)}): ${sig.type};`);
+    }
+    return [`  ${readonly}${name(m)}${optional}: ${m.type?.toString() ?? "unknown"};`];
   });
-  return `interface ${reflection.name}${typeParamsText(reflection.typeParameters)}${heritage} {\n${lines.join("\n")}\n}`;
+  return `${keyword} ${reflection.name}${typeParamsText(reflection.typeParameters)}${heritage} {\n${[...constructors, ...lines].join("\n")}\n}`;
 }
 
 /** Each type parameter and what it stands for, from its `@typeParam`. */
@@ -421,7 +431,7 @@ export function symbolMd(reflection, project, index, { level = 3, title = true, 
       out.push(parametersMd(signatures[0], index, inner));
     }
     out.push(...comments.map((c) => examplesMd(c, index, inner)));
-  } else if (reflection.kind === ReflectionKind.Interface) {
+  } else if (reflection.kind === ReflectionKind.Interface || reflection.kind === ReflectionKind.Class) {
     out.push(`\`\`\`ts\n${interfaceText(reflection)}\n\`\`\``);
     out.push(summaryMd(reflection.comment, index, inner, { omitRemarks }));
     out.push(typeParamsMd(reflection.typeParameters, index));
