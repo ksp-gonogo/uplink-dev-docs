@@ -81,9 +81,7 @@ function relink(md, onPage, index) {
     const [type, member] = parts;
     if (onPage.has(type)) return `[${shown}](#${member ? `${type}.${member}` : type})`;
     const url = index?.url(type);
-    if (!url) return shown;
-    // A generated page anchors each member under its type's; a hand page has only the page.
-    return `[${shown}](${member && url.includes("#") ? `${url}.${member}` : url})`;
+    return url ? `[${shown}](${member ? `${url}.${member}` : url})` : shown;
   });
 }
 

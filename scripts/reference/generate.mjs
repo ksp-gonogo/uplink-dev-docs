@@ -9,7 +9,7 @@
  * `reference/guides/` for a guide's own prose, or the page's module under
  * `reference/pages/` for what shares a page.
  */
-import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, relative, resolve } from "node:path";
 import { PAGES } from "../../reference/pages.mjs";
 import { contractCategory, contractMd, contractSummary, isContractType, runXmldocmd } from "./csharp.mjs";
@@ -514,28 +514,6 @@ function contractPage(page, index) {
   return [title, `${code("Sitrep.Contract")} · ${code("KspGonogo.Sitrep.Contract")} ${contractVersion()}`, body];
 }
 
-/**
- * The hand-written reference pages that are a symbol's entry: those titled
- * with the name of something the packages export or the contract declares,
- * such as `docs/reference/ui-kit/Badge.md`.
- */
-function handWrittenEntries(generated, isSymbol) {
-  const entries = [];
-  const walk = (dir) => {
-    for (const entry of readdirSync(dir, { withFileTypes: true })) {
-      const full = resolve(dir, entry.name);
-      if (entry.isDirectory()) walk(full);
-      if (!entry.isFile() || !entry.name.endsWith(".md")) continue;
-      const path = relative(DOCS, full);
-      if (generated.has(path)) continue;
-      const title = /^# ([A-Za-z_$][\w$]*)\s*$/m.exec(readFileSync(full, "utf8"))?.[1];
-      if (title && isSymbol(title)) entries.push([title, urlOf({ path })]);
-    }
-  };
-  walk(resolve(DOCS, "reference"));
-  return entries;
-}
-
 const SIDEBAR = resolve(DOCS, ".vitepress/sidebar.generated.json");
 
 /** The lists a guide page includes with `<!--@include: @/.vitepress/includes/topics.md-->`. */
@@ -630,12 +608,6 @@ export async function generate({ install = true } = {}) {
     if (page.kind === "widget") {
       for (const t of slotTypes(recordOf(records, page), projects[SDK], projects[KIT])) index.add(t, `${url}#${t}`);
     }
-  }
-  const isSymbol = (name) =>
-    Object.values(projects).some((project) => project.getChildByName(name)) || isContractType(name);
-  for (const [name, url] of handWrittenEntries(new Set(PAGES.map((p) => p.path)), isSymbol)) {
-    index.add(name, url);
-    if (isContractType(name) && url.startsWith("/reference/mod/")) contractIndex.add(name, url);
   }
   writeFileSync(SYMBOL_INDEX, `${JSON.stringify(index, null, 2)}\n`);
 
