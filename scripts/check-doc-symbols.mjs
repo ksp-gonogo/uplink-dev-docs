@@ -218,7 +218,8 @@ function collectClaims() {
 
     pages.push({
       file: rel,
-      isReference: isReference || (generated && rel.startsWith("docs/reference/ui-kit/")),
+      // A generated page for a kit subpath (`@ksp-gonogo/ui-kit/testing`) documents exports this root snapshot does not hold; its generator checked them.
+      isReference: isReference || (generated && rel.startsWith("docs/reference/ui-kit/") && !/^`@ksp-gonogo\/ui-kit\/[\w-]+`/m.test(body)),
       // The page's subject, as the two places a page says what it is about. A generated category page is named for its category, so every symbol it anchors is a subject too.
       subjects: [
         rel.split("/").pop().replace(/\.md$/, ""),
