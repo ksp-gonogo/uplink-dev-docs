@@ -169,7 +169,8 @@ function storiesOf(page) {
   if (!page.stories || root === null) return { states: [], extensions: new Map() };
   // A widget with no stories file of its own shows no states; its slots' stories still render.
   const states = [...(page.stories.states ? storyExports(root, page.stories.states) : [])].map(([name, shown]) => ({
-    id: `${page.widget}--${shown}`,
+    // A story name can hold spaces and " @ " (`pre-launch-mixed @ stock-career`); an id and an anchor cannot.
+    id: `${page.widget}--${shown.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`,
     story: page.stories.states,
     export: name,
     title: storyTitle(shown),
