@@ -1,0 +1,50 @@
+{
+  "_meta": {
+    "notes": "The docking view every Targeting example renders on: a docking port 35 m ahead, off the centre line, so the reticle sits away from the middle of the box."
+  },
+  "_stream": {
+    "pinnedUt": 0,
+    "emits": [
+      {
+        "channel": "vessel.target",
+        "value": {
+          "name": "Space Station Hub",
+          "kind": 0,
+          "vesselId": "target-vessel",
+          "bodyIndex": null,
+          "relativePosition": {
+            "x": 0,
+            "y": 0,
+            "z": 35
+          },
+          "relativeVelocity": {
+            "x": 0,
+            "y": 0,
+            "z": 1.2
+          },
+          "closestApproach": {
+            "time": 0,
+            "distance": 0
+          }
+        }
+      },
+      {
+        "channel": "vessel.dock",
+        "value": {
+          "relativePosition": {
+            "x": 4.8,
+            "y": -3.6,
+            "z": 35
+          },
+          "relativeVelocity": {
+            "x": 0,
+            "y": 0,
+            "z": 1.2
+          },
+          "distance": 35,
+          "forwardDot": 0.985
+        }
+      }
+    ]
+  }
+}
