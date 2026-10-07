@@ -37,14 +37,38 @@ To try the Uplink in the game you need KSP, the Gonogo mod and the Gonogo app:
 
 Nothing before [Releasing and installing](/guide/release) needs either.
 
-## How the Guide goes
+## The pages
 
-1. [Prerequisites](/guide/prerequisites) and [Your first Uplink](/guide/first-uplink): install, scaffold, and what each file is
-2. The plugin: [the plugin class](/guide/plugin), [publishing a Topic](/guide/topics), [accepting a command](/guide/commands)
-3. The client: [a widget](/guide/client-widget), [sending a command](/guide/client-commands), [writing a reckoner](/guide/reckoners), [extending a built-in widget](/guide/extensions)
-4. Shipping: [testing](/guide/testing), [documenting your Uplink](/guide/documenting), [releasing and installing](/guide/release)
+Getting started:
 
-[Concepts](/guide/concepts) explains the ideas the API is built on, such as what a reading's state is and why a command can arrive late. [Known limits](/guide/limits) lists what the published packages do not do yet.
+- [Prerequisites](/guide/prerequisites): what to install
+- [Your first Uplink](/guide/first-uplink): scaffold, and what each file is for
+
+The plugin:
+
+- [The plugin class](/guide/plugin): how Gonogo finds it, its manifest, `Register` and `Health`
+- [Publishing a Topic](/guide/topics): the payload type, codegen, and the source that publishes it
+- [Accepting a command](/guide/commands): its arguments, its handler and its reply
+- [Wrapping a mod](/guide/wrapping-a-mod): reaching another mod, reading it safely, and saying when it is missing
+
+The client:
+
+- [A widget](/guide/client-widget): registering it and reading a Topic
+- [Sending a command](/guide/client-commands): typing the command, and a button that sends it
+- [Writing a reckoner](/guide/reckoners): a forward model that carries a value between samples
+- [Extensions](/guide/extensions): adding to the app's own widgets
+
+Shipping:
+
+- [Testing](/guide/testing): both halves, without the game
+- [Documenting your Uplink](/guide/documenting): the generated page and the doc comments
+- [Releasing and installing](/guide/release): building, hosting the client, installing, and CKAN
+
+Background:
+
+- [uplink.json](/guide/uplink-json): every field, and what reads it
+- [Concepts](/guide/concepts): readings, signal delay, reckoning, Domains and the rest
+- [Known limits](/guide/limits): what the published packages do not do yet
 
 ## The example in this Guide
 

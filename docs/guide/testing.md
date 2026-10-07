@@ -63,6 +63,10 @@ npx uplink-tools bake        # the plugin's generated files
 dotnet test ../mod-tests
 ```
 
-`new --workflows` writes these as a GitHub Actions workflow. `npm run docs:check` also compares the pictures, and needs Chromium.
+`new --workflows` writes these as a GitHub Actions workflow.
+
+## Checking the pictures
+
+`npm run docs:check` regenerates the page and its pictures in memory and fails when the committed ones differ, so it needs Chromium. As it draws each fixture it also checks the picture can be read, and prints a warning for a widget whose text is cut off or whose title is clipped at a size it draws, such as its `minSize`. The scaffold's heartbeat draws two such warnings at rc.14, at its default and its minimum size; they say the widget needs a bigger tile or less text, and the command does not fail on them.
 
 Next: [Documenting your Uplink](/guide/documenting).

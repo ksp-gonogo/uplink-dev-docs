@@ -82,14 +82,7 @@ The **contract slice** is a small assembly holding the C# classes that describe 
 
 <<< ../../example/uplink.json
 
-- **`id`, `name`, `author` and `repo`** are what `bake` writes into the plugin, so the app can say who made the client before it loads it
-- **`gamedata` and `dll`** are the folder and file the release lays out under `GameData`
-- **`minAppVersion`** is the oldest Gonogo app the Uplink works with, which the app checks when it loads the client and warns about rather than refuses
-- **`mod`** names the mod the Uplink wraps, shown on its generated page; `null` for one that wraps none, like this one
-- **`codegen`** tells `codegen` which assembly and configuration to run, and needs no edit
-- **`client.url`** is where the app fetches the bundle from
-
-The version lives in `client/package.json`, and `bake` reads it from there. Two other places repeat it and change with it: `UPLINK_VERSION` in `client/src/uplink.ts`, and the version folder in `client.url`.
+The Uplink's identity, where its plugin and client go, and how codegen runs. [uplink.json](/guide/uplink-json) lists each field and the command that reads it. The version lives in `client/package.json` instead, and two other places repeat it: `UPLINK_VERSION` in `client/src/uplink.ts`, and the version folder in `client.url`.
 
 ## Prove it works
 
@@ -107,6 +100,6 @@ Everything except what `.gitignore` names: `node_modules`, the build outputs, `k
 
 ## The heartbeat
 
-The scaffold's plugin publishes one Topic, `example.heartbeat`, carrying a count of how many times it has published and the game time of the last sample. Its widget shows both. The next three pages take the plugin apart, and the four after them the client.
+The scaffold's plugin publishes one Topic, `example.heartbeat`, carrying a count of how many times it has published and the game time of the last sample. Its widget shows both. The next four pages take the plugin apart, and the four after them the client.
 
 Next: [The plugin class](/guide/plugin).

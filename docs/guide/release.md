@@ -46,6 +46,8 @@ git add releases && git commit -m "Release example 0.0.1" && git push -u origin 
 
 For a later version, `git worktree add ../example-releases releases` checks the branch out again, and the files go in that version's folder. Keep `gonogo-uplink.json` beside the bundle under exactly that name: the app finds it from the bundle's own URL.
 
+`new` writes this URL only when it knows the repository, from `--repo` or this directory's GitHub remote. With `--no-repo` it writes a placeholder, and `release` refuses to run until you set `repo` and `client.url` in `uplink.json` to where the bundle will really be published ([uplink.json](/guide/uplink-json#what-release-refuses)).
+
 Never change a published file. The plugin vouches for one exact bundle, and jsDelivr keeps serving what it first fetched from a path; a new release is a new version folder. Any other host that serves files over HTTPS works too: put its URL in `client.url` before running `release`.
 
 ## A new version
@@ -102,4 +104,4 @@ If your Uplink integrates another mod, add that mod to the netkan's `depends` (o
 - [CKAN's guide to adding a mod](https://github.com/KSP-CKAN/CKAN/wiki/Adding-a-mod-to-the-CKAN)
 - [SpaceDock](https://spacedock.info/), which hosts a mod's zip and which CKAN can index from
 
-Next: [Concepts](/guide/concepts).
+Next: [uplink.json](/guide/uplink-json).

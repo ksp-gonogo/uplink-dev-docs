@@ -9,8 +9,14 @@ namespace ExampleUplink
     /// </summary>
     internal sealed class GuideExamples
     {
-        private bool _modLoaded;
-        private int _staleSamples;
+        public GuideExamples(bool modLoaded, int staleSamples)
+        {
+            _modLoaded = modLoaded;
+            _staleSamples = staleSamples;
+        }
+
+        private readonly bool _modLoaded;
+        private readonly int _staleSamples;
 
         #region health
         /// <summary>Reports the mod this Uplink wraps as missing, and a stale read as degraded.</summary>

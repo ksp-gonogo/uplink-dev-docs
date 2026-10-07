@@ -1,5 +1,6 @@
 import { defineConfig } from "vitepress";
 import { islandVite } from "./islands.mts";
+import { conceptLinks } from "./conceptLinks.mts";
 import { symbolLinks } from "./symbolLinks.mts";
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
@@ -44,7 +45,12 @@ export default defineConfig({
   // were never defined for it.
   appearance: "force-dark",
   vite: islandVite(),
-  markdown: { config: symbolLinks },
+  markdown: {
+    config: (md) => {
+      symbolLinks(md);
+      conceptLinks(md);
+    },
+  },
   cleanUrls: true,
   lastUpdated: true,
   themeConfig: {
@@ -69,6 +75,7 @@ export default defineConfig({
             { text: "The plugin class", link: "/guide/plugin" },
             { text: "Publishing a Topic", link: "/guide/topics" },
             { text: "Accepting a command", link: "/guide/commands" },
+            { text: "Wrapping a mod", link: "/guide/wrapping-a-mod" },
           ],
         },
         {
@@ -91,6 +98,7 @@ export default defineConfig({
         {
           text: "Background",
           items: [
+            { text: "uplink.json", link: "/guide/uplink-json" },
             { text: "Concepts", link: "/guide/concepts" },
             { text: "Known limits", link: "/guide/limits" },
           ],

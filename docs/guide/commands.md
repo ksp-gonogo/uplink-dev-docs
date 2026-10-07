@@ -50,4 +50,4 @@ In `mod-tests/ExampleUplinkTests.cs`:
 
 The handler is `internal` and the test project compiles the plugin's sources, so a test calls it directly with no game running. Run them with `dotnet test ../mod-tests` from `client/`.
 
-Next: [A widget](/guide/client-widget).
+Next: [Wrapping a mod](/guide/wrapping-a-mod).
