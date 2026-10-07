@@ -9,9 +9,7 @@ The two halves never call each other. They meet at a WebSocket the Gonogo mod se
 
 ## What you can build today
 
-The published packages cover the plugin half completely, and cover a standalone browser client that speaks the stream directly.
-
-They do not yet cover mounting your client as a widget inside the Gonogo dashboard: the API that registers one is not published to npm. [Known limits](/guide/limits) states exactly what is missing.
+The published packages cover both halves: the plugin, and a client that either registers widgets into the Gonogo dashboard or runs as a standalone page speaking the stream directly. [Known limits](/guide/limits) states what they do not do.
 
 The command line is `@ksp-gonogo/uplink-tools`. `npx @ksp-gonogo/uplink-tools new <id>` scaffolds an Uplink, and the same package bundles, renders and documents it. Each command answers `--help`, and [Command line](/reference/tools/command-line) prints every command's help.
 

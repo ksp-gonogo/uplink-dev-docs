@@ -14,7 +14,7 @@ The output lands in `bin/Release/`, without a target-framework subdirectory, bec
 ## Bundle the client
 
 ```bash
-npx uplink-tools bundle
+npx @ksp-gonogo/uplink-tools bundle
 ```
 
 from the client directory builds `dist/<id>/<id>.client.js`, its `.sha256`, and the `gonogo-uplink.json` the app reads beside it. `--watch` rebuilds on every save and leaves the last good bundle in place when a save does not compile.
@@ -22,7 +22,7 @@ from the client directory builds `dist/<id>/<id>.client.js`, its `.sha256`, and 
 To let the plugin vouch for the client it shipped with, bake the hash into C# before compiling the DLL:
 
 ```bash
-npx uplink-tools bake-hash --bundle dist/example/example.client.js \
+npx @ksp-gonogo/uplink-tools bake-hash --bundle dist/example/example.client.js \
   --out mod/ExampleUplink/ExampleClientHash.g.cs --namespace ExampleUplink
 ```
 

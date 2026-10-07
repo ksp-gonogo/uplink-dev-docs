@@ -5,9 +5,9 @@
 - **.NET SDK 8 or later.** The plugin targets `net48`; on macOS and Linux the template pulls in `Microsoft.NETFramework.ReferenceAssemblies` so no Mono install is needed
 - **`Sitrep.Contract.dll`.** The Gonogo mod's contract assembly. It is the only Gonogo assembly you may reference, and the only one you need
 
-  It is not on NuGet, and **the Gonogo mod itself is not released yet**: it is on neither CKAN nor SpaceDock, and there is no download. Until it ships, the assembly comes from building the mod from source, from [its repository](https://github.com/ksp-gonogo/gonogo).
+  It is published on NuGet as `KspGonogo.Sitrep.Contract`: reference that package at the Gonogo version you build against. The Gonogo mod itself is not on CKAN or SpaceDock yet ([Known limits](/guide/limits)).
 
-  Once installed it is at:
+  In a KSP install with the mod, it is at:
 
   ```
   KSP/GameData/Gonogo/Plugins/Sitrep.Contract.dll
@@ -22,7 +22,7 @@
 ## For the client
 
 - **Node 18 or later.**
-- **React 18.** `@ksp-gonogo/ui-kit@0.1.0` declares a peer dependency on `react@^18`. Installing it alongside React 19 fails outright on npm
+- **React 18.** `@ksp-gonogo/ui-kit` declares a peer dependency on `react@^18`. Installing it alongside React 19 fails outright on npm
 
 ```bash
 npm install @ksp-gonogo/sitrep-sdk @ksp-gonogo/ui-kit \
@@ -30,7 +30,7 @@ npm install @ksp-gonogo/sitrep-sdk @ksp-gonogo/ui-kit \
 npm install -D @ksp-gonogo/uplink-tools typescript @types/react @types/react-dom vite @vitejs/plugin-react
 ```
 
-The template's `client/package.json` has the same list, pinned.
+The template's `client/package.json` pins the same list except `@ksp-gonogo/uplink-tools`: the template is a standalone page built with Vite, so it does not bundle for the dashboard.
 
 Those two, plus `react`, `styled-components` and anything from the wider registry, are the whole of what an Uplink's client may import. The third published package, `@ksp-gonogo/uplink-tools`, is a devDependency: the command line that scaffolds, bundles and documents an Uplink, never imported by the client itself.
 
