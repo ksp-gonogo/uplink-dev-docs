@@ -10,6 +10,5 @@ export const HAND_PAGES = [
   "docs/reference/client/index.md",
   "docs/reference/client/topics.md",
   "docs/reference/index.md",
-  "docs/reference/ui-kit/Button.md",
   "docs/reference/ui-kit/index.md",
 ];
