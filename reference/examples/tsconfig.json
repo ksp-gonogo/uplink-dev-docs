@@ -15,7 +15,10 @@
       "@ksp-gonogo/sitrep-sdk": [
         "../../.reference/node_modules/@ksp-gonogo/sitrep-sdk"
       ],
-      "@ksp-gonogo/ui-kit": ["../../.reference/node_modules/@ksp-gonogo/ui-kit"]
+      "@ksp-gonogo/ui-kit": ["../../.reference/node_modules/@ksp-gonogo/ui-kit"],
+      "@ksp-gonogo/ui-kit/grid": [
+        "../../.reference/node_modules/@ksp-gonogo/ui-kit/dist/gridUnits"
+      ]
     }
   },
   "include": ["**/*.ts", "**/*.tsx"]

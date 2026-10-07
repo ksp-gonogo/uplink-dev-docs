@@ -20,7 +20,7 @@ The theme's values are custom properties, and the sheet that defines them goes i
 import "@ksp-gonogo/ui-kit/tokens.css";
 ```
 
-Without it every themed size resolves to nothing. See [Theme](/reference/ui-kit/theme).
+Without it every themed size resolves to nothing. See [Theme](/reference/ui-kit/Theme).
 
 ## It is presentational only
 
@@ -28,25 +28,25 @@ No primitive reads telemetry, dispatches a command, or holds anything but its ow
 
 ## The primitives
 
-**Layout**: [Stack](/reference/ui-kit/Stack), [Cluster](/reference/ui-kit/Cluster), [Inline](/reference/ui-kit/Inline), [Grid](/reference/ui-kit/Grid), [Box](/reference/ui-kit/Box), [Section](/reference/ui-kit/Section)
+**Layout**: [Stack](/reference/ui-kit/Layout#Stack), [Cluster](/reference/ui-kit/Layout#Cluster), [Inline](/reference/ui-kit/Layout#Inline), [Grid](/reference/ui-kit/Layout#Grid), [Box](/reference/ui-kit/Layout#Box), [Section](/reference/ui-kit/Layout#Section)
 
-**Containers**: [Panel](/reference/ui-kit/Panel), [Card](/reference/ui-kit/Card)
+**Containers**: [Panel](/reference/ui-kit/Panel), [Card](/reference/ui-kit/Layout#Card)
 
-**Readouts**: [Unit](/reference/ui-kit/Unit), [Text](/reference/ui-kit/Text), [Readout](/reference/ui-kit/Readout) (with `ReadoutCaption`), [Meter](/reference/ui-kit/Meter), [Truncate](/reference/ui-kit/Truncate)
+**Readouts**: [Unit](/reference/ui-kit/Unit), [Text](/reference/ui-kit/Typography#Text), [Readout](/reference/ui-kit/Readout) (with `ReadoutCaption`), [Meter](/reference/ui-kit/Meter), [Truncate](/reference/ui-kit/Typography#Truncate)
 
 **State**: [Badge](/reference/ui-kit/Badge), [StatusIndicator](/reference/ui-kit/Badge#StatusIndicator), [Spinner](/reference/ui-kit/EmptyState#Spinner), [EmptyState](/reference/ui-kit/EmptyState)
 
-**Rows**: [Row](/reference/ui-kit/Row)
+**Rows**: [Row](/reference/ui-kit/Layout#Row)
 
 **Controls**: [Button](/reference/ui-kit/Button)
 
-**Non-component**: [Theme](/reference/ui-kit/theme)
+**Non-component**: [Theme](/reference/ui-kit/Theme)
 
 ## Shared vocabulary
 
 Two scales run through the whole kit.
 
-**Space**: every `gap` takes a spacing job, `related` between things that belong together and `section` between groups, with fixed-density tiers and a few named single jobs beside them. The union is declared on [Stack](/reference/ui-kit/Stack). A [Box](/reference/ui-kit/Box) `pad` takes a named inset instead. Naming the job rather than a size is what makes separate widgets line up.
+**Space**: every `gap` takes a spacing job, `related` between things that belong together and `section` between groups, with fixed-density tiers and a few named single jobs beside them. The union is [GapToken](/reference/ui-kit/Layout#GapToken). A [Box](/reference/ui-kit/Layout#Box) `pad` takes a named inset instead. Naming the job rather than a size is what makes separate widgets line up.
 
 **Tone**: what state a thing is in, on one scale every surface speaks. `Tone` is exported by `@ksp-gonogo/sitrep-sdk`:
 
@@ -58,7 +58,7 @@ type Tone = "neutral" | "info" | "go" | "caution" | "warn" | "nogo" | "offline";
 
 | Prop | Takes | On |
 | --- | --- | --- |
-| `tone` | `Tone` | [Badge](/reference/ui-kit/Badge), [StatusIndicator](/reference/ui-kit/Badge#StatusIndicator), [Text](/reference/ui-kit/Text), [Readout](/reference/ui-kit/Readout) |
+| `tone` | `Tone` | [Badge](/reference/ui-kit/Badge), [StatusIndicator](/reference/ui-kit/Badge#StatusIndicator), [Text](/reference/ui-kit/Typography#Text), [Readout](/reference/ui-kit/Readout) |
 | `tone` | `ButtonTone`, the four a button's action can mean | [Button](/reference/ui-kit/Button) |
 
 A [Panel](/reference/ui-kit/Panel) merges the badges under it into a single worst-case summary, so the one scale is what lets separate chips add up to a panel state.

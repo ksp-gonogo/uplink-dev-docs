@@ -3,5 +3,6 @@ export default {
   title: "Layout",
   package: "@ksp-gonogo/ui-kit",
   category: "Layout",
-  lead: "Block",
+  lead: "Stack",
+  examples: [{ id: "layout--crew-panel", file: "reference/examples/layout/CrewPanel.tsx", export: "CrewPanel" }],
 };

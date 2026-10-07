@@ -58,17 +58,7 @@ const documents = ["@ksp-gonogo/sitrep-sdk", "@ksp-gonogo/ui-kit"]
   .join(" &middot; ");
 
 const primitives = [
-  "Box",
   "Button",
-  "Card",
-  "Cluster",
-  "Grid",
-  "Inline",
-  "Row",
-  "Section",
-  "Stack",
-  "Text",
-  "Truncate",
 ];
 
 export default defineConfig({
@@ -155,7 +145,6 @@ export default defineConfig({
               primitives.map((name) => ({ text: name, link: `/reference/ui-kit/${name}` })),
               { text: "Setup", link: "/reference/ui-kit/" },
             ),
-            { text: "Theme", link: "/reference/ui-kit/theme" },
           ],
         },
       ],
