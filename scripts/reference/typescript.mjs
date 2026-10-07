@@ -437,6 +437,14 @@ export function symbolMd(reflection, project, index, { level = 3, title = true, 
     out.push(typeParamsMd(reflection.typeParameters, index));
     out.push(propertiesMd(reflection, index));
     out.push(examplesMd(reflection.comment, index, inner));
+  } else if (reflection.kind === ReflectionKind.Enum) {
+    const members = reflection.children ?? [];
+    const value = (m) => (m.type?.type === "literal" ? JSON.stringify(m.type.value) : String(m.defaultValue ?? ""));
+    out.push(`\`\`\`ts\nenum ${reflection.name} {\n${members.map((m) => `  ${m.name} = ${value(m)},`).join("\n")}\n}\n\`\`\``);
+    out.push(summaryMd(reflection.comment, index, inner, { omitRemarks }));
+    const rows = members.map((m) => `| ${code(m.name)} | ${code(value(m))} | ${cellMd(m.comment?.summary, index)} |`);
+    if (rows.length > 0) out.push(`| Member | Value | Description |\n| --- | --- | --- |\n${rows.join("\n")}`);
+    out.push(examplesMd(reflection.comment, index, inner));
   } else if (reflection.kind === ReflectionKind.TypeAlias) {
     const params = typeParamsText(reflection.typeParameters);
     out.push(`\`\`\`ts\ntype ${reflection.name}${params} =${declarationText(reflection.type)};\n\`\`\``);
