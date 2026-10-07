@@ -137,8 +137,7 @@ export default defineConfig({
         { text: "Reference", link: "/reference/" },
         {
           text: "Mod API",
-          items: section("reference/mod", [
-          ]),
+          items: section("reference/mod", []),
         },
         {
           text: "Client SDK",
