@@ -433,6 +433,17 @@ export function symbolMd(reflection, project, index, { level = 3, title = true, 
     out.push(summaryMd(reflection.comment, index, inner, { omitRemarks }));
     out.push(typeParamsMd(reflection.typeParameters, index));
     out.push(examplesMd(reflection.comment, index, inner));
+  } else if (reflection.type?.type === "reflection" && reflection.type.declaration.children?.length) {
+    // A constant object such as `CommandErrorCode`: its members are the values an author uses, so they are a table.
+    const twin = typeTwinOf(reflection);
+    const alias = twin ? `\ntype ${twin.name}${typeParamsText(twin.typeParameters)} =${declarationText(twin.type)};` : "";
+    out.push(`\`\`\`ts\nconst ${reflection.name}: { ... };${alias}\n\`\`\``);
+    const summary = summaryMd(reflection.comment, index, inner, { omitRemarks });
+    out.push(summary);
+    const twinSummary = twin?.comment && summaryMd(twin.comment, index, inner, { omitRemarks });
+    if (twinSummary && twinSummary !== summary) out.push(twinSummary);
+    out.push(propertiesMd(reflection.type.declaration, index));
+    out.push(examplesMd(reflection.comment, index, inner));
   } else {
     const declared = reflection.type?.toString() ?? "";
     // A styled component's inferred type is hundreds of characters of library generics, and says nothing.
@@ -445,12 +456,21 @@ export function symbolMd(reflection, project, index, { level = 3, title = true, 
   return out.filter(Boolean).join("\n\n");
 }
 
-/** Every top-level reflection carrying `@category <name>`. */
+/** Every top-level reflection carrying `@category <name>`, a constant and its same-named type counted once, as the constant. */
 export function categoryMembers(project, name) {
   const category = (project.categories ?? []).find((c) => c.title === name);
   if (!category) throw new Error(`no symbol in ${project.name} carries @category ${name}`);
-  return category.children;
+  return category.children.filter((m) => !(m.kind === ReflectionKind.TypeAlias && constTwinOf(m)));
 }
+
+const sameName = (reflection, kind) =>
+  (reflection.parent?.children ?? []).find((c) => c !== reflection && c.name === reflection.name && c.kind === kind);
+
+/** The type alias declared under a constant's own name, which the constant's entry documents with it. */
+const typeTwinOf = (constant) => sameName(constant, ReflectionKind.TypeAlias);
+
+/** The constant a type alias shares its name with, under whose entry the alias is documented. */
+const constTwinOf = (alias) => sameName(alias, ReflectionKind.Variable);
 
 /**
  * A category's symbols in reading order: the lead, then what the lead's own doc
