@@ -1,0 +1,18 @@
+{
+  "_meta": {
+    "notes": "The scene every Astronaut Complex example renders on. Its spaceCenter.astronautComplex value comes from reference/examples/astronaut-complex/applicants.ts, which the top example shows."
+  },
+  "_stream": {
+    "pinnedUt": 10,
+    "emits": [
+      {
+        "channel": "career.status",
+        "value": {
+          "balances": {
+            "funds": 289848
+          }
+        }
+      }
+    ]
+  }
+}
