@@ -62,6 +62,8 @@ function body(md) {
     .replace(/^# .*\n+/, "")
     .replace(/\n## See Also[\s\S]*?(?=\n---\n|$)/g, "")
     .replace(/<!-- DO NOT EDIT[^>]*-->\s*/g, "")
+    // xmldocmd drops a `<b>` with the line break after it, so a bold sentence runs into the next link.
+    .replace(/([.:;!?])(\[`)/g, "$1 $2")
     .trim();
 }
 
