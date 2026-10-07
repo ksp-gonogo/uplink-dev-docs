@@ -1,7 +1,7 @@
 {
   "_": "Generated. Do not edit: node scripts/check-doc-symbols.mjs --sync",
   "source": "@ksp-gonogo/ui-kit packages/ui-kit/src/index.ts",
-  "count": 589,
+  "count": 590,
   "exports": [
     "ARM_TIMEOUT_MS",
     "ActionMenu",
@@ -261,6 +261,7 @@
     "MARKER_ICONS",
     "MARKER_IDS",
     "ManeuverIcon",
+    "MarkKind",
     "MarkerIconProps",
     "MarkerId",
     "Meter",
