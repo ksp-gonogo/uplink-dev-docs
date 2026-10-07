@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "notes": "The scene every landing-status example renders on."
+    "notes": "The scene the Plots example renders on: a lander 180 m above the Mun on a live link, with no extension registered."
   },
   "_stream": {
     "pinnedUt": 10,
@@ -14,7 +14,9 @@
               "index": 3,
               "parentIndex": 0,
               "radius": 200000,
-              "orbit": null
+              "orbit": null,
+              "surfaceGravity": 0.166056700098353,
+              "rotationPeriod": 138984.376574476
             }
           ]
         }
@@ -55,12 +57,12 @@
         "channel": "vessel.flight",
         "value": {
           "latitude": 0,
-          "longitude": 2.7562343631912856,
-          "altitudeAsl": 148.99750962914914,
-          "altitudeTerrain": 148.99750962914914,
-          "verticalSpeed": -2.5151263598903952,
-          "surfaceSpeed": 3.9380569005480845,
-          "orbitalSpeed": 3.9380569005480845,
+          "longitude": 0,
+          "altitudeAsl": 180,
+          "altitudeTerrain": 180,
+          "verticalSpeed": -8.1,
+          "surfaceSpeed": 8.34326075344646,
+          "orbitalSpeed": 8.34326075344646,
           "atmDensity": 0
         }
       },
@@ -69,7 +71,7 @@
         "value": {
           "biome": "Midlands",
           "landedAt": null,
-          "heightFromTerrain": 148.99750962914914
+          "heightFromTerrain": 180
         }
       },
       {
@@ -99,7 +101,7 @@
         "channel": "comms.delay",
         "value": {
           "source": 1,
-          "oneWaySeconds": 4
+          "oneWaySeconds": 0
         }
       },
       {
@@ -108,7 +110,7 @@
           "outcome": "terrain-assessed",
           "sampleSource": "predicted",
           "predictedLatitude": 0,
-          "predictedLongitude": 2.761477198187212,
+          "predictedLongitude": 0.003068428964332017,
           "predictedTerrainElevation": 120,
           "predictedSlopeAngle": 9,
           "predictedSlopeHeading": 110,

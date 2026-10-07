@@ -9,7 +9,7 @@ export default {
       id: "plots--gear-height",
       file: "reference/examples/plots/gear-height.tsx",
       widget: "landing-status",
-      scene: { fixture: "reference/fixtures/landing-status.json", w: 8, h: 11 },
+      scene: { fixture: "reference/fixtures/plots-landing-status.json", w: 8, h: 11 },
     },
   ],
 };

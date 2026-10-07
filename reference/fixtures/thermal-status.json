@@ -1,0 +1,29 @@
+{
+  "_meta": {
+    "notes": "The scene every thermal-status example renders on."
+  },
+  "_stream": {
+    "emits": [
+      {
+        "channel": "vessel.thermal",
+        "value": {
+          "maxSkinTempRatio": 0.81,
+          "maxInternalTempRatio": 0.81,
+          "hottestPart": {
+            "internalTemp": 1670.9,
+            "maxTemp": 2400,
+            "skinTemp": 1670.9,
+            "skinMaxTemp": 2400,
+            "name": "Heat Shield (2.5m)"
+          },
+          "heatShieldTemp": 1553.15,
+          "heatShieldFlux": 3250.4,
+          "hottestEngineTemp": 350,
+          "hottestEngineMaxTemp": 2273,
+          "hottestEngineTempRatio": 0.15,
+          "anyEnginesOverheating": false
+        }
+      }
+    ]
+  }
+}
