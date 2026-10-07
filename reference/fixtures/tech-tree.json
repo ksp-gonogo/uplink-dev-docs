@@ -1,0 +1,87 @@
+{
+  "_meta": {
+    "notes": "The scene the Tech Tree page renders on: a five-node tree with three nodes researched."
+  },
+  "_stream": {
+    "pinnedUt": 10,
+    "emits": [
+      {
+        "channel": "spaceCenter.scene",
+        "value": {
+          "scene": "SpaceCenter"
+        }
+      },
+      {
+        "channel": "career.status",
+        "value": {
+          "balances": {
+            "funds": 45000,
+            "reputation": 0,
+            "science": 4854
+          },
+          "contracts": null,
+          "strategies": null,
+          "tech": {
+            "unlockedCount": 3,
+            "unlockedIds": [
+              "basicRocketry",
+              "engineering101",
+              "survivability"
+            ],
+            "nodes": [
+              {
+                "id": "basicRocketry",
+                "title": "Basic Rocketry",
+                "description": "How hard can Rocket Science be anyway?",
+                "scienceCost": 0,
+                "unlocked": true,
+                "parents": []
+              },
+              {
+                "id": "engineering101",
+                "title": "General Rocketry",
+                "description": "How hard can Aerospace Engineering be anyway?",
+                "scienceCost": 15,
+                "unlocked": true,
+                "parents": [
+                  "basicRocketry"
+                ]
+              },
+              {
+                "id": "survivability",
+                "title": "Survivability",
+                "description": "The art and science of landing and walking away from it.",
+                "scienceCost": 15,
+                "unlocked": true,
+                "parents": [
+                  "basicRocketry"
+                ]
+              },
+              {
+                "id": "stability",
+                "title": "Stability",
+                "description": "Tumbling out of control may be fun, but our engineers insist there's more to rocket science than that.",
+                "scienceCost": 45,
+                "unlocked": false,
+                "parents": [
+                  "engineering101",
+                  "survivability"
+                ]
+              },
+              {
+                "id": "advRocketry",
+                "title": "Advanced Rocketry",
+                "description": "More engines, more fuel, more ambitious ideas.",
+                "scienceCost": 45,
+                "unlocked": false,
+                "parents": [
+                  "engineering101"
+                ]
+              }
+            ]
+          }
+        }
+      }
+    ]
+  }
+}
