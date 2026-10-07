@@ -1,0 +1,56 @@
+{
+  "_meta": {
+    "scenario": "eve-orbit-high-gravity",
+    "notes": "Eve orbit at 100 km (just above atmosphere ceiling at 90 km). Eve escape velocity at this altitude ~4526 m/s. Orbital speed ~2500 m/s, well below. High-gravity body with thick atmosphere: large scale and wide reference curve. v.altitude/v.orbitalVelocity are vessel.flight.altitudeAsl/orbitalSpeed, read straight off the vessel.flight emit."
+  },
+  "v.body": "Eve",
+  "v.altitude": 100000,
+  "v.orbitalVelocity": 2500,
+  "_stream": {
+    "emits": [
+      {
+        "channel": "vessel.flight",
+        "value": {
+          "latitude": 0,
+          "longitude": 0,
+          "altitudeAsl": 100000,
+          "altitudeTerrain": 100000,
+          "verticalSpeed": 0,
+          "surfaceSpeed": 2500,
+          "orbitalSpeed": 2500,
+          "gForce": 0,
+          "dynamicPressureKPa": 0,
+          "mach": 0,
+          "atmDensity": 0
+        }
+      },
+      {
+        "channel": "vessel.identity",
+        "value": {
+          "vesselId": "v1",
+          "name": "Active Vessel",
+          "vesselType": 0,
+          "situation": 1,
+          "parentBodyIndex": 1,
+          "launchUt": 0
+        }
+      },
+      {
+        "channel": "system.bodies",
+        "value": {
+          "bodies": [
+            {
+              "name": "Eve",
+              "index": 1,
+              "parentIndex": 0,
+              "radius": 700000,
+              "gravParameter": 8171730200000,
+              "orbit": null
+            }
+          ]
+        }
+      }
+    ],
+    "pinnedUt": 0
+  }
+}
