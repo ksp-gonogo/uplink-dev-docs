@@ -172,3 +172,6 @@ export function contractMd(types, examples, index) {
     .filter(Boolean)
     .join("\n\n");
 }
+
+/** A type's summary, its first paragraph, linked through `index`. */
+export const contractSummary = (type, index) => relink(body(read(`${type}.md`)).split(/\n{2,}/)[0], new Set(), index);

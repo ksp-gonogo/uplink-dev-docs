@@ -16,10 +16,12 @@ const generatedSidebar: Record<string, SidebarItem[]> = existsSync(sidebarFile)
   ? JSON.parse(readFileSync(sidebarFile, "utf8"))
   : {};
 
-/** A section's hand pages and its generated pages, in name order after an optional first entry. */
-function section(dir: string, hand: SidebarItem[], first?: SidebarItem): SidebarItem[] {
-  const items = [...hand, ...(generatedSidebar[dir] ?? [])].sort((a, b) => a.text.localeCompare(b.text));
-  return first ? [first, ...items] : items;
+/** A section's generated pages, its index first, then its hand pages among them in name order. */
+function section(dir: string, hand: SidebarItem[]): SidebarItem[] {
+  const [first, ...generated] = generatedSidebar[dir] ?? [];
+  const isIndex = first?.link === `/${dir}/`;
+  const items = [...hand, ...(isIndex ? generated : generatedSidebar[dir] ?? [])].sort((a, b) => a.text.localeCompare(b.text));
+  return isIndex ? [first, ...items] : items;
 }
 
 const modules = resolve(
@@ -126,9 +128,7 @@ export default defineConfig({
           items: section(
             "reference/client",
             [
-              { text: "Topics", link: "/reference/client/topics" },
             ],
-            { text: "Package contents", link: "/reference/client/" },
           ),
         },
         {
@@ -142,7 +142,6 @@ export default defineConfig({
             ...section(
               "reference/ui-kit",
               primitives.map((name) => ({ text: name, link: `/reference/ui-kit/${name}` })),
-              { text: "Setup", link: "/reference/ui-kit/" },
             ),
           ],
         },

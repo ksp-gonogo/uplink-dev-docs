@@ -12,7 +12,8 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, relative, resolve } from "node:path";
 import { PAGES } from "../../reference/pages.mjs";
-import { contractCategory, contractMd, isContractType, runXmldocmd } from "./csharp.mjs";
+import { contractCategory, contractMd, contractSummary, isContractType, runXmldocmd } from "./csharp.mjs";
+import { commandListMd, packageIndexMd, referenceIndexMd, SECTIONS, sectionOf, topicListMd, topicsPageMd } from "./indexes.mjs";
 import { installArtifacts } from "./install.mjs";
 import { DOCS, GENERATED_HASHES, hashOf, INSTALL, PLANTED_DEMO_FILE, PLANTED_DEMOS, ROOT, storybookRoot } from "./paths.mjs";
 import { UNRESOLVED_LINK_DEBT } from "../symbol-link-debt.mjs";
@@ -537,6 +538,12 @@ function handWrittenEntries(generated, isSymbol) {
 
 const SIDEBAR = resolve(DOCS, ".vitepress/sidebar.generated.json");
 
+/** The lists a guide page includes with `<!--@include: @/.vitepress/includes/topics.md-->`. */
+const INCLUDES = {
+  topics: resolve(DOCS, ".vitepress/includes/topics.md"),
+  commands: resolve(DOCS, ".vitepress/includes/commands.md"),
+};
+
 /**
  * Every generated reference page's sidebar entry, by the section it sits in
  * (`reference/client`, `reference/widgets` ...), in name order. A widget
@@ -548,10 +555,16 @@ function writeSidebar(pages, records) {
   for (const page of pages) {
     if (!page.path.startsWith("reference/")) continue;
     const text = page.kind === "widget" ? recordOf(records, page).name : page.title;
-    // A subpath's pages (`reference/client/testing/...`) sit in their package's group.
-    (sections[page.path.split("/").slice(0, 2).join("/")] ??= []).push({ text, link: urlOf(page) });
+    // The reference index heads the whole reference, so it sits in no section.
+    if (!SECTIONS.some((s) => s.dir === sectionOf(page))) continue;
+    // A section's index page is its first entry.
+    const first = page.kind === "index";
+    (sections[sectionOf(page)] ??= []).push({ text: first ? "Overview" : text, link: urlOf(page), first });
   }
-  for (const items of Object.values(sections)) items.sort((a, b) => a.text.localeCompare(b.text));
+  for (const items of Object.values(sections)) {
+    items.sort((a, b) => b.first - a.first || a.text.localeCompare(b.text));
+    for (const item of items) delete item.first;
+  }
   writeFileSync(SIDEBAR, `${JSON.stringify(sections, null, 2)}\n`);
 }
 
@@ -568,6 +581,7 @@ function recordWritten(written) {
     ...written.map((file) => resolve(ROOT, file)),
     resolve(DOCS, ".vitepress/theme/islands/demos.generated.ts"),
     SIDEBAR,
+    ...Object.values(INCLUDES),
   ];
   const lines = files.map((file) => `/${relative(DOCS, file)}`).sort();
   writeFileSync(resolve(DOCS, ".gitignore"), `# Written by npm run reference.\n/.gitignore\n${lines.join("\n")}\n`);
@@ -628,10 +642,33 @@ export async function generate({ install = true } = {}) {
   }
   writeFileSync(SYMBOL_INDEX, `${JSON.stringify(index, null, 2)}\n`);
 
+  /** A page's lead description: its lead symbol's or contract type's summary, or a widget's record description. */
+  const leadOf = (page) => {
+    if (page.kind === "widget") return recordOf(records, page).description;
+    if (page.kind === "contract") return contractSummary(contractTypes(page)[0], contractIndex);
+    const lead = page.lead && projects[specifierOf(page)]?.getChildByName(page.lead);
+    const comment = lead && (lead.comment ?? lead.signatures?.[0]?.comment);
+    return comment ? partsMd(comment.summary, index).trim() : "";
+  };
+  const listing = {
+    pages: PAGES,
+    projects,
+    index,
+    urlOf,
+    specifierOf,
+    version: versionOf,
+    leadOf,
+    title: (page) => (page.kind === "widget" ? recordOf(records, page).name : page.title),
+    sdk: projects[SDK],
+  };
+
   const written = [];
   for (const page of PAGES) {
     let sections;
-    if (page.kind === "category") sections = categoryPage(page, projects[specifierOf(page)], index);
+    if (page.kind === "index") {
+      sections = SECTIONS.some((s) => s.dir === sectionOf(page)) ? packageIndexMd(page, listing) : referenceIndexMd(page, listing);
+    } else if (page.kind === "topics") sections = topicsPageMd(page, listing);
+    else if (page.kind === "category") sections = categoryPage(page, projects[specifierOf(page)], index);
     else if (page.kind === "guide") sections = guidePage(page, projects[specifierOf(page)], index);
     else if (page.kind === "widget") sections = widgetPage(page, recordOf(records, page), projects[SDK], projects[KIT], index);
     else sections = contractPage(page, contractIndex);
@@ -640,6 +677,9 @@ export async function generate({ install = true } = {}) {
     writeFileSync(file, `${frontmatter(page)}\n${vueSafe(sections.filter(Boolean).join("\n\n"))}\n`);
     written.push(relative(ROOT, file));
   }
+  mkdirSync(dirname(INCLUDES.topics), { recursive: true });
+  writeFileSync(INCLUDES.topics, `${topicListMd(projects[SDK], index, 3)}\n`);
+  writeFileSync(INCLUDES.commands, `${commandListMd(projects[SDK], index, 3)}\n`);
   writeSidebar(PAGES, records);
   recordWritten(written);
   const debt = new Set(UNRESOLVED_LINK_DEBT);
