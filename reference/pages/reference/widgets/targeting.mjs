@@ -7,8 +7,11 @@ export default {
     h: 9,
   },
   examples: [{ id: "targeting" }],
+  /*
+   * No worked example for targeting.camera: it takes a live picture of the target, and the published
+   * packages carry no video source to draw one from, so any example would be a placeholder.
+   */
   extensions: {
-    "targeting.camera": "reference/examples/targeting/camera.tsx",
     "targeting.overlay": "reference/examples/targeting/overlay.tsx",
   },
   stories: {

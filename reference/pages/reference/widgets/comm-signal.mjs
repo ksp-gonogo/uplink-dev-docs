@@ -10,9 +10,10 @@ export default {
     feeds: { "comms.path": { file: FEED, export: "commsPath" } },
   },
   examples: [{ id: "comm-signal", file: FEED }],
-  extensions: {
-    "comm-signal.hop-rates": "reference/examples/comm-signal/hop-rates.ts",
-  },
+  /*
+   * No worked example for comm-signal.hop-rates: a hop's bitrate has to come from a mod that measures one,
+   * and no published Topic carries it, so any example would invent the figure it contributes.
+   */
   stories: {
     states: "widgets/comm-signal.stories.tsx",
     extensions: {

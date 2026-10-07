@@ -23,7 +23,7 @@ function FearlessBadge({
   const applicant = complex.value.applicants.find(
     (candidate) => candidate.name === kerbalName,
   );
-  if (!applicant?.courage || applicant.courage.magnitude < FEARLESS) return null;
+  if (!applicant?.courage || applicant.courage.lessThan(FEARLESS)) return null;
   return (
     <Badge tone="go" size="sm">
       Fearless

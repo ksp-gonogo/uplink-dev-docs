@@ -3,6 +3,7 @@ import {
   registerAugment,
   type SlotProps,
 } from "@ksp-gonogo/sitrep-sdk";
+import { TONE_MARK, TONE_TEXT } from "@ksp-gonogo/ui-kit";
 
 const uplink = defineUplinkClient({
   id: "system-scale",
@@ -28,10 +29,10 @@ function ScaleBar({ width, height, plotScale }: SlotProps<"system-view.overlay">
       <path
         d={`M ${left} ${y - 5} V ${y} H ${left + length} V ${y - 5}`}
         fill="none"
-        stroke="var(--color-info-mark)"
+        stroke={TONE_MARK.info}
         strokeWidth={2}
       />
-      <text x={left} y={y - 10} fill="var(--color-info-text)" fontSize={11}>
+      <text x={left} y={y - 10} fill={TONE_TEXT.info} fontSize={11}>
         1,000 km
       </text>
     </svg>

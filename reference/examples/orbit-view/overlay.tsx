@@ -4,6 +4,7 @@ import {
   type SlotProps,
   useTelemetry,
 } from "@ksp-gonogo/sitrep-sdk";
+import { TONE_MARK, TONE_TEXT } from "@ksp-gonogo/ui-kit";
 
 const uplink = defineUplinkClient({
   id: "synchronous-orbit",
@@ -37,12 +38,12 @@ function SynchronousRing({ center, scale }: SlotProps<"orbit-view.overlay">) {
         cy={center.y}
         r={radius}
         fill="none"
-        stroke="var(--color-info-mark)"
+        stroke={TONE_MARK.info}
         strokeWidth={unit * 0.8}
         strokeDasharray={`${unit * 2} ${unit * 1.5}`}
       />
       <g transform={`translate(${center.x} ${center.y - radius - unit * 3}) scale(${unit / 2})`}>
-        <text textAnchor="middle" fill="var(--color-info-text)" fontSize={10}>
+        <text textAnchor="middle" fill={TONE_TEXT.info} fontSize={10}>
           Synchronous orbit
         </text>
       </g>

@@ -19,7 +19,7 @@ function ChuteLoad({ groupId }: SlotProps<"action-group.subsystem">) {
   const flight = useTelemetry("vessel.flight");
   if (groupId !== "AG1" || flight.state !== "observed") return null;
   const pressure = flight.value.dynamicPressureKPa;
-  const nearLimit = pressure.magnitude > SAFE_PRESSURE.magnitude * 0.75;
+  const nearLimit = pressure.greaterThan(SAFE_PRESSURE.scaled(0.75));
   return (
     <Section title="Chute load">
       <Meter

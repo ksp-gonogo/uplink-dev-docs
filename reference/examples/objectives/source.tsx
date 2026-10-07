@@ -4,6 +4,7 @@ import {
   registerAugment,
   type SlotProps,
   useTelemetry,
+  value,
 } from "@ksp-gonogo/sitrep-sdk";
 
 const uplink = defineUplinkClient({
@@ -12,12 +13,12 @@ const uplink = defineUplinkClient({
   name: "Ascent Goals",
 });
 
-const SPACE_ALTITUDE = 70000;
+const SPACE_ALTITUDE = value("m", 70_000);
 
 function AscentGoals({ Section }: SlotProps<"objectives.source">) {
   const flight = useTelemetry("vessel.flight");
   if (flight.state !== "observed") return null;
-  const reached = flight.value.altitudeAsl.magnitude >= SPACE_ALTITUDE;
+  const reached = flight.value.altitudeAsl.greaterThanOrEqual(SPACE_ALTITUDE);
   const items: ObjectiveSlotItem[] = [
     {
       id: "ascent-goals:space",

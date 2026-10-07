@@ -16,7 +16,7 @@ uplink.registerContribution({
   compute: (topics): CrewRowToneEntry[] => {
     const crew = topics["vessel.crew"]?.crew ?? [];
     return crew.flatMap((kerbal) => {
-      const rookie = kerbal.experienceLevel?.magnitude === 0;
+      const rookie = kerbal.experienceLevel?.isZero() === true;
       if (!kerbal.name || !rookie) return [];
       return [{ crewName: kerbal.name, tone: "warn" }];
     });

@@ -3,6 +3,7 @@ import {
   registerAugment,
   type SlotProps,
 } from "@ksp-gonogo/sitrep-sdk";
+import { TONE_MARK, TONE_TEXT } from "@ksp-gonogo/ui-kit";
 
 const uplink = defineUplinkClient({
   id: "launch-sites",
@@ -30,10 +31,10 @@ function KerbalSpaceCenter({
         cy={y}
         r={7}
         fill="none"
-        stroke="var(--color-info-mark)"
+        stroke={TONE_MARK.info}
         strokeWidth={2}
       />
-      <text x={x + 12} y={y + 4} fill="var(--color-info-text)" fontSize={12}>
+      <text x={x + 12} y={y + 4} fill={TONE_TEXT.info} fontSize={12}>
         Kerbal Space Center
       </text>
     </svg>

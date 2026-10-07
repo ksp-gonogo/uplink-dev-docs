@@ -1,53 +1,77 @@
 import {
   defineUplinkClient,
+  type MapCoverageGate,
   registerAugment,
   type SlotProps,
 } from "@ksp-gonogo/sitrep-sdk";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 const uplink = defineUplinkClient({
-  id: "map-graticule",
+  id: "survey-zones",
   version: "1.0.0",
-  name: "Map Graticule",
+  name: "Survey Zones",
 });
 
-const WIDTH = 1024;
-const HEIGHT = 512;
-const LAYER_ID = "map-graticule-grid";
+const LAYER_ID = "survey-zones-tint";
+/** Four cells to a degree, across the whole body. */
+const WIDTH = 1440;
+const HEIGHT = 720;
 
-function Graticule({ onLayer }: SlotProps<"map-view.base">) {
+/** The regions this Uplink surveys on Kerbin, in degrees. */
+const ZONES = [
+  { west: -110, east: -40, south: -20, north: 20 },
+  { west: 20, east: 80, south: 25, north: 55 },
+];
+
+/** Canvas x for a longitude: the left edge is -180 and the right 180. */
+const xOf = (longitude: number) => ((longitude + 180) / 360) * WIDTH;
+/** Canvas y for a latitude: the top edge is the north pole. */
+const yOf = (latitude: number) => ((90 - latitude) / 180) * HEIGHT;
+
+/** Keeps only what the coverage gate has revealed; with no coverage source, everything is. */
+function keepRevealed(ctx: CanvasRenderingContext2D, gate: MapCoverageGate) {
+  if (!gate.hasAnySource) return;
+  if (!gate.data) {
+    ctx.clearRect(0, 0, WIDTH, HEIGHT);
+    return;
+  }
+  const mask = document.createElement("canvas");
+  mask.width = gate.width;
+  mask.height = gate.height;
+  const pixels = new ImageData(gate.width, gate.height);
+  gate.data.forEach((revealed, cell) => {
+    pixels.data[cell * 4 + 3] = revealed;
+  });
+  mask.getContext("2d")?.putImageData(pixels, 0, 0);
+  ctx.globalCompositeOperation = "destination-in";
+  ctx.drawImage(mask, 0, 0, WIDTH, HEIGHT);
+}
+
+function SurveyZones({ bodyId, coverageGate, onLayer }: SlotProps<"map-view.base">) {
+  const drawn = useRef(0);
   useEffect(() => {
+    if (bodyId !== "Kerbin") return;
     const canvas = document.createElement("canvas");
     canvas.width = WIDTH;
     canvas.height = HEIGHT;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.45)";
-    ctx.lineWidth = 2;
-    ctx.setLineDash([8, 6]);
-    for (let lon = 0; lon <= 360; lon += 30) {
-      const x = (lon / 360) * WIDTH;
-      ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, HEIGHT);
-      ctx.stroke();
+    ctx.fillStyle = "rgba(90, 170, 255, 0.45)";
+    for (const zone of ZONES) {
+      ctx.fillRect(xOf(zone.west), yOf(zone.north), xOf(zone.east) - xOf(zone.west), yOf(zone.south) - yOf(zone.north));
     }
-    for (let lat = 0; lat <= 180; lat += 30) {
-      const y = (lat / 180) * HEIGHT;
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(WIDTH, y);
-      ctx.stroke();
-    }
-    onLayer(LAYER_ID, canvas, 1);
+    keepRevealed(ctx, coverageGate);
+    drawn.current += 1;
+    onLayer(LAYER_ID, canvas, drawn.current);
     return () => onLayer(LAYER_ID, null, 0);
-  }, [onLayer]);
+  }, [bodyId, coverageGate, onLayer]);
   return null;
 }
 
 registerAugment({
-  id: "map-graticule-grid",
+  id: LAYER_ID,
   augments: "map-view.base",
-  component: Graticule,
+  component: SurveyZones,
+  // A tint over the stock texture, which stays beneath it, so suppressesVanillaBase is left unset.
   owner: uplink,
 });

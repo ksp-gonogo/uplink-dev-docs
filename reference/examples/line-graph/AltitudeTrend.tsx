@@ -1,4 +1,4 @@
-import { LineGraph } from "@ksp-gonogo/ui-kit";
+import { TONE_MARK, LineGraph } from "@ksp-gonogo/ui-kit";
 
 const climb = Array.from({ length: 24 }, (_, i) => ({
   x: i * 10,
@@ -10,7 +10,7 @@ export function AltitudeTrend() {
     <LineGraph
       ariaLabel="Altitude over the last four minutes"
       height={120}
-      series={[{ id: "altitude", color: "var(--color-go-mark)", points: climb }]}
+      series={[{ id: "altitude", color: TONE_MARK.go, points: climb }]}
       thresholds={[{ id: "karman", value: 70, valueText: "70 km" }]}
       thresholdStyle="marker"
     />

@@ -15,7 +15,8 @@ function Turnaround({
   occupied,
   occupantName,
 }: SlotProps<"launch-director.pad">) {
-  if (!occupied) return null;
+  // `null` means the site does not report it, which says nothing either way.
+  if (occupied !== true) return null;
   return (
     <Badge tone="warn" size="sm">
       Clear {occupantName ?? "the pad"} before the next launch

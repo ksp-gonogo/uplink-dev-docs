@@ -5,6 +5,7 @@ import {
   isBinaryFrame,
 } from "@ksp-gonogo/sitrep-sdk";
 import { Stack, Text } from "@ksp-gonogo/ui-kit";
+import { useEffect, useState } from "react";
 
 /** A binary-lane frame as it arrives from the socket: prefix, header, then the segments. */
 function frameFromSocket(): Uint8Array {
@@ -35,16 +36,29 @@ function frameFromSocket(): Uint8Array {
   return frame;
 }
 
-export function Decode() {
-  const bytes = frameFromSocket();
-  if (!isBinaryFrame(bytes)) return <Text>A text frame</Text>;
+interface Decoded {
+  topic: string;
+  sizes: number[];
+}
+
+/** What a socket's message handler makes of one binary message: its Topic and segment sizes, or why it is not a frame. */
+function decode(bytes: Uint8Array): Decoded | string {
+  if (!isBinaryFrame(bytes)) return "A text frame";
   const result = decodeBinaryFrame(bytes);
-  if (!result.ok) return <Text tone="nogo">{result.reason}</Text>;
-  const { topic, segments } = result.message;
+  if (!result.ok) return result.reason;
+  return { topic: result.message.topic, sizes: result.message.segments.map((segment) => segment.length) };
+}
+
+export function Decode() {
+  const [decoded, setDecoded] = useState<Decoded | string | null>(null);
+  // A frame is decoded once, when it arrives, and the render shows what came of it.
+  useEffect(() => setDecoded(decode(frameFromSocket())), []);
+  if (decoded === null) return null;
+  if (typeof decoded === "string") return <Text tone="nogo">{decoded}</Text>;
   return (
     <Stack gap="related-compact">
-      <Text>{topic}</Text>
-      <Text>{segments.map((segment) => `${segment.length} bytes`).join(", ")}</Text>
+      <Text>{decoded.topic}</Text>
+      <Text>{decoded.sizes.map((size) => `${size} bytes`).join(", ")}</Text>
     </Stack>
   );
 }

@@ -20,7 +20,7 @@ uplink.registerContribution({
     return parts.flatMap((part) => {
       const ore = part.resources.Ore;
       if (!ore) return [];
-      const low = ore.amount.magnitude < ore.maxAmount.magnitude * LOW_ORE;
+      const low = ore.amount.lessThan(ore.maxAmount.scaled(LOW_ORE));
       return [
         {
           partId: part.id,
