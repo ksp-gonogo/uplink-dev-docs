@@ -12,6 +12,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { Application, ReflectionKind } from "typedoc";
+import { AMBIGUOUS_SYMBOLS } from "../ambiguous-symbols.mjs";
 import { INSTALL } from "./paths.mjs";
 
 /**
@@ -91,6 +92,30 @@ export class SymbolIndex {
 
 const escapeText = (s) => s.replace(/([\\`*_<>|[\]])/g, "\\$1");
 const code = (s) => (s.includes("`") ? `\`\` ${s} \`\`` : `\`${s}\``);
+const htmlEscape = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
+/**
+ * A member's, parameter's or type parameter's own name, in the first cell of
+ * its table. It is marked as a member so the symbol pass never links it to a
+ * top-level export that shares the name, and a member row carries `anchor` so
+ * a link to the member lands on its row rather than on its owner.
+ */
+function memberName(name, anchor) {
+  const id = anchor ? ` id="${htmlEscape(anchor)}"` : "";
+  return `<code class="member"${id}>${htmlEscape(name)}</code>`;
+}
+
+/**
+ * A member's anchor: its owner's name and its own, `StatEntry.value`. An
+ * object type written inline has no name of its own, so it adds nothing.
+ */
+function memberAnchor(member) {
+  const names = [];
+  for (let r = member; r && !r.kindOf(ReflectionKind.Project | ReflectionKind.Module); r = r.parent) {
+    if (r.name !== "__type") names.unshift(r.name);
+  }
+  return names.join(".");
+}
 
 /** A name as inline code, linked where the index has a page for it. */
 function linked(name, index, shown = name) {
@@ -104,6 +129,8 @@ export function typeMd(type, index) {
   const t = (x) => typeMd(x, index);
   switch (type.type) {
     case "reference": {
+      // A type parameter such as `Unit` in `Value<Unit>` is named by its declaration, never by an export that shares its name.
+      if (type.refersToTypeParameter) return code(type.name);
       // A named union of literals is shown as its values, which is what an author has to write.
       const alias = type.reflection?.kind === ReflectionKind.TypeAlias ? type.reflection.type : undefined;
       if (!index.url(type.name) && alias?.type === "union" && alias.types.every((m) => m.type === "literal")) {
@@ -163,6 +190,12 @@ function ownerOf(reflection) {
   return owner;
 }
 
+/** The URL of a member's row: its owner's page, at the member's own anchor. */
+function memberUrl(member, index) {
+  const owner = index.url(ownerOf(member).name);
+  return owner && `${owner.split("#")[0]}#${memberAnchor(member)}`;
+}
+
 /** Display parts to Markdown, with every `{@link}` pointed at its page. */
 export function partsMd(parts, index) {
   return (parts ?? [])
@@ -172,8 +205,15 @@ export function partsMd(parts, index) {
       const target = typeof part.target?.kindOf === "function" ? part.target : undefined;
       const name = target?.name ?? part.text;
       const shown = part.text.trim() || name;
-      // TypeDoc resolves a bare name to a sibling member first; a top-level export of that name is the one meant.
       const member = target && ownerOf(target) !== target;
+      /*
+       * TypeDoc resolves a bare name to a sibling member first. For most names a top-level export of
+       * that name is the one meant; for an ambiguous one the member TypeDoc found is.
+       */
+      if (member && (Object.hasOwn(AMBIGUOUS_SYMBOLS, target.name) || !index.url(target.name))) {
+        const url = memberUrl(target, index);
+        if (url) return `[${code(shown)}](${url})`;
+      }
       const symbol = target && !(member && index.url(target.name)) ? ownerOf(target).name : name.split(".")[0];
       if (!index.url(symbol)) index.miss(symbol);
       return linked(symbol, index, shown);
@@ -277,7 +317,7 @@ export function propertiesMd(reflection, index, { withDefaults = false } = {}) {
       : member.signatures
         ? cellSafe(code(methodText(member.signatures[0])))
         : "";
-    const cells = [`${code(member.name + optional)}`, type];
+    const cells = [memberName(member.name + optional, memberAnchor(member)), type];
     if (withDefaults) cells.push(defaultOf(member) ? code(defaultOf(member)) : "");
     cells.push(cellMd(commentOf(member)?.summary, index));
     return `| ${cells.join(" | ")} |`;
@@ -329,7 +369,7 @@ function interfaceText(reflection) {
 function typeParamsMd(params, index) {
   const documented = (params ?? []).filter((p) => p.comment?.summary?.length);
   if (documented.length === 0) return "";
-  const rows = documented.map((p) => `| ${code(p.name)} | ${cellMd(p.comment.summary, index)} |`);
+  const rows = documented.map((p) => `| ${memberName(p.name)} | ${cellMd(p.comment.summary, index)} |`);
   return `| Type parameter | Meaning |\n| --- | --- |\n${rows.join("\n")}`;
 }
 
@@ -348,7 +388,7 @@ function parametersMd(signature, index, level) {
   const params = signature.parameters ?? [];
   if (params.length === 0 || params.every((p) => !p.comment)) return "";
   const rows = params.map(
-    (p) => `| ${code(paramName(p))} | ${cellSafe(typeMd(p.type, index))} | ${cellMd(p.comment?.summary, index)} |`,
+    (p) => `| ${memberName(paramName(p))} | ${cellSafe(typeMd(p.type, index))} | ${cellMd(p.comment?.summary, index)} |`,
   );
   return `${"#".repeat(level)} Parameters\n\n| Name | Type | Description |\n| --- | --- | --- |\n${rows.join("\n")}`;
 }
@@ -442,7 +482,7 @@ export function symbolMd(reflection, project, index, { level = 3, title = true, 
     const value = (m) => (m.type?.type === "literal" ? JSON.stringify(m.type.value) : String(m.defaultValue ?? ""));
     out.push(`\`\`\`ts\nenum ${reflection.name} {\n${members.map((m) => `  ${m.name} = ${value(m)},`).join("\n")}\n}\n\`\`\``);
     out.push(summaryMd(reflection.comment, index, inner, { omitRemarks }));
-    const rows = members.map((m) => `| ${code(m.name)} | ${code(value(m))} | ${cellMd(m.comment?.summary, index)} |`);
+    const rows = members.map((m) => `| ${memberName(m.name, memberAnchor(m))} | ${code(value(m))} | ${cellMd(m.comment?.summary, index)} |`);
     if (rows.length > 0) out.push(`| Member | Value | Description |\n| --- | --- | --- |\n${rows.join("\n")}`);
     out.push(examplesMd(reflection.comment, index, inner));
   } else if (reflection.kind === ReflectionKind.TypeAlias) {

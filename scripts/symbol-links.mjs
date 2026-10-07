@@ -9,19 +9,29 @@
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { AMBIGUOUS_SYMBOLS } from "./ambiguous-symbols.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 export const SYMBOL_INDEX = resolve(ROOT, ".reference/symbols.json");
 
 /**
- * The symbol a code span refers to, or null. A span is a reference when it is
- * the name alone, the name called (`useTelemetry()`), or the name given type
- * arguments (`SlotProps<"crew-status.avatar">`).
+ * The documented symbol a code span names, or null. A span names one when it
+ * is the name alone, the name called (`useTelemetry()`), or the name given
+ * type arguments (`SlotProps<"crew-status.avatar">`).
  */
-export function symbolOf(text, index) {
+export function namedSymbol(text, index) {
   const match = /^([A-Za-z_$][\w$]*)(?:\(\)|<.*>)?$/s.exec(text.trim());
   if (!match || !Object.hasOwn(index, match[1])) return null;
   return match[1];
+}
+
+/**
+ * The symbol a code span refers to, or null: the one it names, unless that
+ * name is ambiguous, in which case only an explicit link refers to it.
+ */
+export function symbolOf(text, index) {
+  const name = namedSymbol(text, index);
+  return name && !Object.hasOwn(AMBIGUOUS_SYMBOLS, name) ? name : null;
 }
 
 /** A site-relative URL's page, without its anchor or a trailing `index`. */

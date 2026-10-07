@@ -8,15 +8,20 @@
  * heading carries its own anchor, so neither is read. A name on its own
  * entry's page, with nowhere further to go, needs no link.
  *
- * Before grading the site it grades a planted page holding one of each fault,
- * and fails as BLIND unless it finds both.
+ * A member's own name in its table row is not a reference, so it is never
+ * linked; nor is a name on the ambiguous list unless a link was written.
+ *
+ * Before grading the site it grades a planted page holding one of each fault
+ * and one of each exemption, and fails as BLIND unless it finds exactly the
+ * faults.
  *
  *   node scripts/check-symbol-links.mjs   # after `vitepress build docs`
  */
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { isSelf, loadSymbolIndex, pageOf, symbolOf } from "./symbol-links.mjs";
+import { AMBIGUOUS_SYMBOLS } from "./ambiguous-symbols.mjs";
+import { isSelf, loadSymbolIndex, namedSymbol, pageOf, symbolOf } from "./symbol-links.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const DIST = resolve(ROOT, "docs/.vitepress/dist");
@@ -71,10 +76,15 @@ function grade(page, html, index, site) {
     if (close) continue;
     const end = m.input.indexOf("</code>", m.index);
     const text = decode(m.input.slice(m.index + tag.length, end));
+    if (/\bclass="member"/.test(attrs)) {
+      if (href !== null) faults.push(`member name \`${text}\` is linked to ${href}`);
+      continue;
+    }
     const symbol = symbolOf(text, index);
-    if (!symbol) continue;
-    if (href === null && !isSelf(index[symbol], page)) faults.push(`\`${text}\` is not linked to ${index[symbol]}`);
-    if (href !== null && !href.startsWith("http") && !resolves(href)) faults.push(`\`${text}\` links to ${href}, which does not resolve`);
+    if (symbol && href === null && !isSelf(index[symbol], page)) faults.push(`\`${text}\` is not linked to ${index[symbol]}`);
+    if (namedSymbol(text, index) && href !== null && !href.startsWith("http") && !resolves(href)) {
+      faults.push(`\`${text}\` links to ${href}, which does not resolve`);
+    }
   }
   return faults;
 }
@@ -83,14 +93,19 @@ const idsOf = (html) => new Set([...html.matchAll(/\sid="([^"]+)"/g)].map((m) =>
 
 const index = loadSymbolIndex();
 
+const PLANTED_FAULTS = 3;
+const ambiguous = Object.keys(AMBIGUOUS_SYMBOLS).find((name) => Object.hasOwn(index, name)) ?? "";
 const planted = grade(
   "/planted",
-  '<main><p><code>useTelemetry</code> and <a href="/uplink-dev-docs/nowhere#x"><code>useTelemetry</code></a></p></main>',
+  "<main><p><code>useTelemetry</code> and " +
+    '<a href="/uplink-dev-docs/nowhere#x"><code>useTelemetry</code></a> and ' +
+    '<a href="/uplink-dev-docs/nowhere#x"><code class="member">useTelemetry</code></a>, beside ' +
+    `<code class="member">useTelemetry</code> and <code>${ambiguous}</code></p></main>`,
   index,
   new Map([["/planted", new Set()]]),
 );
-if (planted.length !== 2) {
-  console.error(`BLIND: the planted page has two faults and the check found ${planted.length}. Fix the check before trusting it.`);
+if (planted.length !== PLANTED_FAULTS) {
+  console.error(`BLIND: the planted page has ${PLANTED_FAULTS} faults and the check found ${planted.length}. Fix the check before trusting it.`);
   process.exit(1);
 }
 
@@ -115,4 +130,4 @@ if (faults.length > 0) {
   console.error(`Symbol links: ${faults.length} fault${faults.length === 1 ? "" : "s"}\n  ${faults.join("\n  ")}`);
   process.exit(1);
 }
-console.log(`Symbol links: every reference to ${Object.keys(index).length} documented symbols across ${files.length} pages is linked and resolves (planted faults found: 2).`);
+console.log(`Symbol links: every reference to ${Object.keys(index).length} documented symbols across ${files.length} pages is linked and resolves (planted faults found: ${PLANTED_FAULTS}).`);

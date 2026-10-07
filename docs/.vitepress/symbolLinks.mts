@@ -6,8 +6,9 @@ import { isSelf, loadSymbolIndex, pageOfFile, symbolOf } from "../../scripts/sym
  * symbol's reference entry, on every page, hand-written or generated.
  *
  * Left alone: a span already inside a link, one in a heading, where a link
- * would fight the heading's own anchor, and one that would link to the top of
- * the page it is on. Code blocks are never inline spans, so they are never
+ * would fight the heading's own anchor, one that would link to the top of the
+ * page it is on, and one naming a symbol on the ambiguous list
+ * (`scripts/ambiguous-symbols.mjs`), which links only where a link is written. Code blocks are never inline spans, so they are never
  * touched.
  */
 export function symbolLinks(md: MarkdownRenderer): void {

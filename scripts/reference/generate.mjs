@@ -11,12 +11,14 @@
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, relative, resolve } from "node:path";
+import { ReflectionKind } from "typedoc";
 import { PAGES } from "../../reference/pages.mjs";
 import { cliPageMd } from "./cli.mjs";
 import { contractCategory, contractMd, contractSummary, isContractType, runXmldocmd } from "./csharp.mjs";
 import { commandListMd, packageIndexMd, referenceIndexMd, SECTIONS, sectionOf, topicListMd, topicsPageMd } from "./indexes.mjs";
 import { installArtifacts } from "./install.mjs";
 import { DOCS, GENERATED_HASHES, hashOf, PLANTED_DEMO_FILE, PLANTED_DEMOS, PUBLISHED, ROOT, storybookRoot } from "./paths.mjs";
+import { AMBIGUOUS_SYMBOLS } from "../ambiguous-symbols.mjs";
 import { UNRESOLVED_LINK_DEBT } from "../symbol-link-debt.mjs";
 import { anchorOf, assertModulesStateNoRecordFacts, loadWidgetRecords, recordOf, widgetHeaderMd } from "./widgets.mjs";
 import { SYMBOL_INDEX } from "../symbol-links.mjs";
@@ -555,6 +557,25 @@ function recordWritten(written) {
   writeFileSync(resolve(DOCS, ".gitignore"), `# Written by npm run reference.\n/.gitignore\n${lines.join("\n")}\n`);
 }
 
+/**
+ * Fails on an entry in the ambiguous list that no longer needs to be there:
+ * a name with no reference entry, or one no member, parameter or type
+ * parameter in the published packages shares.
+ */
+function assertStillAmbiguous(projects, index) {
+  const shared = new Set();
+  const kinds = ReflectionKind.Property | ReflectionKind.Method | ReflectionKind.Accessor | ReflectionKind.Parameter |
+    ReflectionKind.TypeParameter | ReflectionKind.EnumMember;
+  for (const project of projects) {
+    for (const reflection of Object.values(project.reflections)) if (reflection.kindOf(kinds)) shared.add(reflection.name);
+  }
+  for (const [name, reason] of Object.entries(AMBIGUOUS_SYMBOLS)) {
+    if (!reason) throw new Error(`scripts/ambiguous-symbols.mjs lists ${name} with no reason`);
+    if (!index.url(name)) throw new Error(`scripts/ambiguous-symbols.mjs lists ${name}, which has no reference entry. Delete the entry.`);
+    if (!shared.has(name)) throw new Error(`scripts/ambiguous-symbols.mjs lists ${name}, which no member, parameter or type parameter shares any more. Delete the entry.`);
+  }
+}
+
 /* ------------------------------------------------------------------ *
  * Entry point.
  * ------------------------------------------------------------------ */
@@ -603,6 +624,7 @@ export async function generate({ install = true } = {}) {
     }
   }
   writeFileSync(SYMBOL_INDEX, `${JSON.stringify(index, null, 2)}\n`);
+  assertStillAmbiguous(Object.values(projects), index);
 
   /** A page's lead description: its lead symbol's or contract type's summary, or a widget's record description. */
   const leadOf = (page) => {
