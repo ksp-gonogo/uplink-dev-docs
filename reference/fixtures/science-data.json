@@ -1,0 +1,95 @@
+{
+  "_meta": {
+    "notes": "The scene every Science Data example renders on, landed on the Mun. Its science.experimentBreakdown value comes from reference/examples/science-data/aboard.ts, which the top example shows."
+  },
+  "_stream": {
+    "pinnedUt": 10,
+    "emits": [
+      {
+        "channel": "system.bodies",
+        "value": {
+          "bodies": [
+            {
+              "name": "Mun",
+              "index": 2,
+              "parentIndex": 0,
+              "radius": 200000,
+              "orbit": null
+            }
+          ]
+        }
+      },
+      {
+        "channel": "vessel.orbit",
+        "value": {
+          "sma": 280000,
+          "ecc": 0,
+          "inc": 0,
+          "argPe": 0,
+          "mu": 65138398000,
+          "meanAnomalyAtEpoch": 0,
+          "epoch": 10,
+          "referenceBodyIndex": 2,
+          "horizon": {
+            "kind": 1,
+            "trajectoryKind": 1
+          }
+        }
+      },
+      {
+        "channel": "vessel.identity",
+        "value": {
+          "parentBodyIndex": 2,
+          "situation": 0,
+          "launchUt": 0
+        }
+      },
+      {
+        "channel": "vessel.surface",
+        "value": {
+          "biome": "",
+          "landedAt": "Midland Craters"
+        }
+      },
+      {
+        "channel": "career.status",
+        "value": {
+          "balances": {
+            "science": 4200.75,
+            "funds": 421900.25,
+            "reputation": 88
+          }
+        }
+      },
+      {
+        "channel": "science.experiments",
+        "value": [
+          {
+            "partName": "Mk1 Command Pod",
+            "experimentId": "crewReport",
+            "subjectId": "crewReport@MunSrfLandedMidlandCraters",
+            "title": "Crew Report from Midland Craters",
+            "location": "SrfLanded",
+            "situation": "Midland Craters",
+            "dataAmount": 6,
+            "scienceValueRatio": 0.6,
+            "baseTransmitValue": 3.2,
+            "transmitBonus": 0
+          },
+          {
+            "partName": "Mystery Goo™ Containment Unit",
+            "experimentId": "mysteryGoo",
+            "subjectId": "mysteryGoo@MunSrfLandedMidlandCraters",
+            "title": "Mystery Goo Observation from Midland Craters",
+            "location": "SrfLanded",
+            "situation": "Midland Craters",
+            "dataAmount": 3.5,
+            "scienceValueRatio": 0.4,
+            "baseTransmitValue": 1.8,
+            "transmitBonus": 0
+          }
+        ]
+      }
+    ]
+  }
+}
