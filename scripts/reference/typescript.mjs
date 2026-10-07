@@ -190,10 +190,16 @@ function ownerOf(reflection) {
   return owner;
 }
 
-/** The URL of a member's row: its owner's page, at the member's own anchor. */
+/**
+ * The URL of a member's row: its owner's page, at the member's own anchor. Only
+ * an owner's own members have rows, so a member nested deeper, such as a
+ * property of a method's parameter, links to its owner.
+ */
 function memberUrl(member, index) {
   const owner = index.url(ownerOf(member).name);
-  return owner && `${owner.split("#")[0]}#${memberAnchor(member)}`;
+  if (!owner) return undefined;
+  const anchor = memberAnchor(member);
+  return anchor.split(".").length === 2 ? `${owner.split("#")[0]}#${anchor}` : owner;
 }
 
 /** Display parts to Markdown, with every `{@link}` pointed at its page. */
