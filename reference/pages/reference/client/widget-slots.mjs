@@ -3,5 +3,5 @@ export default {
   title: "Widget slots",
   package: "@ksp-gonogo/sitrep-sdk",
   category: "Widget slots",
-  lead: "SystemEntity",
+  lead: "CrewBadgeContext",
 };
