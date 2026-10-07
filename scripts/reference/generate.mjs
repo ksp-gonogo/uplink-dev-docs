@@ -14,7 +14,7 @@ import { dirname, relative, resolve } from "node:path";
 import { ReflectionKind } from "typedoc";
 import { PAGES } from "../../reference/pages.mjs";
 import { cliPageMd } from "./cli.mjs";
-import { contractCategory, contractMd, contractSummary, isContractType, runXmldocmd } from "./csharp.mjs";
+import { contractCategory, contractCategoryDescription, contractMd, contractSummary, isContractType, runXmldocmd } from "./csharp.mjs";
 import { commandListMd, packageIndexMd, referenceIndexMd, SECTIONS, sectionOf, topicListMd, topicsPageMd } from "./indexes.mjs";
 import { installArtifacts } from "./install.mjs";
 import { DOCS, GENERATED_HASHES, hashOf, PLANTED_DEMO_FILE, PLANTED_DEMOS, PUBLISHED, ROOT, storybookRoot } from "./paths.mjs";
@@ -23,6 +23,7 @@ import { UNRESOLVED_LINK_DEBT } from "../symbol-link-debt.mjs";
 import { anchorOf, assertModulesStateNoRecordFacts, loadWidgetRecords, recordOf, widgetHeaderMd } from "./widgets.mjs";
 import { SYMBOL_INDEX } from "../symbol-links.mjs";
 import {
+  categoryDescriptionMd,
   categoryMembers,
   cellSafe,
   code,
@@ -289,6 +290,7 @@ function categoryPage(page, project, index) {
   const leadIsTitle = page.title === lead.name;
   return [
     `# ${page.title}`,
+    categoryDescriptionMd(project, page.category, index),
     `${code(specifierOf(page))} · ${versionOf(page.package)}`,
     examplesMd(page),
     symbolMd(lead, project, index, { title: !leadIsTitle, level: 2 }),
@@ -506,7 +508,8 @@ function contractPage(page, index) {
   // The title stands for the lead type, which the page's own links point at, so it carries that type's anchor.
   const anchor = page.lead ?? (types.includes(page.title) ? page.title : undefined);
   const title = anchor ? `# ${page.title} {#${anchor}}` : `# ${page.title}`;
-  return [title, `${code("Sitrep.Contract")} · ${code("KspGonogo.Sitrep.Contract")} ${versionOf()}`, body];
+  const description = page.category ? contractCategoryDescription(page.category, index) : "";
+  return [title, description, `${code("Sitrep.Contract")} · ${code("KspGonogo.Sitrep.Contract")} ${versionOf()}`, body];
 }
 
 const SIDEBAR = resolve(DOCS, ".vitepress/sidebar.generated.json");
@@ -626,9 +629,20 @@ export async function generate({ install = true } = {}) {
   writeFileSync(SYMBOL_INDEX, `${JSON.stringify(index, null, 2)}\n`);
   assertStillAmbiguous(Object.values(projects), index);
 
-  /** A page's lead description: its lead symbol's or contract type's summary, or a widget's record description. */
+  /** A category page's description of its category, from the package's own doc comments. */
+  const describedOf = (page) => {
+    if (page.kind === "contract") return page.category ? contractCategoryDescription(page.category, contractIndex) : "";
+    if (page.kind !== "category" && page.kind !== "guide") return "";
+    return categoryDescriptionMd(projects[specifierOf(page)], page.category, index);
+  };
+  /**
+   * What a page is for: its category's description, else its lead symbol's or contract type's summary,
+   * or a widget's record description.
+   */
   const leadOf = (page) => {
     if (page.kind === "widget") return recordOf(records, page).description;
+    const described = describedOf(page);
+    if (described) return described;
     if (page.kind === "contract") return contractSummary(contractTypes(page)[0], contractIndex);
     const lead = page.lead && projects[specifierOf(page)]?.getChildByName(page.lead);
     const comment = lead && (lead.comment ?? lead.signatures?.[0]?.comment);
@@ -646,6 +660,7 @@ export async function generate({ install = true } = {}) {
     sdk: projects[SDK],
   };
 
+  const undescribed = PAGES.filter((p) => (p.kind === "category" || (p.kind === "contract" && p.category)) && !describedOf(p));
   const written = [];
   for (const page of PAGES) {
     let sections;
@@ -676,6 +691,7 @@ export async function generate({ install = true } = {}) {
   if (stale.length > 0) throw new Error(`scripts/symbol-link-debt.mjs lists ${stale.join(", ")}, which now resolves. Delete the entry.`);
   console.log(`Generated ${written.length} reference pages:\n  ${written.join("\n  ")}`);
   console.log(`Wired ${writeDemoLoaders()}.`);
+  console.log(`${undescribed.length} category pages open with no description of their category: ${undescribed.map((p) => p.path).join(", ")}`);
   return written;
 }
 

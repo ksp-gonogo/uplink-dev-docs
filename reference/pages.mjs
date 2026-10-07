@@ -9,7 +9,9 @@
  *
  * - `category`: every symbol tagged `@category <category>` in `package`, or
  *   in its subpath `entry` (`"frames"` for `@ksp-gonogo/sitrep-sdk/frames`):
- *   `lead` first, then what its doc links to, then the rest in source order
+ *   `lead` first, then what its doc links to, then the rest in source order.
+ *   The page opens with the category's `@categoryDescription`, written in
+ *   the entry's module comment or on any one symbol in the category
  * - `widget`: one core widget, named by its id in `widget`. Its name, its
  *   description and every other fact its registration declares come from its
  *   record in uplink-tools' `widgets.json`, and the module states none of
@@ -23,7 +25,9 @@
  *   and for each command's `--help`, verbatim
  * - `contract`: C# types from the Sitrep.Contract package: those named in
  *   `types`, or `lead` then every type tagged `<category>` `category`. The
- *   compiled template region in `examples` is shown under its type
+ *   compiled template region in `examples` is shown under its type. A
+ *   category's page opens with the `<categoryDescription>` one of its types
+ *   carries beside its `<category>`
  * - `index`: a section's index (`reference/client/index.mjs`): its package's
  *   description and install line, then every page in the section with its
  *   lead's first sentence. `reference/index.mjs` lists every section instead.

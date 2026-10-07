@@ -154,7 +154,10 @@ or edited by hand (`npm run check:pages`).
 
 - **A sdk, ui-kit or uplink-tools category**: tag its symbols
   `@category <Name>` in gonogo, repack, and add a `category` module naming the
-  package, the category and its `lead` symbol. A guide that places a
+  package, the category and its `lead` symbol. The page opens with what the
+  category is for: a `@categoryDescription <Name>` tag on one of its symbols
+  (or in the entry's module comment), and for a contract category a
+  `<categoryDescription>` element beside one type's `<category>`. A guide that places a
   category's symbols through hand prose is a `guide` module over a source in
   `reference/guides/`
 - **A widget**: a `widget` module naming the widget by id, the fixture scene

@@ -173,3 +173,42 @@ export function contractMd(types, examples, index) {
 
 /** A type's summary, its first paragraph, linked through `index`. */
 export const contractSummary = (type, index) => relink(body(read(`${type}.md`)).split(/\n{2,}/)[0], new Set(), index);
+
+/** An XML doc fragment as Markdown: `<c>` and a `<see cref>` as code, linked through `index`, and `<para>` as paragraphs. */
+function xmlDocMd(xml, index) {
+  const linkedName = (name) => {
+    const url = index?.url(name);
+    return url ? `[\`${name}\`](${url})` : `\`${name}\``;
+  };
+  return xml
+    .replace(/<see\s+cref="\w:([^"]+)"\s*\/>/g, (_, cref) => linkedName(cref.split(".").pop().replace(/`\d+$/, "")))
+    .replace(/<c>([\s\S]*?)<\/c>/g, (_, text) => `\`${text}\``)
+    .replace(/<\/?para>/g, "\n\n")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&amp;/g, "&")
+    .split(/\n{2,}/)
+    .map((para) => para.trim().replace(/\s*\n\s*/g, " "))
+    .filter(Boolean)
+    .join("\n\n");
+}
+
+/**
+ * What a category's page is for: the `<categoryDescription>` element one type
+ * in the category carries beside its `<category>`. Empty when none does; an
+ * error when more than one does.
+ */
+export function contractCategoryDescription(name, index) {
+  const xml = readFileSync(CONTRACT_DLL.replace(/\.dll$/, ".xml"), "utf8");
+  const found = [];
+  for (const [, id, doc] of xml.matchAll(/<member name="T:([^"]+)">([\s\S]*?)<\/member>/g)) {
+    if (/<category>([^<]+)<\/category>/.exec(doc)?.[1].trim() !== name) continue;
+    const description = /<categoryDescription>([\s\S]*?)<\/categoryDescription>/.exec(doc)?.[1];
+    if (description) found.push({ id, description });
+  }
+  if (found.length > 1) {
+    throw new Error(`<category>${name}</category> is described by ${found.map((f) => f.id).join(", ")}: keep one <categoryDescription>`);
+  }
+  return found.length === 1 ? xmlDocMd(found[0].description, index) : "";
+}

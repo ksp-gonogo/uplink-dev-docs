@@ -244,7 +244,7 @@ const commentOf = (reflection) =>
   reflection.comment ?? reflection.signatures?.[0]?.comment;
 
 /** The tags a page renders in its own place, rather than in the running text. */
-const PLACED_TAGS = new Set(["@example", "@category", "@param", "@defaultValue", "@typeParam", "@returns"]);
+const PLACED_TAGS = new Set(["@example", "@category", "@categoryDescription", "@param", "@defaultValue", "@typeParam", "@returns"]);
 
 function summaryMd(comment, index, level, { omitRemarks = false } = {}) {
   if (!comment) return "";
@@ -512,6 +512,39 @@ export function symbolMd(reflection, project, index, { level = 3, title = true, 
     out.push(examplesMd(reflection.comment, index, inner));
   }
   return out.filter(Boolean).join("\n\n");
+}
+
+/**
+ * What a category's page is for, as Markdown: TypeDoc's `@categoryDescription`
+ * for the category, written either in the entry point's module comment or on
+ * any one symbol in the category, its first line naming the category as
+ * TypeDoc reads it. Empty when nothing describes the category; an error when
+ * more than one thing does.
+ */
+export function categoryDescriptionMd(project, name, index) {
+  const sources = [];
+  const native = (project.categories ?? []).find((c) => c.title === name)?.description;
+  if (native?.length) sources.push({ from: "the module comment", parts: native });
+  const category = (project.categories ?? []).find((c) => c.title === name);
+  for (const member of category?.children ?? []) {
+    for (const comment of [member.comment, ...callSignatures(member).map((s) => s.comment)]) {
+      for (const tag of comment?.blockTags ?? []) {
+        if (tag.tag !== "@categoryDescription") continue;
+        const [first, ...rest] = tag.content;
+        const [named, ...text] = (first?.text ?? "").split("\n");
+        if (named.trim() !== name) {
+          throw new Error(`${member.name} carries @categoryDescription ${named.trim()}, but sits in @category ${name}`);
+        }
+        sources.push({ from: member.name, parts: [{ ...first, text: text.join("\n") }, ...rest] });
+      }
+    }
+  }
+  // A function's comment reaches TypeDoc on the function and on its signature, so one tag can be read twice.
+  const distinct = [...new Map(sources.map((s) => [partsMd(s.parts, index).trim(), s])).entries()];
+  if (distinct.length > 1) {
+    throw new Error(`@category ${name} is described ${distinct.length} times (${distinct.map(([, s]) => s.from).join(", ")}): keep one`);
+  }
+  return distinct[0]?.[0] ?? "";
 }
 
 /** Every top-level reflection carrying `@category <name>`, a constant and its same-named type counted once, as the constant. */
