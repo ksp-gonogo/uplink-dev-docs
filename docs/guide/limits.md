@@ -75,7 +75,7 @@ That has two knock-on effects. There is no CKAN identifier your Uplink can decla
 
 ## Binary frames are not in the SDK
 
-`@ksp-gonogo/sitrep-sdk@0.0.1` has no decoder for [binary frames](/reference/client/binary-frames), and `ServerMessage` has no `stream-binary` member. Decode them yourself; the format is short.
+`@ksp-gonogo/sitrep-sdk@0.0.1` has no decoder for [binary frames](/reference/client/binary-lane), and `ServerMessage` has no `stream-binary` member. Decode them yourself; the format is short.
 
 ## Command handlers do not run on the main thread
 

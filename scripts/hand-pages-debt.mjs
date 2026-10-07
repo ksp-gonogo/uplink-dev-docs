@@ -7,9 +7,7 @@
  * A new reference page is a module under `reference/pages/`, never a line here.
  */
 export const HAND_PAGES = [
-  "docs/reference/client/binary-frames.md",
   "docs/reference/client/index.md",
-  "docs/reference/client/messages.md",
   "docs/reference/client/topics.md",
   "docs/reference/index.md",
   "docs/reference/ui-kit/Badge.md",

@@ -1,0 +1,15 @@
+{
+  "subscribed": ["vessel.identity"],
+  "emits": [
+    {
+      "topic": "vessel.identity",
+      "payload": {
+        "vesselId": "kerbal-x",
+        "name": "Kerbal X",
+        "vesselType": 0,
+        "situation": 3,
+        "parentBodyIndex": 1
+      }
+    }
+  ]
+}

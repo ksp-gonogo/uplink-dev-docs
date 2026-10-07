@@ -27,7 +27,7 @@ stream.onEvent("example.status", (name) => {
 stream.onError("example.status", (code, message) => showProblem(code, message));
 ```
 
-The mod sends every frame as a binary WebSocket message, JSON included, which is why the constructor sets `binaryType` and hands each message to `readFrame` before parsing. [Binary frames](/reference/client/binary-frames) covers the other lane.
+The mod sends every frame as a binary WebSocket message, JSON included, which is why the constructor sets `binaryType` and hands each message to `readFrame` before parsing. [Binary lane](/reference/client/binary-lane) covers the other lane.
 
 If the Topic already has a value, it is delivered immediately on subscribe rather than at the next emission.
 

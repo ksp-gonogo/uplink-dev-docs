@@ -1,0 +1,14 @@
+{
+  "subscribed": ["vessel.maneuver"],
+  "emits": [
+    {
+      "topic": "vessel.maneuver",
+      "payload": {
+        "nodes": {
+          "locked": [{ "kind": 1, "id": "TrackingStation", "name": "Tracking Station level 2" }]
+        },
+        "planner": null
+      }
+    }
+  ]
+}
