@@ -12,6 +12,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, relative, resolve } from "node:path";
 import { PAGES } from "../../reference/pages.mjs";
+import { cliPageMd } from "./cli.mjs";
 import { contractCategory, contractMd, contractSummary, isContractType, runXmldocmd } from "./csharp.mjs";
 import { commandListMd, packageIndexMd, referenceIndexMd, SECTIONS, sectionOf, topicListMd, topicsPageMd } from "./indexes.mjs";
 import { installArtifacts } from "./install.mjs";
@@ -637,6 +638,7 @@ export async function generate({ install = true } = {}) {
     if (page.kind === "index") {
       sections = SECTIONS.some((s) => s.dir === sectionOf(page)) ? packageIndexMd(page, listing) : referenceIndexMd(page, listing);
     } else if (page.kind === "topics") sections = topicsPageMd(page, listing);
+    else if (page.kind === "cli") sections = cliPageMd(page, listing);
     else if (page.kind === "category") sections = categoryPage(page, projects[specifierOf(page)], index);
     else if (page.kind === "guide") sections = guidePage(page, projects[specifierOf(page)], index);
     else if (page.kind === "widget") sections = widgetPage(page, recordOf(records, page), projects[SDK], projects[KIT], index);

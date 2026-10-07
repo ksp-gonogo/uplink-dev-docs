@@ -5,7 +5,7 @@
  * from the packages' own doc comments; a page module only says which symbols
  * share the page and which examples it shows.
  *
- * A page module's default export takes one of six kinds:
+ * A page module's default export takes one of seven kinds:
  *
  * - `category`: every symbol tagged `@category <category>` in `package`, or
  *   in its subpath `entry` (`"frames"` for `@ksp-gonogo/sitrep-sdk/frames`):
@@ -19,6 +19,8 @@
  * - `guide`: a hand-written page in `reference/guides/`, whose placeholders
  *   take the symbols of `category`, their `@remarks` and its `examples`. Every
  *   symbol in the category is placed exactly once, by name or by `<!-- rest -->`
+ * - `cli`: a package's command line, from what its `bin` prints for `--help`
+ *   and for each command's `--help`, verbatim
  * - `contract`: C# types from the Sitrep.Contract package: those named in
  *   `types`, or `lead` then every type tagged `<category>` `category`. The
  *   compiled template region in `examples` is shown under its type

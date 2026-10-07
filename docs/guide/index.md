@@ -13,7 +13,7 @@ The published packages cover the plugin half completely, and cover a standalone 
 
 They do not yet cover mounting your client as a widget inside the Gonogo dashboard: the API that registers one is not published to npm. [Known limits](/guide/limits) states exactly what is missing.
 
-The command line is `@ksp-gonogo/uplink-tools`. `npx @ksp-gonogo/uplink-tools new <id>` scaffolds an Uplink, and the same package bundles, renders and documents it. Each command answers `--help`.
+The command line is `@ksp-gonogo/uplink-tools`. `npx @ksp-gonogo/uplink-tools new <id>` scaffolds an Uplink, and the same package bundles, renders and documents it. Each command answers `--help`, and [Command line](/reference/tools/command-line) prints every command's help.
 
 ## Vocabulary
 
