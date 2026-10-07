@@ -17,6 +17,8 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # A hung step fails the run instead of holding the deploy.
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       # The generated reference is build output, written here from packages
@@ -61,6 +63,8 @@ jobs:
         env:
           GONOGO_REPO: ${{ github.workspace }}/gonogo
           SITREP_CONTRACT_DLL: ${{ runner.temp }}/contract/Sitrep.Contract.dll
+          # Live examples graded at once, sized to the runner's four cores.
+          DEMO_PAGES: 4
       - uses: actions/upload-pages-artifact@v3
         with:
           path: docs/.vitepress/dist

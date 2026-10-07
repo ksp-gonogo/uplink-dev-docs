@@ -5,7 +5,8 @@
  * fixture change break a render.
  *
  * Each example is graded on its own frame page (`/demo?id=`), served by
- * `vitepress preview`, one at a time:
+ * `vitepress preview`, several at once (`DEMO_PAGES`, default 6), each with
+ * a hard limit that fails it by name rather than holding up the rest:
  * - any uncaught error, unhandled rejection or `console.error` fails it
  * - the "failed to load" or "No example is wired" note fails it
  * - a render with no text and no drawn graphic fails it
@@ -33,6 +34,10 @@ const DIST = resolve(import.meta.dirname, "../docs/.vitepress/dist");
 const RENDER_LIMIT_MS = 20_000;
 /** How long a drawn example is watched for an error that lands after it. */
 const SETTLE_MS = 1_500;
+/** The most one example may take, loading included, before it fails by name. */
+const EXAMPLE_LIMIT_MS = 60_000;
+/** How many examples are graded at once, each on its own page. */
+const PAGES_AT_ONCE = Math.max(1, Number(process.env.DEMO_PAGES) || 6);
 const PLANTED = [...Object.keys(PLANTED_DEMOS), "plant--missing"];
 
 function builtPages(dir = DIST) {
@@ -119,8 +124,32 @@ function stageState() {
   return { drawn: text.length > 0 || graphic };
 }
 
-/** The faults one example shows, or an empty list when it drew and stayed quiet. */
+/** The faults one example shows, or an empty list when it drew and stayed quiet; never longer than the example limit. */
 async function grade(browser, url, id) {
+  let timer;
+  const limit = new Promise((done) => {
+    timer = setTimeout(() => done([`did not finish within ${EXAMPLE_LIMIT_MS / 1000}s`]), EXAMPLE_LIMIT_MS);
+  });
+  const faults = await Promise.race([gradeOnce(browser, url, id).catch((error) => [`could not be graded: ${error.message}`]), limit]);
+  clearTimeout(timer);
+  return faults;
+}
+
+/** Every id graded, `PAGES_AT_ONCE` at a time, with its faults, in the order given. */
+async function gradeAll(browser, url, ids) {
+  const results = new Array(ids.length);
+  let next = 0;
+  const worker = async () => {
+    while (next < ids.length) {
+      const i = next++;
+      results[i] = await grade(browser, url, ids[i]);
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(PAGES_AT_ONCE, ids.length) }, worker));
+  return results;
+}
+
+async function gradeOnce(browser, url, id) {
   const page = await browser.newPage({ viewport: { width: 1200, height: 800 } });
   await page.addInitScript(recordErrors);
   const faults = [];
@@ -138,7 +167,7 @@ async function grade(browser, url, id) {
   if (!settled) faults.push(`drew nothing within ${RENDER_LIMIT_MS / 1000}s`);
   await page.waitForTimeout(SETTLE_MS);
   faults.push(...(await page.evaluate(() => window.__demoErrors)));
-  await page.close();
+  await page.close().catch(() => {});
   return [...new Set(faults)];
 }
 
@@ -157,19 +186,17 @@ const server = await preview();
 const browser = await chromium.launch();
 let failed = false;
 try {
-  const blind = [];
-  for (const id of PLANTED) {
-    if ((await grade(browser, server.url, id)).length === 0) blind.push(id);
-  }
+  const plantedFaults = await gradeAll(browser, server.url, PLANTED);
+  const blind = PLANTED.filter((_, i) => plantedFaults[i].length === 0);
   if (blind.length > 0) {
     console.error(`BLIND: the planted example(s) ${blind.join(", ")} passed. Fix the check before trusting it.`);
     failed = true;
   } else {
-    const broken = [];
-    for (const [id, pages] of named) {
-      const faults = await grade(browser, server.url, id);
-      if (faults.length > 0) broken.push(`  ${id} (on ${pages.join(", ")})\n${faults.map((f) => `      ${f}`).join("\n")}`);
-    }
+    const entries = [...named];
+    const graded = await gradeAll(browser, server.url, entries.map(([id]) => id));
+    const broken = entries.flatMap(([id, pages], i) =>
+      graded[i].length === 0 ? [] : [`  ${id} (on ${pages.join(", ")})\n${graded[i].map((f) => `      ${f}`).join("\n")}`],
+    );
     if (broken.length > 0) {
       console.error(`Live examples that do not render cleanly:\n${broken.join("\n")}`);
       failed = true;
