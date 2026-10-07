@@ -558,7 +558,8 @@ export async function generate({ install = true } = {}) {
   const index = new SymbolIndex();
   // The sdk's TypeScript mirrors carry the contract's type names, so a C# page links through its own index.
   const contractIndex = new SymbolIndex();
-  for (const page of PAGES) {
+  // Widget pages first: a slot's type is documented beside its slot, so its link goes there before any category page.
+  for (const page of [...widgetPages, ...PAGES.filter((p) => p.kind !== "widget")]) {
     const url = urlOf(page);
     if (page.kind === "category" || page.kind === "guide") {
       const project = projects[specifierOf(page)];
