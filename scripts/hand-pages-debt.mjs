@@ -6,5 +6,4 @@
  * an entry whose file is gone or is now generated, until the entry is deleted.
  * A new reference page is a module under `reference/pages/`, never a line here.
  */
-export const HAND_PAGES = [
-];
+export const HAND_PAGES = [];
