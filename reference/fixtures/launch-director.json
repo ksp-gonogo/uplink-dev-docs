@@ -1,0 +1,61 @@
+{
+  "_meta": {
+    "notes": "The scene every Launch & Recovery example renders on: Kerbal X on the launch pad, the runway free."
+  },
+  "_stream": {
+    "pinnedUt": 10,
+    "emits": [
+      {
+        "channel": "spaceCenter.scene",
+        "value": {
+          "scene": "SpaceCenter",
+          "launchSite": "LaunchPad"
+        }
+      },
+      {
+        "channel": "spaceCenter.launchSites",
+        "value": [
+          {
+            "name": "Runway",
+            "displayName": "KSC Runway",
+            "editorFacility": "SPH",
+            "bodyIndex": 1,
+            "isStock": true,
+            "padOccupied": null,
+            "padVesselTitle": null
+          },
+          {
+            "name": "LaunchPad",
+            "displayName": "KSC Launch Pad",
+            "editorFacility": "VAB",
+            "bodyIndex": 1,
+            "isStock": true,
+            "padOccupied": true,
+            "padVesselTitle": "Kerbal X"
+          }
+        ]
+      },
+      {
+        "channel": "career.status",
+        "value": {
+          "balances": {
+            "funds": 289848,
+            "reputation": null,
+            "science": null
+          },
+          "contracts": null,
+          "strategies": null,
+          "tech": null
+        }
+      },
+      {
+        "channel": "spaceCenter.savedShips",
+        "value": []
+      },
+      {
+        "channel": "spaceCenter.crewRoster",
+        "value": []
+      }
+    ]
+  }
+}
