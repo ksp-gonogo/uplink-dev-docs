@@ -12,6 +12,14 @@ export const DOCS = resolve(ROOT, "docs");
 /** Each generated page's hash as the generator wrote it, by path from the repo root. Not committed. */
 export const GENERATED_HASHES = resolve(INSTALL, "generated.json");
 
+/**
+ * What an author installs today to get the surface these pages document: the
+ * version every Gonogo package is published at, its npm dist-tag, what that
+ * publish is called, and any package not yet published at it. One value, so a
+ * release changes the whole site at once.
+ */
+export const PUBLISHED = JSON.parse(readFileSync(resolve(ROOT, "reference/artifacts.json"), "utf8")).published;
+
 export const hashOf = (file) => createHash("sha256").update(readFileSync(file)).digest("hex");
 
 /** The broken examples `check:demos` must catch, by id, and the file that exports them. */

@@ -6,6 +6,7 @@
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { publishedMd } from "./indexes.mjs";
 import { INSTALL } from "./paths.mjs";
 
 const fence = (text) => `\`\`\`text\n${text.trimEnd()}\n\`\`\``;
@@ -23,6 +24,7 @@ export function cliPageMd(page, { version }) {
   return [
     `# ${page.title}`,
     `\`${page.package}\` · ${version(page.package)}`,
+    publishedMd(page.package),
     fence(overview),
     ...commands.flatMap((command) => [`## ${command} {#${command}}`, fence(help(command))]),
   ];

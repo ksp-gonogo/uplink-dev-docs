@@ -16,7 +16,7 @@ import { cliPageMd } from "./cli.mjs";
 import { contractCategory, contractMd, contractSummary, isContractType, runXmldocmd } from "./csharp.mjs";
 import { commandListMd, packageIndexMd, referenceIndexMd, SECTIONS, sectionOf, topicListMd, topicsPageMd } from "./indexes.mjs";
 import { installArtifacts } from "./install.mjs";
-import { DOCS, GENERATED_HASHES, hashOf, INSTALL, PLANTED_DEMO_FILE, PLANTED_DEMOS, ROOT, storybookRoot } from "./paths.mjs";
+import { DOCS, GENERATED_HASHES, hashOf, PLANTED_DEMO_FILE, PLANTED_DEMOS, PUBLISHED, ROOT, storybookRoot } from "./paths.mjs";
 import { UNRESOLVED_LINK_DEBT } from "../symbol-link-debt.mjs";
 import { anchorOf, assertModulesStateNoRecordFacts, loadWidgetRecords, recordOf, widgetHeaderMd } from "./widgets.mjs";
 import { SYMBOL_INDEX } from "../symbol-links.mjs";
@@ -75,16 +75,8 @@ const urlOf = (page) => `/${page.path.replace(/(index)?\.md$/, "")}`;
 /** The import specifier a category or guide page documents: its package, or the subpath its `entry` names. */
 const specifierOf = (page) => (page.entry ? `${page.package}/${page.entry}` : page.package);
 
-function versionOf(name) {
-  const manifest = resolve(INSTALL, "node_modules", ...name.split("/"), "package.json");
-  return JSON.parse(readFileSync(manifest, "utf8")).version;
-}
-
-/** The contract package's version, off the nuspec the installer extracted. */
-function contractVersion() {
-  const nuspec = readFileSync(resolve(INSTALL, "contract/KspGonogo.Sitrep.Contract.nuspec"), "utf8");
-  return /<version>([^<]+)<\/version>/.exec(nuspec)?.[1] ?? "";
-}
+/** The version a page names for a package: what an author installs today, the same for every Gonogo package. */
+const versionOf = () => PUBLISHED.version;
 
 /**
  * One example: the render and the file that produces it, as one block. The
@@ -512,7 +504,7 @@ function contractPage(page, index) {
   // The title stands for the lead type, which the page's own links point at, so it carries that type's anchor.
   const anchor = page.lead ?? (types.includes(page.title) ? page.title : undefined);
   const title = anchor ? `# ${page.title} {#${anchor}}` : `# ${page.title}`;
-  return [title, `${code("Sitrep.Contract")} · ${code("KspGonogo.Sitrep.Contract")} ${contractVersion()}`, body];
+  return [title, `${code("Sitrep.Contract")} · ${code("KspGonogo.Sitrep.Contract")} ${versionOf()}`, body];
 }
 
 const SIDEBAR = resolve(DOCS, ".vitepress/sidebar.generated.json");

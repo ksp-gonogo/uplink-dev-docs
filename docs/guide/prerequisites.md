@@ -5,7 +5,11 @@
 - **.NET SDK 8 or later.** The plugin targets `net48`; on macOS and Linux the template pulls in `Microsoft.NETFramework.ReferenceAssemblies` so no Mono install is needed
 - **`Sitrep.Contract.dll`.** The Gonogo mod's contract assembly. It is the only Gonogo assembly you may reference, and the only one you need
 
-  It is published on NuGet as `KspGonogo.Sitrep.Contract`: reference that package at the Gonogo version you build against. The Gonogo mod itself is not on CKAN or SpaceDock yet ([Known limits](/guide/limits)).
+  It is published on NuGet as `KspGonogo.Sitrep.Contract`. Today that is the <Published field="name" />, <Published field="version" />, a prerelease:
+
+  ```bash
+  dotnet add package KspGonogo.Sitrep.Contract --prerelease
+  ``` The Gonogo mod itself is not on CKAN or SpaceDock yet ([Known limits](/guide/limits)).
 
   In a KSP install with the mod, it is at:
 
@@ -25,10 +29,12 @@
 - **React 18.** `@ksp-gonogo/ui-kit` declares a peer dependency on `react@^18`. Installing it alongside React 19 fails outright on npm
 
 ```bash
-npm install @ksp-gonogo/sitrep-sdk @ksp-gonogo/ui-kit \
+npm install @ksp-gonogo/sitrep-sdk@rc @ksp-gonogo/ui-kit@rc \
   react@18 react-dom@18 styled-components
 npm install -D @ksp-gonogo/uplink-tools typescript @types/react @types/react-dom vite @vitejs/plugin-react
 ```
+
+The `rc` tag is the <Published field="name" />, <Published field="version" />, which these pages document. A plain `npm install @ksp-gonogo/sitrep-sdk` fetches an older `latest` that lacks most of it. `@ksp-gonogo/uplink-tools` is not on npm at the <Published field="name" /> yet: the command arrives with the next one.
 
 The template's `client/package.json` pins the same list except `@ksp-gonogo/uplink-tools`: the template is a standalone page built with Vite, so it does not bundle for the dashboard.
 

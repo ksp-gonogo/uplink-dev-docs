@@ -1,5 +1,13 @@
 {
   "gonogo": "36754b057e1bb0ec412b1418d342d8aef730a912",
+  "published": {
+    "version": "0.2.0-rc.8",
+    "npmTag": "rc",
+    "name": "release candidate",
+    "pending": [
+      "@ksp-gonogo/uplink-tools"
+    ]
+  },
   "npm": {
     "@ksp-gonogo/ui-kit": "file:../artifacts/ksp-gonogo-ui-kit.tgz",
     "@ksp-gonogo/sitrep-sdk": "file:../artifacts/ksp-gonogo-sitrep-sdk.tgz",

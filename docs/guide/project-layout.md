@@ -8,7 +8,7 @@ In an empty directory:
 npx @ksp-gonogo/uplink-tools new example
 ```
 
-writes the hand-written seed of an Uplink called `example` and prints what is left to do. It never overwrites a file, and in a repository holding several Uplinks under `uplinks/` it writes `uplinks/example/` instead. See [Known limits](/guide/limits) before relying on it to build outside the Gonogo repositories.
+writes the hand-written seed of an Uplink called `example` and prints what is left to do. It never overwrites a file, and in a repository holding several Uplinks under `uplinks/` it writes `uplinks/example/` instead. See [Known limits](/guide/limits) before relying on it to build outside the Gonogo repositories. `@ksp-gonogo/uplink-tools` is not on npm at the <Published field="name" /> yet: the command arrives with the next one.
 
 It writes `.gitignore`, `uplink.json`, `client/` (its package.json, two tsconfigs, a vitest config, `uplink.md`, and `src/` with one Heartbeat widget, its test, a `_scene` fixture and the page test), `mod/` (the csproj, a netkan and the plugin class), `mod-contract/` (the contract slice csproj, a payload and its codegen config), `mod-contract-codegen/` (the codegen twin csproj) and `mod-tests/` (an xunit project and its tests).
 

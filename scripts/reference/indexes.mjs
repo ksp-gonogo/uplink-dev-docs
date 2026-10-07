@@ -6,7 +6,7 @@
  */
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { INSTALL } from "./paths.mjs";
+import { INSTALL, PUBLISHED } from "./paths.mjs";
 import { cellSafe, code, partsMd, typeMd } from "./typescript.mjs";
 
 /**
@@ -63,6 +63,14 @@ export function describeSection(section, projects, index) {
   return readmeLead(section.package);
 }
 
+/** What the install line fetches, or that the package is not published at it yet. */
+export function publishedMd(name) {
+  if (PUBLISHED.pending?.includes(name)) {
+    return `\`${name}\` is not on npm at the ${PUBLISHED.name} yet: it arrives with the next one.`;
+  }
+  return `The \`${PUBLISHED.npmTag}\` tag is the ${PUBLISHED.name}, ${PUBLISHED.version}, which these pages document.`;
+}
+
 /** The install line for a package and every peer it needs that is not optional. */
 function installMd(name) {
   const manifest = manifestOf(name);
@@ -70,7 +78,7 @@ function installMd(name) {
   const peers = Object.entries(manifest.peerDependencies ?? {})
     .filter(([peer]) => !optional[peer]?.optional)
     .map(([peer, range]) => (range === "*" ? peer : /[\s|]/.test(range) ? `"${peer}@${range}"` : `${peer}@${range}`));
-  return `\`\`\`bash\nnpm install ${[name, ...peers].join(" ")}\n\`\`\``;
+  return `\`\`\`bash\nnpm install ${[`${name}@${PUBLISHED.npmTag}`, ...peers].join(" ")}\n\`\`\`\n\n${publishedMd(name)}`;
 }
 
 /**
