@@ -36,7 +36,8 @@
  *   `@concept <concept>` tag a doc comment in the packages writes beside the
  *   code it explains, then every symbol carrying that tag. Generation fails
  *   on a concept a comment writes that no page shows, and on a page naming
- *   one no comment writes. A symbol carrying the tag links to the page, and
+ *   one no comment writes. A symbol carrying the tag links to the page, the
+ *   first use on any page of each term in the concept's name links to it, and
  *   one carrying `@guide <page>#<anchor>` links to that Guide page, which
  *   must exist
  * - `topics`: every Topic in `package`'s `TOPIC_IDS` by prefix, with its

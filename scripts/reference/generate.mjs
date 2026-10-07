@@ -21,6 +21,7 @@ import { DOCS, GENERATED_HASHES, hashOf, PLANTED_DEMO_FILE, PLANTED_DEMOS, PUBLI
 import { AMBIGUOUS_SYMBOLS } from "../ambiguous-symbols.mjs";
 import { UNRESOLVED_LINK_DEBT } from "../symbol-link-debt.mjs";
 import { anchorOf, assertModulesStateNoRecordFacts, loadWidgetRecords, recordOf, widgetHeaderMd } from "./widgets.mjs";
+import { AMBIGUOUS_TERMS, CONCEPT_TERMS, termsOf } from "../concept-terms.mjs";
 import { GUIDE_LINK_LIST, SYMBOL_INDEX } from "../symbol-links.mjs";
 import {
   categoryDescriptionMd,
@@ -562,6 +563,26 @@ function conceptPage(page, concept, index) {
   return [`# ${page.title}`, partsMd(concept.parts, index).trim(), "## In the API {#in-the-api}", carriers.join("\n")];
 }
 
+/**
+ * Writes each concept term with its concept page, for the Markdown pass that
+ * links a term's first use on a page. A term on the ambiguous list is left out,
+ * and an entry there that no concept name gives fails generation.
+ */
+function writeConceptTerms(conceptModules) {
+  const terms = {};
+  for (const page of conceptModules) {
+    for (const term of termsOf(page.concept)) {
+      if (Object.hasOwn(AMBIGUOUS_TERMS, term)) continue;
+      if (terms[term]) throw new Error(`concept term "${term}" names two concepts: list it in scripts/concept-terms.mjs's AMBIGUOUS_TERMS`);
+      terms[term] = urlOf(page);
+    }
+  }
+  const given = new Set(conceptModules.flatMap((page) => termsOf(page.concept)));
+  const stale = Object.keys(AMBIGUOUS_TERMS).filter((term) => !given.has(term));
+  if (stale.length > 0) throw new Error(`scripts/concept-terms.mjs lists ${stale.join(", ")}, which no concept's name gives any more. Delete the entry.`);
+  writeFileSync(CONCEPT_TERMS, `${JSON.stringify(terms, null, 2)}\n`);
+}
+
 const SIDEBAR = resolve(DOCS, ".vitepress/sidebar.generated.json");
 
 /** The lists a guide page includes with `<!--@include: @/.vitepress/includes/topics.md-->`. */
@@ -692,6 +713,7 @@ export async function generate({ install = true } = {}) {
     throw new Error(`a doc comment writes @concept ${unshown.join(", ")}, which no page shows: add a concept module under reference/pages/reference/concepts/`);
   }
   setConceptPages(new Map(conceptModules.map((p) => [p.concept, urlOf(p)])));
+  writeConceptTerms(conceptModules);
 
   /** A category page's description of its category, from the package's own doc comments. */
   const describedOf = (page) => {

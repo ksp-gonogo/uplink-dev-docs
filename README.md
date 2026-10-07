@@ -166,7 +166,9 @@ or edited by hand (`npm run check:pages`).
   rest the text; repack, and add a `concept` module naming it under
   `reference/pages/reference/concepts/`. Generation fails on a concept no
   page shows and on a page whose concept no comment writes. Every symbol
-  carrying the tag links to the page
+  carrying the tag links to the page, and the first use of each term in the
+  concept's name on any page links there too (`docs/.vitepress/conceptLinks.mts`),
+  bar the terms `scripts/concept-terms.mjs` lists as ambiguous
 - **A link from a reference entry to the Guide**: a `@guide <page>#<anchor>`
   tag in the symbol's doc comment (`@guide extensions#augments`). Generation
   fails when the Guide page does not exist, and `npm run check:links` when
