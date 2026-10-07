@@ -34,7 +34,7 @@ No primitive reads telemetry, dispatches a command, or holds anything but its ow
 
 **Readouts**: [Unit](/reference/ui-kit/Unit), [Text](/reference/ui-kit/Text), [Readout](/reference/ui-kit/Readout) (with `ReadoutCaption`), [Meter](/reference/ui-kit/Meter), [Truncate](/reference/ui-kit/Truncate)
 
-**State**: [Badge](/reference/ui-kit/Badge), [StatusIndicator](/reference/ui-kit/StatusIndicator), [Spinner](/reference/ui-kit/Spinner), [EmptyState](/reference/ui-kit/EmptyState)
+**State**: [Badge](/reference/ui-kit/Badge), [StatusIndicator](/reference/ui-kit/Badge#StatusIndicator), [Spinner](/reference/ui-kit/EmptyState#Spinner), [EmptyState](/reference/ui-kit/EmptyState)
 
 **Rows**: [Row](/reference/ui-kit/Row)
 
@@ -58,7 +58,7 @@ type Tone = "neutral" | "info" | "go" | "caution" | "warn" | "nogo" | "offline";
 
 | Prop | Takes | On |
 | --- | --- | --- |
-| `tone` | `Tone` | [Badge](/reference/ui-kit/Badge), [StatusIndicator](/reference/ui-kit/StatusIndicator), [Text](/reference/ui-kit/Text), [Readout](/reference/ui-kit/Readout) |
+| `tone` | `Tone` | [Badge](/reference/ui-kit/Badge), [StatusIndicator](/reference/ui-kit/Badge#StatusIndicator), [Text](/reference/ui-kit/Text), [Readout](/reference/ui-kit/Readout) |
 | `tone` | `ButtonTone`, the four a button's action can mean | [Button](/reference/ui-kit/Button) |
 
 A [Panel](/reference/ui-kit/Panel) merges the badges under it into a single worst-case summary, so the one scale is what lets separate chips add up to a panel state.
