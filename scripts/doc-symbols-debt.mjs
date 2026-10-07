@@ -98,6 +98,13 @@ export const FLOORS = {
   markdownPages: 20,
   referencePages: 15,
   templateSources: 10,
-  claims: 100,
+  /*
+   * Claims come from hand pages and the template. Each hand reference page a
+   * generated page replaces takes its claims to TypeDoc, which resolves every
+   * name on a generated page, so this census falls as hand pages go. The floor
+   * only has to sit well under it; the planted dead and live pages are what
+   * prove the scan is not blind.
+   */
+  claims: 40,
   internalLinks: 15,
 };
