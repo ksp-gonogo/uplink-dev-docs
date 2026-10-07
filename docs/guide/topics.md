@@ -39,7 +39,7 @@ Reading the game must happen on the Unity main thread; packing and sending must 
 
 <<< ../../template/mod/ExampleUplink/ExampleUplink.cs#sampling{cs}
 
-The first function runs on the main thread at snapshot cadence, and is handed the tick's [`KspSnapshot`](/reference/mod/host-and-kernel#IUplinkHost.AddSampledSource) for its UT. Read the game there and return **plain data**. Never return a `Vessel`, a `Part`, or anything else live: the second function receives exactly that object, off the main thread, and touching a live game object from there will crash KSP.
+The first function runs on the main thread at snapshot cadence, and is handed the tick's [`KspSnapshot`](/reference/mod/channels-and-emission#KspSnapshot) for its UT. Read the game there and return **plain data**. Never return a `Vessel`, a `Part`, or anything else live: the second function receives exactly that object, off the main thread, and touching a live game object from there will crash KSP.
 
 `AddSampledSource` has a second overload taking trailing Topic prefixes, which gates the capture on subscription: with nobody watching, neither function runs. A full Topic name is a prefix of itself, so `"example.status"` and `"example."` are both valid.
 
