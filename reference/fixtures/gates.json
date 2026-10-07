@@ -1,0 +1,19 @@
+{
+  "subscribed": ["system.uplink.gates"],
+  "emits": [
+    {
+      "topic": "system.uplink.gates",
+      "payload": {
+        "gates": [
+          {
+            "command": "career.facility.upgrade",
+            "verdict": { "outcome": 1, "detail": "The Tracking Station needs a higher level before this upgrade is available" },
+            "itemArgument": "",
+            "items": []
+          }
+        ],
+        "channels": []
+      }
+    }
+  ]
+}

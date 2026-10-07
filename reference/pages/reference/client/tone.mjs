@@ -4,4 +4,11 @@ export default {
   package: "@ksp-gonogo/sitrep-sdk",
   category: "Tone",
   lead: "Tone",
+  examples: [
+    {
+      id: "tone--legend",
+      file: "reference/examples/tone/ToneLegend.tsx",
+      export: "ToneLegend",
+    },
+  ],
 };

@@ -1,0 +1,4 @@
+{
+  "subscribed": ["comms.connectivity"],
+  "emits": [{ "topic": "comms.connectivity", "payload": { "connected": false, "controlSource": 1, "hasLocalControl": true } }]
+}

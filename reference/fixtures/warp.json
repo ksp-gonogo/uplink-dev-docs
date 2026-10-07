@@ -1,0 +1,16 @@
+{
+  "subscribed": ["time.warp"],
+  "emits": [
+    {
+      "topic": "time.warp",
+      "payload": {
+        "warpRate": 50,
+        "warpRateIndex": 4,
+        "warpMode": 0,
+        "paused": false,
+        "keyframeFloorSec": 0.02,
+        "sampleIntervalUt": 0.5
+      }
+    }
+  ]
+}
