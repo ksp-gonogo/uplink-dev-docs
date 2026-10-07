@@ -25,12 +25,12 @@
     "docs:check": "uplink-tools docs --check"
   },
   "dependencies": {
-    "@ksp-gonogo/ui-kit": "1.0.0-rc.14",
+    "@ksp-gonogo/ui-kit": "1.0.0-rc.16",
     "styled-components": "^6.0.0"
   },
   "devDependencies": {
-    "@ksp-gonogo/sitrep-sdk": "1.0.0-rc.14",
-    "@ksp-gonogo/uplink-tools": "1.0.0-rc.14",
+    "@ksp-gonogo/sitrep-sdk": "1.0.0-rc.16",
+    "@ksp-gonogo/uplink-tools": "1.0.0-rc.16",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@types/react": "^18.3.28",

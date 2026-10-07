@@ -1,10 +1,11 @@
 // #region maps
+import { registerTopicUnits, registerTypeUnits, registerUplinkCommand } from "@ksp-gonogo/sitrep-sdk";
 import {
-  type CommandResult,
-  registerTopicUnits,
-  registerTypeUnits,
-  registerUplinkCommand,
-} from "@ksp-gonogo/sitrep-sdk";
+  GENERATED_COMMAND_IDS,
+  GENERATED_COMMAND_RAIL,
+  type GeneratedCommandArgsMap,
+  type GeneratedCommandReplyMap,
+} from "./__generated__/command-map.js";
 import type { ExampleHeartbeat, ExampleResetArgs } from "./__generated__/contract.js";
 import {
   GENERATED_TOPIC_SHAPES,
@@ -18,13 +19,9 @@ declare module "@ksp-gonogo/sitrep-sdk" {
   interface TopicPayloadMap {
     "example.heartbeat": ExampleHeartbeat;
   }
-  // Each command's arguments and reply, so useCommand("example.reset") is typed. Add a line for every command the plugin declares.
-  interface CommandArgsMap {
-    "example.reset": ExampleResetArgs;
-  }
-  interface CommandReplyMap {
-    "example.reset": CommandResult;
-  }
+  // Every command the contract slice declares, from the command map codegen writes, so useCommand("example.reset") is typed.
+  interface CommandArgsMap extends GeneratedCommandArgsMap {}
+  interface CommandReplyMap extends GeneratedCommandReplyMap {}
 }
 // #endregion maps
 
@@ -37,8 +34,10 @@ for (const [typeName, units] of Object.entries(GENERATED_TYPE_UNITS)) {
 }
 
 // #region command
-// The plugin declares example.reset TrueNow and its handler returns a CommandResult, so it runs on arrival and replies.
-registerUplinkCommand("example.reset", { replies: true, delayed: false });
+// How each command travels, as its [SitrepCommand] in the slice declares it, so the app draws a sent command right.
+for (const id of GENERATED_COMMAND_IDS) {
+  registerUplinkCommand(id, GENERATED_COMMAND_RAIL[id]);
+}
 // #endregion command
 
 /**

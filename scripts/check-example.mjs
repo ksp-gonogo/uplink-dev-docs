@@ -40,7 +40,7 @@ const NEW_ARGS = [
 export const EDITED = {
   "client/src/uplink.ts": "Documenting your Uplink: what the Uplink is for",
   "client/src/index.ts": "Writing a reckoner: loads the reckoner",
-  "client/src/topics.ts": "Sending a command: the command's types and how it travels",
+  "client/src/topics.ts": "Sending a command: the generated command maps and rails",
   "client/src/Heartbeat/index.tsx": "A widget, Sending a command and Writing a reckoner: every reading state, the reset button and the modelled count",
   "client/src/Heartbeat/index.test.tsx": "Testing: the widget fed by a stream fixture, received, modelled and held",
   "mod/ExampleUplink.cs": "Accepting a command: the reset command",
@@ -59,6 +59,7 @@ export const ADDED = {
   "client/docs/widgets.json": "npm run page",
   "client/src/__generated__/contract.ts": "npm run codegen",
   "client/src/__generated__/topic-map.ts": "npm run codegen",
+  "client/src/__generated__/command-map.ts": "npm run codegen",
   "client/src/__generated__/units.ts": "npm run codegen",
   "client/src/__generated__/units.json": "npm run codegen",
 };

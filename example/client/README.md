@@ -17,6 +17,16 @@ The Uplink the Gonogo Uplink Guide builds: a heartbeat it publishes, a command t
 | --- | --- | --- | --- |
 | `example.heartbeat` | `ExampleHeartbeat` | lossy-latest | true-now |
 
+## Commands
+
+| Command | Args | Result |
+| --- | --- | --- |
+| `example.reset` | `ExampleResetArgs` | `CommandResult` |
+
+| Args | Fields |
+| --- | --- |
+| `ExampleResetArgs` | – |
+
 ## Widgets
 
 ### Heartbeat
@@ -27,10 +37,8 @@ How many samples the Example Uplink has published, and the game time of the late
 | --- | --- |
 | Widget id | `example-heartbeat` |
 | Reads | `example.heartbeat` |
-| Default size | 3 × 3 |
+| Default size | 6 × 4 |
 | Scenes | 1 |
-
-![The Example Uplink publishing: 42 ticks since load, at UT 1,000,000](docs/assets/beating--default.png)
 
 ## Models
 

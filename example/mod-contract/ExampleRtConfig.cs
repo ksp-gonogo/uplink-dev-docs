@@ -35,6 +35,16 @@ public static class ExampleRtConfig
             Sitrep.Contract.RtConfig.EmitTopicMap(topicMapOut!, typeof(ExampleRtConfig).Assembly);
         }
 
+        // One row for every [SitrepCommand] in this slice, which is where the generated page and registerUplinkCommand's rail both read your commands from. It is empty until you declare one.
+        var commandMapOut = Environment.GetEnvironmentVariable("SITREP_EXAMPLE_COMMANDMAP_OUT");
+        if (!string.IsNullOrEmpty(commandMapOut))
+        {
+            Sitrep.Contract.RtConfig.EmitCommandMap(
+                commandMapOut!,
+                typeof(ExampleRtConfig).Assembly,
+                resultImportFrom: "@ksp-gonogo/sitrep-sdk");
+        }
+
         var unitMapOut = Environment.GetEnvironmentVariable("SITREP_EXAMPLE_UNITMAP_OUT");
         if (!string.IsNullOrEmpty(unitMapOut))
         {

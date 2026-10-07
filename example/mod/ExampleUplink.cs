@@ -123,10 +123,10 @@ namespace GonogoExampleUplink
         }
 
         /// <summary>
-        /// The tick's UT, or null when it was not honestly read. Core fills
-        /// <see cref="KspSnapshot.Ut"/> with 0 when Planetarium throws, which is
-        /// live before any save has loaded, so a non-null snapshot can carry a UT
-        /// nobody read.
+        /// The tick's UT, or null when there is none worth publishing. Before a
+        /// save has loaded the snapshot exists and its
+        /// <see cref="KspSnapshot.Ut"/> is 0, which is not a game time anyone is
+        /// playing at, so 0 is treated as no reading.
         /// </summary>
         private static double? ReadableUt(KspSnapshot? snapshot)
         {
