@@ -13,12 +13,17 @@ public static class ExampleRtConfig
 {
     public static void Configure(ConfigurationBuilder builder)
     {
+        // The last two carry the doc comments on the wire types into the generated TypeScript, without anything inside an <internal> element.
         builder.Global(g => g
             .CamelCaseForProperties()
             .UseModules(true)
-            .AutoOptionalProperties());
+            .AutoOptionalProperties()
+            .GenerateDocumentation()
+            .UseVisitor<Sitrep.Contract.RtDocVisitor>());
 
+        #region wiretypes
         var wireTypes = new[] { typeof(ExampleHeartbeat), typeof(ExampleResetArgs) };
+        #endregion wiretypes
 
         builder.ExportAsInterfaces(wireTypes, c => c.AutoI(false).WithPublicProperties());
         Sitrep.Contract.RtConfig.ApplyUnitValueTypes(

@@ -31,18 +31,21 @@ const EXAMPLE = resolve(ROOT, "example");
 const { version } = JSON.parse(readFileSync(resolve(ROOT, "reference/artifacts.json"), "utf8")).published;
 
 /** What `new` is run with: the same answers the example was made with. */
-const NEW_ARGS = ["new", "example", "--author", "Uplink docs", "--repo", "ksp-gonogo/uplink-dev-docs", "--no-install", "--no-generate"];
+const NEW_ARGS = [
+  "new", "example", "--name", "Example", "--author", "Uplink docs", "--repo", "ksp-gonogo/uplink-dev-docs",
+  "--topics", "own", "--no-workflows", "--no-ksp", "--no-install", "--no-generate",
+];
 
 /** Files the Guide changes from what `new` writes, and the page that changes each. */
 export const EDITED = {
   "client/src/uplink.ts": "Documenting your Uplink: what the Uplink is for",
   "client/src/index.ts": "Writing a reckoner: loads the reckoner",
   "client/src/topics.ts": "Sending a command: the command's types and how it travels",
-  "client/src/Heartbeat/index.tsx": "Sending a command and Writing a reckoner: the reset button and the reckoned reading",
-  "client/src/Heartbeat/index.test.tsx": "Testing: the widget fed by a stream fixture",
+  "client/src/Heartbeat/index.tsx": "A widget, Sending a command and Writing a reckoner: every reading state, the reset button and the modelled count",
+  "client/src/Heartbeat/index.test.tsx": "Testing: the widget fed by a stream fixture, received, modelled and held",
   "mod/ExampleUplink.cs": "Accepting a command: the reset command",
   "mod-contract/ExamplePayloads.cs": "Accepting a command: the command's arguments",
-  "mod-contract/ExampleRtConfig.cs": "Accepting a command: the arguments are a wire type",
+  "mod-contract/ExampleRtConfig.cs": "Publishing a Topic and Accepting a command: the wire types codegen exports",
   "mod-tests/ExampleUplinkTests.cs": "Accepting a command: the reset's tests",
 };
 

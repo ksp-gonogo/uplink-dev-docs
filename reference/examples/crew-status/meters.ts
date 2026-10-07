@@ -12,6 +12,8 @@ uplink.registerContribution({
   id: "experience-meters",
   contributes: "crew-status.meters",
   deps: ["vessel.crew"],
+  // The widget's own meters sit at priority 0, and only the highest priority in a slot draws, so 0 draws beside them.
+  priority: 0,
   compute: (topics) => {
     const crew = topics["vessel.crew"]?.crew ?? [];
     return crew.flatMap((kerbal) => {

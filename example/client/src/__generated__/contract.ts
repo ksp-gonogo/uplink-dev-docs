@@ -4,11 +4,28 @@
 
 import { Value, Vec3Of } from '@ksp-gonogo/sitrep-sdk';
 
+/**
+* What `example.heartbeat` carries: a count of the samples this Uplink has
+* published and the game time of the latest. Nothing is published until a save
+* is loaded.
+*/
 export interface ExampleHeartbeat
 {
+	/**
+	* The game's universal time when the sample was taken. Never null in a
+	* published sample.
+	*/
 	ut?: Value<"ut"> | null;
+	/**
+	* How many samples this Uplink has published since the game started, this one
+	* included. It starts again from 1 when the game restarts.
+	*/
 	ticks?: Value<"count"> | null;
 }
+/**
+* The arguments of `example.reset`, which starts the heartbeat's count again.
+* The command takes none, so this class carries only its tag.
+*/
 export interface ExampleResetArgs
 {
 }

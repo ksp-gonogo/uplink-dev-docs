@@ -3,7 +3,7 @@
     {
       "id": "example-heartbeat",
       "name": "Heartbeat",
-      "description": "How many times the Example Uplink has published, and the universal time of the last sample.",
+      "description": "How many samples the Example Uplink has published, and the game time of the latest one, carried forward between samples. Reset starts the count again.",
       "tags": [
         "example"
       ],

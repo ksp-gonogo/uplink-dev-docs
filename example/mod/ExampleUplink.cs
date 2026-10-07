@@ -14,14 +14,22 @@ namespace GonogoExampleUplink
     [SitrepUplink("example")]
     public sealed class ExampleUplink : ISitrepUplink
     {
+        /// <summary>The one Topic this Uplink publishes. Its payload is <see cref="ExampleHeartbeat"/>.</summary>
         public const string HeartbeatTopic = "example.heartbeat";
+
+        /// <summary>The command that starts the count again. Its arguments are <see cref="ExampleResetArgs"/>.</summary>
         public const string ResetCommand = "example.reset";
         #endregion declaration
 
-        /// <summary>Written by the courier's sample and by the reset handler, which run on different threads.</summary>
+        /// <summary>The count, written by the sample on the Courier thread and by the reset on the main thread.</summary>
         private long _ticks;
 
         #region manifest
+        /// <summary>
+        /// What this Uplink tells the mod about itself: who it is, where its client
+        /// lives, and every channel it will publish, each with how it is delivered
+        /// and whether it is held back by signal delay.
+        /// </summary>
         public UplinkManifest Manifest { get; } = new UplinkManifest
         {
             Id = "example",
@@ -39,6 +47,7 @@ namespace GonogoExampleUplink
                 Url = ClientSource.Url,
                 DevPath = string.IsNullOrEmpty(ClientSource.DevPath) ? null : ClientSource.DevPath,
             },
+            #region channels
             Channels = new List<ChannelDeclaration>
             {
                 new ChannelDeclaration
@@ -53,6 +62,7 @@ namespace GonogoExampleUplink
                         quantum: EmissionQuantum.Absolute(0)),
                 },
             },
+            #endregion channels
             #region commands
             Commands = new List<CommandDeclaration>
             {
@@ -63,6 +73,7 @@ namespace GonogoExampleUplink
         #endregion manifest
 
         #region register
+        /// <summary>Called once at startup. Each channel the manifest declares gets its source here, and each command its handler.</summary>
         public void Register(IUplinkHost host)
         {
             host.AddChannelSource(HeartbeatTopic, Sample);
@@ -72,8 +83,8 @@ namespace GonogoExampleUplink
 
         #region command
         /// <summary>
-        /// Starts the count again. The count is shared with the courier's sample,
-        /// so both sides change it through <see cref="Interlocked"/>.
+        /// Starts the count again. It runs on the main thread while the sample runs on
+        /// the Courier thread, so both change the count through <see cref="Interlocked"/>.
         /// </summary>
         internal CommandResult Reset(ExampleResetArgs args)
         {

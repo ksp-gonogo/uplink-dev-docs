@@ -9,7 +9,7 @@ The Uplink the Gonogo Uplink Guide builds: a heartbeat it publishes, a command t
 | --- | --- |
 | Uplink id | `example` |
 | Version | `0.0.1` |
-| Built against | contract 29.22, api 6.0.0, ui-kit 0.1.0 |
+| Built against | contract 29.22, extension API 6.0.0 |
 
 ## Wire
 
@@ -21,7 +21,7 @@ The Uplink the Gonogo Uplink Guide builds: a heartbeat it publishes, a command t
 
 ### Heartbeat
 
-How many times the Example Uplink has published, and the universal time of the last sample.
+How many samples the Example Uplink has published, and the game time of the latest one, carried forward between samples. Reset starts the count again.
 
 | | |
 | --- | --- |

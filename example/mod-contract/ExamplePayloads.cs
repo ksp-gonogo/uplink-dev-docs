@@ -7,8 +7,15 @@ namespace GonogoExampleUplink;
 
 #region heartbeat
 /// <summary>
-/// The <c>example.heartbeat</c> channel. A wire type belongs in the Uplink's own contract
-/// slice, never in <c>Sitrep.Contract</c>.
+/// What <c>example.heartbeat</c> carries: a count of the samples this Uplink has
+/// published and the game time of the latest. Nothing is published until a save
+/// is loaded.
+/// <internal>
+/// The wire is written from the dictionary ExampleUplink.Sample returns, and this
+/// type is what the client's TypeScript is generated from, so the two are kept
+/// in step by hand. Prose inside this element stays in the C# and never reaches
+/// the generated types.
+/// </internal>
 /// </summary>
 [SitrepContract]
 [SitrepTopic("example.heartbeat")]
@@ -17,11 +24,11 @@ namespace GonogoExampleUplink;
 #endif
 public sealed class ExampleHeartbeat
 {
-    /// <summary>Universal time the sample was captured at.</summary>
+    /// <summary>The game's universal time when the sample was taken. Never null in a published sample.</summary>
     [SitrepUnit(Units.UniversalTime)]
     public double? Ut { get; set; }
 
-    /// <summary>How many times this Uplink has published, since load.</summary>
+    /// <summary>How many samples this Uplink has published since the game started, this one included. It starts again from 1 when the game restarts.</summary>
     [SitrepUnit(Units.Count)]
     public double? Ticks { get; set; }
 }
@@ -29,8 +36,8 @@ public sealed class ExampleHeartbeat
 
 #region reset
 /// <summary>
-/// The <c>example.reset</c> command, which starts the heartbeat's count again. It
-/// takes no arguments, so this class exists to carry the command's tag.
+/// The arguments of <c>example.reset</c>, which starts the heartbeat's count again.
+/// The command takes none, so this class carries only its tag.
 /// </summary>
 [SitrepContract]
 [SitrepCommand("example.reset", Delay = DelayRole.TrueNow)]

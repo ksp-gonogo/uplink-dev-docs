@@ -1,3 +1,4 @@
+// #region reckon
 import { type ExampleHeartbeat } from "./__generated__/contract.js";
 import { type ReckonerAnswer, type TimelinePoint, value } from "@ksp-gonogo/sitrep-sdk";
 import { EXAMPLE } from "./uplink.js";
@@ -8,7 +9,6 @@ const SPAN_UT = 120;
 /** The count in a sample, or null when the sample has none. */
 const ticksOf = (point: TimelinePoint<ExampleHeartbeat>) => point.payload?.ticks?.magnitude ?? null;
 
-// #region reckon
 /**
  * Carries the heartbeat forward between samples: its time to the instant
  * asked for, and its count at the rate the samples in the last two minutes

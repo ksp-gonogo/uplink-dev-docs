@@ -24,7 +24,7 @@ namespace ExampleUplink
 
     // #region args
     /// <summary>Arguments of the <c>example.setMode</c> command.</summary>
-    [SitrepCommand("example.setMode")]
+    [SitrepCommand("example.setMode", Payload = typeof(int))]
     public sealed class SetModeArgs
     {
         public int Mode { get; set; }

@@ -12,7 +12,7 @@
   <!-- IncludeAssets="compile": GonogoCore provides Sitrep.Contract.dll at runtime, and two
        copies of one assembly identity are two sets of types that do not compare equal. -->
   <ItemGroup>
-    <PackageReference Include="KspGonogo.Sitrep.Contract" Version="[0.2.0-rc.12]" IncludeAssets="compile" PrivateAssets="all" />
+    <PackageReference Include="KspGonogo.Sitrep.Contract" Version="[1.0.0-rc.14]" IncludeAssets="compile" PrivateAssets="all" />
     <!-- The .NET Framework reference assemblies, so net48 compiles on macOS and Linux. -->
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
   </ItemGroup>

@@ -7,10 +7,9 @@
   "version": "0.0.1",
   "minAppVersion": "0.0.0",
   "apiVersion": "6.0.0",
-  "uiKitVersion": "0.1.0",
   "contractMajor": 29,
   "contractMinor": 22,
   "bundleUrl": "example/example.client.js",
   "integrity": "",
-  "sdkVersion": "0.2.0-rc.12"
+  "sdkVersion": "1.0.0-rc.14"
 }
