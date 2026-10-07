@@ -1,0 +1,17 @@
+{
+  "subscribed": ["vessel.crew"],
+  "emits": [
+    {
+      "topic": "vessel.crew",
+      "payload": {
+        "count": 2,
+        "capacity": 3,
+        "crew": [
+          { "name": "Jebediah Kerman", "trait": "Pilot", "experienceLevel": 3 },
+          { "name": "Bill Kerman", "trait": "Engineer", "experienceLevel": 1 }
+        ],
+        "meta": { "source": "ksp" }
+      }
+    }
+  ]
+}

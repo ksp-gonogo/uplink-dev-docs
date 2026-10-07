@@ -1,0 +1,16 @@
+{
+  "subscribed": ["vessel.parts"],
+  "emits": [
+    {
+      "topic": "vessel.parts",
+      "payload": {
+        "parts": [
+          { "id": "4294967001", "parentId": null, "name": "mk1-3pod", "title": "Mk1-3 Command Pod", "dryMass": 2.72, "inverseStage": 3, "maxTemp": 1200, "currentTemp": 301 },
+          { "id": "4294967002", "parentId": "4294967001", "name": "fuelTank", "title": "FL-T800 Fuel Tank", "dryMass": 0.5, "inverseStage": 2, "maxTemp": 2000, "currentTemp": 298 },
+          { "id": "4294967003", "parentId": "4294967002", "name": "liquidEngine", "title": "LV-T45 Swivel", "dryMass": 1.5, "inverseStage": 2, "maxTemp": 2000, "currentTemp": 344 }
+        ],
+        "meta": { "source": "ksp" }
+      }
+    }
+  ]
+}

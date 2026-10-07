@@ -1,0 +1,14 @@
+{
+  "subscribed": ["flight.current"],
+  "emits": [
+    {
+      "topic": "flight.current",
+      "payload": {
+        "flightId": "kerbal-x",
+        "vesselId": "kerbal-x",
+        "vesselName": "Kerbal X",
+        "phase": 3
+      }
+    }
+  ]
+}

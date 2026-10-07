@@ -1,0 +1,19 @@
+{
+  "subscribed": ["missions.active"],
+  "emits": [
+    {
+      "topic": "missions.active",
+      "payload": {
+        "name": "Orbital Survey",
+        "phase": "running",
+        "started": true,
+        "finished": false,
+        "objectives": [
+          { "id": "a1", "title": "Reach orbit", "state": 2 },
+          { "id": "a2", "title": "Survey Mun", "state": 1 },
+          { "id": "a3", "title": "Return home", "state": 0 }
+        ]
+      }
+    }
+  ]
+}

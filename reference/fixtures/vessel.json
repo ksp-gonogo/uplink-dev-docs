@@ -1,0 +1,26 @@
+{
+  "subscribed": ["vessel.identity", "vessel.resources"],
+  "emits": [
+    {
+      "topic": "vessel.identity",
+      "payload": {
+        "vesselId": "kerbal-x",
+        "name": "Kerbal X",
+        "vesselType": 0,
+        "situation": 3,
+        "parentBodyIndex": 1,
+        "meta": { "source": "ksp" }
+      }
+    },
+    {
+      "topic": "vessel.resources",
+      "payload": {
+        "resources": {
+          "LiquidFuel": { "current": 1260, "max": 3600, "active": true },
+          "Oxidizer": { "current": 1540, "max": 4400, "active": true }
+        },
+        "meta": { "source": "ksp" }
+      }
+    }
+  ]
+}
