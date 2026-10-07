@@ -117,7 +117,7 @@ Leave it null for a Topic whose every frame stands alone.
 
 ## PerVesselNode
 
-Only meaningful on the template of a [dynamic namespace](/reference/mod/host#dynamic-topics), where each sub-topic is keyed by a vessel. It routes each sub-topic through that vessel's own delay.
+Only meaningful on the template of a [dynamic namespace](/reference/mod/host-and-kernel#IUplinkHost.RegisterDynamicNamespace), where each sub-topic is keyed by a vessel. It routes each sub-topic through that vessel's own delay.
 
 Without it, a sub-topic about a vessel you are not flying is delayed by the vessel you are flying, which is usually less. Nothing errors and nothing goes missing; the value simply turns up early carrying the wrong craft's light-time.
 

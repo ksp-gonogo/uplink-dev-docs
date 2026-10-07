@@ -14,8 +14,6 @@ export const HAND_PAGES = [
   "docs/reference/index.md",
   "docs/reference/mod/channels.md",
   "docs/reference/mod/commands.md",
-  "docs/reference/mod/host.md",
-  "docs/reference/mod/kernel.md",
   "docs/reference/ui-kit/Badge.md",
   "docs/reference/ui-kit/Box.md",
   "docs/reference/ui-kit/Button.md",

@@ -138,10 +138,8 @@ export default defineConfig({
         {
           text: "Mod API",
           items: section("reference/mod", [
-            { text: "IUplinkHost", link: "/reference/mod/host" },
             { text: "Channels", link: "/reference/mod/channels" },
             { text: "Commands", link: "/reference/mod/commands" },
-            { text: "Kernel", link: "/reference/mod/kernel" },
           ]),
         },
         {

@@ -38,7 +38,7 @@ A command's delay is read from the `[SitrepCommand]` tag on its arguments class,
 
 ## Subject
 
-The Topic whose vessel the command addresses, which decides whose light-time it waits for, whose blackout holds it, and which vessel it reaches. It must name a channel, or a [dynamic namespace](/reference/mod/host#dynamic-topics) Topic with an `{args.X}` segment filled from the arguments, that some Uplink declares.
+The Topic whose vessel the command addresses, which decides whose light-time it waits for, whose blackout holds it, and which vessel it reaches. It must name a channel, or a [dynamic namespace](/reference/mod/host-and-kernel#IUplinkHost.RegisterDynamicNamespace) Topic with an `{args.X}` segment filled from the arguments, that some Uplink declares.
 
 A `Delayed` command with no `Subject`, or one that resolves to nothing, marks your Uplink unavailable once every Uplink has registered. It never falls back to the active vessel. A `TrueNow` command needs none.
 

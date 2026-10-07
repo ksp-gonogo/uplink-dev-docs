@@ -39,7 +39,7 @@ Reading the game must happen on the Unity main thread; packing and sending must 
 
 <<< ../../template/mod/ExampleUplink/ExampleUplink.cs#sampling{cs}
 
-The first function runs on the main thread at snapshot cadence, and is handed the tick's [`KspSnapshot`](/reference/mod/host#kspsnapshot) for its UT. Read the game there and return **plain data**. Never return a `Vessel`, a `Part`, or anything else live: the second function receives exactly that object, off the main thread, and touching a live game object from there will crash KSP.
+The first function runs on the main thread at snapshot cadence, and is handed the tick's [`KspSnapshot`](/reference/mod/host-and-kernel#IUplinkHost.AddSampledSource) for its UT. Read the game there and return **plain data**. Never return a `Vessel`, a `Part`, or anything else live: the second function receives exactly that object, off the main thread, and touching a live game object from there will crash KSP.
 
 `AddSampledSource` has a second overload taking trailing Topic prefixes, which gates the capture on subscription: with nobody watching, neither function runs. A full Topic name is a prefix of itself, so `"example.status"` and `"example."` are both valid.
 
@@ -50,6 +50,6 @@ The first function runs on the main thread at snapshot cadence, and is handed th
 `AddSampledSource` is the general case. Two narrower ones exist:
 
 - **`host.AddChannelSource(topic, map)`**: `map` runs on the courier thread with that tick's snapshot and returns the payload. Use it only for values that need no game access, such as a constant availability flag
-- **`host.Publisher(topic).Publish(payload, ut)`**: publish directly, from the main thread, when you have your own event to publish from rather than a cadence to sample on. `ut` is the time the value was true at, not the time you are sending it. Full signatures in [IUplinkHost](/reference/mod/host)
+- **`host.Publisher(topic).Publish(payload, ut)`**: publish directly, from the main thread, when you have your own event to publish from rather than a cadence to sample on. `ut` is the time the value was true at, not the time you are sending it. Full signatures in [IUplinkHost](/reference/mod/host-and-kernel)
 
 Next: [Accepting a command](/guide/commands).
