@@ -1,0 +1,36 @@
+import {
+  defineUplinkClient,
+  type ShipMapPartMeterEntry,
+} from "@ksp-gonogo/sitrep-sdk";
+
+const uplink = defineUplinkClient({
+  id: "ore-meters",
+  version: "1.0.0",
+  name: "Ore Meters",
+});
+
+const LOW_ORE = 0.25;
+
+uplink.registerContribution({
+  id: "ore-level",
+  contributes: "ship-map.part-meters",
+  deps: ["vessel.parts"],
+  compute: (topics): ShipMapPartMeterEntry[] => {
+    const parts = topics["vessel.parts"]?.parts ?? [];
+    return parts.flatMap((part) => {
+      const ore = part.resources.Ore;
+      if (!ore) return [];
+      const low = ore.amount.magnitude < ore.maxAmount.magnitude * LOW_ORE;
+      return [
+        {
+          partId: part.id,
+          resource: "Ore",
+          displayName: "Ore",
+          amount: ore.amount,
+          capacity: ore.maxAmount,
+          status: low ? "low" : null,
+        },
+      ];
+    });
+  },
+});
