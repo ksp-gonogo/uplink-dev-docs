@@ -4,55 +4,92 @@ How to scaffold an Uplink, what each file `new` writes is for, and the two comma
 
 ## Scaffold
 
-In an empty directory named after the Uplink:
+In an empty directory named after the Uplink, run `new`. It writes into that directory.
 
 ```bash
-npx @ksp-gonogo/uplink-tools@rc new example --author "Your Name" --repo you/example
+mkdir example && cd example
+npx @ksp-gonogo/uplink-tools@rc new
 ```
 
-- **The id** (`example`) names the Uplink everywhere: its Topics start `example.`, its plugin is `GonogoExampleUplink.dll`, and its widgets' ids start `example-`. Lower case, and unique across every Uplink a player might install
-- **`--author`** is shown to the operator when the app asks whether to load your client
-- **`--repo`** is the GitHub repository the Uplink will live in. It sets where the released client bundle is fetched from ([Releasing and installing](/guide/release#hosting-the-client)). Without it the URL is a placeholder, and `npm run release` refuses it
+On a terminal it asks what it was not told. Each question is also a flag, so this asks nothing:
 
-`new` never overwrites a file. After writing the files it runs four steps: `bake`, `codegen` (which needs the .NET SDK), `npm install` in `client/`, and `npm run page`. A step that fails is reported with the exact command to run again, and the files stay in place.
+```bash
+npx @ksp-gonogo/uplink-tools@rc new example --name Example --author "Your Name" \
+  --repo you/example --topics own --no-workflows --no-ksp
+```
+
+| Question | Flag | When you do not answer |
+| --- | --- | --- |
+| The id | `<id>` | the directory's name, when it is a valid id |
+| The display name | `--name <name>` | the id, capitalised |
+| Who wrote it | `--author <name>` | git's `user.name` |
+| The GitHub repository it is published from | `--repo <owner>/<name>` or `--no-repo` | this directory's GitHub remote; otherwise a placeholder `release` refuses |
+| Whether it publishes Topics of its own | `--topics own` or `--topics core` | `own` |
+| A GitHub Actions workflow | `--workflows` or `--no-workflows` | none |
+| Your KSP install | `--ksp <path>` or `--no-ksp` | Steam's install, when there is one |
+
+`--yes` takes the default for every question not answered by a flag. With no terminal and no `--yes`, `new` writes nothing and names each flag it is missing.
+
+- **The id** names the Uplink everywhere: lower-case letters and digits, 2 to 30 of them, starting with a letter. It prefixes the Topics (`example.heartbeat`), the widget ids (`example-heartbeat`) and the C# names: the namespace and assembly are `Gonogo` + the id capitalised + `Uplink` (`GonogoExampleUplink`), and the plugin class is the id capitalised + `Uplink` (`ExampleUplink`). Choose one no other Uplink a player might install is likely to use
+- **The author** is shown to the operator when the app asks whether to load your client
+- **`--repo`** sets where the released client bundle is fetched from ([Releasing and installing](/guide/release#hosting-the-client)). `you/example` becomes `https://github.com/you/example` in `uplink.json`
+- **`--topics core`** makes an Uplink that publishes nothing of its own: its widget reads one of Gonogo's own Topics, and it has no contract slice. This Guide builds one with Topics of its own
+- **`--ksp`** writes your KSP folder into `ksp.local.props`, for a plugin that calls the game ([The plugin class](/guide/plugin#calling-the-game)). It is kept out of git
+
+`new` never overwrites a file. After writing the files it runs four steps: `bake`, `codegen` (which needs the .NET SDK), `npm install` in `client/`, and `npm run page`. A step that fails is reported with the command to run again, and the files stay in place. Its closing message also suggests describing the Uplink in `client/uplink.md`; nothing reads that file, so write the description where [Documenting your Uplink](/guide/documenting) says.
 
 ## What it writes
 
 ```
 example/
 ├── uplink.json                   the Uplink's identity, and where its client is fetched from
-├── Directory.Build.props/.targets  where to find KSP's assemblies, if the plugin needs them
+├── .gitignore
+├── Directory.Build.props         where to find KSP's assemblies, if the plugin needs them
+├── Directory.Build.targets         and the message when it cannot
 ├── mod/                          the plugin
 │   ├── ExampleUplink.cs            the plugin class
 │   ├── GonogoExampleUplink.csproj
-│   ├── GonogoExampleUplink.netkan  the CKAN metadata
+│   ├── GonogoExampleUplink.netkan  the metadata CKAN indexes it from
 │   └── *.g.cs                      written by bake, never committed
 ├── mod-contract/                 the contract slice: the Uplink's own wire types
-│   ├── ExamplePayloads.cs
-│   └── ExampleRtConfig.cs          how codegen turns them into TypeScript
+│   ├── ExamplePayloads.cs          the payload of each Topic, the arguments of each command
+│   ├── ExampleRtConfig.cs          which of those codegen turns into TypeScript
+│   └── GonogoExampleUplink.Contract.csproj
 ├── mod-contract-codegen/         the build codegen runs, never shipped
 ├── mod-tests/                    the plugin's tests
+│   └── ExampleUplinkTests.cs
 └── client/                       the client package
     ├── package.json
-    ├── uplink.md
+    ├── tsconfig.json, tsconfig.nodenext.json
+    ├── vitest.config.ts            the test runner's settings
+    ├── uplink.md                   read by nothing
+    ├── README.md                   the generated page
+    ├── gonogo-uplink.json          what the app reads about the client
+    ├── docs/widgets.json           a record of each widget
     └── src/
         ├── index.ts                the bundle's entry: imports every registration
         ├── uplink.ts               the client's identity
         ├── topics.ts               the Uplink's Topics, typed
         ├── __generated__/          written by codegen from the contract slice
+        ├── test/setup.ts           runs before every test
         ├── Heartbeat/              one widget, its test and its fixture
         └── uplink-page.test.ts     fails when the generated page is out of date
 ```
 
-The **contract slice** is a small assembly holding the C# classes that describe what goes on the wire: the payload of each Topic and the arguments of each command. The plugin compiles against it, and `codegen` reads it to write the client's TypeScript types, so the two halves cannot disagree about a payload's shape. [Publishing a Topic](/guide/topics) covers it.
+The **contract slice** is a small assembly holding the C# classes that describe what goes on the wire: the payload of each Topic and the arguments of each command. The plugin compiles against it, and `codegen` reads it to write the client's TypeScript types, doc comments included, so the two halves describe a payload the same way. [Publishing a Topic](/guide/topics) covers it.
 
 ## uplink.json
 
 <<< ../../example/uplink.json
 
-`id`, `name`, `author` and `repo` are what `bake` writes into the plugin, so the app can show who made the client before it loads it. `gamedata` and `dll` are the folder and file the release lays out under `GameData`. `client.url` is where the app fetches the bundle from. `codegen` tells `codegen` which assembly and configuration to run, and needs no edit.
+- **`id`, `name`, `author` and `repo`** are what `bake` writes into the plugin, so the app can say who made the client before it loads it
+- **`gamedata` and `dll`** are the folder and file the release lays out under `GameData`
+- **`minAppVersion`** is the oldest Gonogo app the Uplink works with, which the app checks when it loads the client and warns about rather than refuses
+- **`mod`** names the mod the Uplink wraps, shown on its generated page; `null` for one that wraps none, like this one
+- **`codegen`** tells `codegen` which assembly and configuration to run, and needs no edit
+- **`client.url`** is where the app fetches the bundle from
 
-The version lives in `client/package.json`, and `bake` reads it from there. Two other places repeat it and must be changed with it: `UPLINK_VERSION` in `client/src/uplink.ts`, and the version folder in `client.url`.
+The version lives in `client/package.json`, and `bake` reads it from there. Two other places repeat it and change with it: `UPLINK_VERSION` in `client/src/uplink.ts`, and the version folder in `client.url`.
 
 ## Prove it works
 
@@ -62,14 +99,14 @@ npm test
 dotnet test ../mod-tests
 ```
 
-`npm test` runs the widget's test and the page check, which fails when `README.md`, `gonogo-uplink.json` or `docs/widgets.json` no longer describe what the client registers. `dotnet test` runs the plugin's tests with no game: they construct the plugin class and call it directly.
+`npm test` runs the widget's test and the page check, which fails when `README.md`, `gonogo-uplink.json` or `docs/widgets.json` no longer describe what the client registers; it ends with every test file passed. `dotnet test` builds the plugin and runs its tests with no game, constructing the plugin class and calling it directly, and ends `Passed!` with the count.
 
 ## What to commit
 
-Everything except what `.gitignore` names: `node_modules`, the build outputs, and the three `*.g.cs` files, one of which can hold a path on the machine that baked it. Commit `client/src/__generated__/`, the generated page files and `package-lock.json`: a reader of your repository, and CI, use them without running the generators.
+Everything except what `.gitignore` names: `node_modules`, the build outputs, `ksp.local.props`, and the three `*.g.cs` files, one of which can hold a path on the machine that baked it. Commit `client/src/__generated__/`, the generated page files and `package-lock.json`: a reader of your repository, and CI, use them without running the generators.
 
 ## The heartbeat
 
-The scaffold's plugin publishes one Topic, `example.heartbeat`, carrying a count of how many times it has published and the game time of the last sample. Its widget shows both. The next three pages take the plugin apart; the three after them, the client.
+The scaffold's plugin publishes one Topic, `example.heartbeat`, carrying a count of how many times it has published and the game time of the last sample. Its widget shows both. The next three pages take the plugin apart, and the four after them the client.
 
 Next: [The plugin class](/guide/plugin).

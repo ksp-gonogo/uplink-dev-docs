@@ -4,7 +4,7 @@ Some of the API is built on ideas no single type holds: what "current" means for
 
 ## Topics and samples
 
-A **Topic** is a named stream of one payload shape. The plugin publishes **samples** onto it, each stamped with the game time (UT, universal time, in seconds) it was true at. A sample is published when the value changes enough, and at least every keyframe interval, so a quiet Topic still proves it is alive. [Publishing a Topic](/guide/topics) covers the plugin's side.
+A **Topic** is a named stream of one payload shape. The plugin publishes **samples** onto it, each stamped with the game time (UT, universal time, in seconds) it was true at. A sample is published when the value changes enough, and at least once every keyframe interval (the channel's [`keyframeIntervalUt`](/guide/topics#declaring-the-topic)), so a quiet Topic still proves it is alive. [Publishing a Topic](/guide/topics) covers the plugin's side.
 
 ## Readings
 
@@ -16,7 +16,7 @@ A widget never reads a bare value. It reads a **reading**: the latest value toge
 
 Gonogo can model the time a radio signal takes to cross space. An operator works from a **command centre**, and a craft far from it is seen as it was when its signal left: its telemetry arrives after the delay, and a command sent to it arrives after the delay too. A mission can have several command centres at different distances from the same craft.
 
-This is why each channel and each command declares a delay role: `Delayed` for anything about a craft, which waits for the signal, and `TrueNow` for anything about the ground or the connection, which does not. A command's `send` resolves only once the command has run, which can be minutes after it was sent, and `CommandDelay` shows the operator where it is. See [Delay and vantage](/reference/concepts/delay-and-vantage).
+This is why each channel, in its declaration, and each command, in its arguments' attribute, declares a delay role: `Delayed` for anything about a craft, which waits for the signal, and `TrueNow` for anything about the ground or the connection, which does not. A command's `send` resolves only once the command has run, which can be minutes after it was sent, and `CommandDelay` shows the operator where it is. See [Delay and vantage](/reference/concepts/delay-and-vantage).
 
 ## Reckoning
 
@@ -36,7 +36,7 @@ An **action** is something a widget can be told to do, such as step a value, whi
 
 ## Domains and seats
 
-Some widgets and extensions only make sense while a mod is present, such as one integrating a science mod. A **Domain** is that presence: an Uplink's extension names one in `requires`, and is mounted only while it is present. A **seat** is where the operator sits, at mission control or aboard the craft as its pilot, and a widget is offered at the seats its Topics suit. See [Domain and seat](/reference/concepts/domain-and-seat).
+Some widgets and extensions only make sense while a mod is present, such as one integrating a science mod. A **Domain** is that presence: an Uplink's extension names one in `requires`, and is mounted only while it is present. A **seat** is where the operator sits, at mission control or aboard the craft as its pilot, and a widget reading a Topic about the ground, such as the space centre or the career, stays at mission control, while every other widget, one reading an Uplink's own Topics included, is offered aboard as well. See [Domain and seat](/reference/concepts/domain-and-seat).
 
 ## The main screen and stations
 
