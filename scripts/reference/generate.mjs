@@ -474,8 +474,9 @@ function contractPage(page, index) {
   );
   const types = contractTypes(page);
   const body = contractMd(types, includes, index);
-  // The title is a type the page's own links point at, so it carries the type's anchor.
-  const title = types.includes(page.title) ? `# ${page.title} {#${page.title}}` : `# ${page.title}`;
+  // The title stands for the lead type, which the page's own links point at, so it carries that type's anchor.
+  const anchor = page.lead ?? (types.includes(page.title) ? page.title : undefined);
+  const title = anchor ? `# ${page.title} {#${anchor}}` : `# ${page.title}`;
   return [title, `${code("Sitrep.Contract")} · ${code("KspGonogo.Sitrep.Contract")} ${contractVersion()}`, body];
 }
 
