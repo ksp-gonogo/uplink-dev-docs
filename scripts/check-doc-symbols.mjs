@@ -219,10 +219,11 @@ function collectClaims() {
     pages.push({
       file: rel,
       isReference: isReference || (generated && rel.startsWith("docs/reference/ui-kit/")),
-      // The page's subject, as the two places a page says what it is about.
+      // The page's subject, as the two places a page says what it is about. A generated category page is named for its category, so every symbol it anchors is a subject too.
       subjects: [
         rel.split("/").pop().replace(/\.md$/, ""),
         (/^#\s+(.+)$/m.exec(body)?.[1] ?? "").trim(),
+        ...(generated ? [...body.matchAll(/\{#([A-Za-z_$][\w$]*)\}/g)].map((m) => m[1]) : []),
       ],
       declared,
     });
