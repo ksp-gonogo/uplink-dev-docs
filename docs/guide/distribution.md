@@ -15,6 +15,8 @@ GameData/ExampleUplink/
 
 Zip so it extracts into `GameData/`. Record in your README which Gonogo mod version you built against: nothing in the package can express that.
 
+The client bundle and `gonogo-uplink.json` that `uplink-tools bundle` writes ship wherever your `uplink.json`'s `client.url` points. Keep the sidecar beside the bundle under exactly the name `gonogo-uplink.json`: the app finds it from the bundle's own URL.
+
 ## Version file
 
 `ExampleUplink.version` is the KSP-AVC format: mod name, version, and the KSP versions you support. It is what tells a player their Uplink is out of date, and CKAN reads it.

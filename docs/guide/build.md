@@ -11,6 +11,21 @@ The output lands in `bin/Release/`, without a target-framework subdirectory, bec
 
 **Nothing else should be in that directory.** If `Sitrep.Contract.dll` appears, `Private="false"` is missing from the reference. Fix it before installing: the duplicate shadows the assembly Gonogo loaded, and the two copies are not the same types.
 
+## Bundle the client
+
+```bash
+npx uplink-tools bundle
+```
+
+from the client directory builds `dist/<id>/<id>.client.js`, its `.sha256`, and the `gonogo-uplink.json` the app reads beside it. `--watch` rebuilds on every save and leaves the last good bundle in place when a save does not compile.
+
+To let the plugin vouch for the client it shipped with, bake the hash into C# before compiling the DLL:
+
+```bash
+npx uplink-tools bake-hash --bundle dist/example/example.client.js \
+  --out mod/ExampleUplink/ExampleClientHash.g.cs --namespace ExampleUplink
+```
+
 ## Install
 
 Your own top-level directory under `GameData`, never inside `GameData/Gonogo/`:

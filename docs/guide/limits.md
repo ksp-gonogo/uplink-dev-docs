@@ -77,6 +77,10 @@ That has two knock-on effects. There is no CKAN identifier your Uplink can decla
 
 `@ksp-gonogo/sitrep-sdk@0.0.1` has no decoder for [binary frames](/reference/client/binary-lane), and `ServerMessage` has no `stream-binary` member. Decode them yourself; the format is short.
 
+## A scaffolded Uplink does not build on its own yet
+
+`uplink-tools new` writes an Uplink whose client imports generated types that only the Gonogo Uplinks repository's codegen produces, and whose C# projects resolve `Sitrep.Contract` through `$(GonogoContract)` and `$(GonogoDevkit)`, MSBuild properties only that repository defines. Outside it, set both properties to a directory holding the contract assembly, and write the generated client types by hand from your contract slice, until the toolchain ships both.
+
 ## Command handlers do not run on the main thread
 
 And `Sitrep.Contract` provides no way to get onto it. A handler that must call the game records the request for the next main-thread capture to apply, as the [command page](/guide/commands) shows. There is no supported way to make a handler's return value depend on a game call.

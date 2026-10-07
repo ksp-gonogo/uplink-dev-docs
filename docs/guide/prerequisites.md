@@ -27,19 +27,19 @@
 ```bash
 npm install @ksp-gonogo/sitrep-sdk @ksp-gonogo/ui-kit \
   react@18 react-dom@18 styled-components
-npm install -D typescript @types/react @types/react-dom vite @vitejs/plugin-react
+npm install -D @ksp-gonogo/uplink-tools typescript @types/react @types/react-dom vite @vitejs/plugin-react
 ```
 
 The template's `client/package.json` has the same list, pinned.
 
-Those two, plus `react`, `styled-components` and anything from the wider registry, are the whole of what an Uplink may import. No other `@ksp-gonogo/*` package is published.
+Those two, plus `react`, `styled-components` and anything from the wider registry, are the whole of what an Uplink's client may import. The third published package, `@ksp-gonogo/uplink-tools`, is a devDependency: the command line that scaffolds, bundles and documents an Uplink, never imported by the client itself.
 
 ## What you may reference
 
 | Half | Allowed | Not allowed |
 | --- | --- | --- |
 | Plugin | `Sitrep.Contract`, KSP/Unity reference assemblies, the mod you integrate | Any other `Sitrep.*` or `Gonogo.*` assembly |
-| Client | `@ksp-gonogo/sitrep-sdk`, `@ksp-gonogo/ui-kit`, third-party packages | Any other `@ksp-gonogo/*` package |
+| Client | `@ksp-gonogo/sitrep-sdk`, `@ksp-gonogo/ui-kit`, third-party packages; `@ksp-gonogo/uplink-tools` as a devDependency | Any other `@ksp-gonogo/*` package |
 
 The restriction is not a policy you can waive: the other assemblies and packages are not distributed, so code that reaches them does not build outside the Gonogo repository.
 
