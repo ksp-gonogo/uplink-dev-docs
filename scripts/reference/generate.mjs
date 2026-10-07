@@ -148,7 +148,8 @@ const storyTitle = (shown) => shown.charAt(0).toUpperCase() + shown.slice(1).rep
 function storiesOf(page) {
   const root = storybookRoot();
   if (!page.stories || root === null) return { states: [], extensions: new Map() };
-  const states = [...storyExports(root, page.stories.states)].map(([name, shown]) => ({
+  // A widget with no stories file of its own shows no states; its slots' stories still render.
+  const states = [...(page.stories.states ? storyExports(root, page.stories.states) : [])].map(([name, shown]) => ({
     id: `${page.widget}--${shown}`,
     story: page.stories.states,
     export: name,
