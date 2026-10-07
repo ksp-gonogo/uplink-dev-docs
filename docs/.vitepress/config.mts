@@ -5,7 +5,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-type SidebarItem = { text: string; link: string };
+type SidebarItem = { text: string; link: string; index?: boolean };
 
 /**
  * The generated reference pages' sidebar entries by directory, as
@@ -16,12 +16,9 @@ const generatedSidebar: Record<string, SidebarItem[]> = existsSync(sidebarFile)
   ? JSON.parse(readFileSync(sidebarFile, "utf8"))
   : {};
 
-/** A section's generated pages, its index first, then its hand pages among them in name order. */
-function section(dir: string, hand: SidebarItem[]): SidebarItem[] {
-  const [first, ...generated] = generatedSidebar[dir] ?? [];
-  const isIndex = first?.link === `/${dir}/`;
-  const items = [...hand, ...(isIndex ? generated : generatedSidebar[dir] ?? [])].sort((a, b) => a.text.localeCompare(b.text));
-  return isIndex ? [first, ...items] : items;
+/** A section's generated pages, its index first. */
+function section(dir: string): SidebarItem[] {
+  return (generatedSidebar[dir] ?? []).map(({ text, link }) => ({ text, link }));
 }
 
 const modules = resolve(
@@ -58,9 +55,6 @@ function installedVersion(name: string): string {
 const documents = ["@ksp-gonogo/sitrep-sdk", "@ksp-gonogo/ui-kit"]
   .map((name) => `${name}@${installedVersion(name)}`)
   .join(" &middot; ");
-
-const primitives = [
-];
 
 export default defineConfig({
   title: "Gonogo Uplink Docs",
@@ -121,29 +115,20 @@ export default defineConfig({
         { text: "Reference", link: "/reference/" },
         {
           text: "Mod API",
-          items: section("reference/mod", []),
+          items: section("reference/mod"),
         },
         {
           text: "Client SDK",
-          items: section(
-            "reference/client",
-            [
-            ],
-          ),
+          items: section("reference/client"),
         },
         {
           text: "Widgets",
-          items: section("reference/widgets", []),
+          items: section("reference/widgets"),
         },
-        ...(generatedSidebar["reference/tools"] ? [{ text: "uplink-tools", items: section("reference/tools", []) }] : []),
+        ...(generatedSidebar["reference/tools"] ? [{ text: "uplink-tools", items: section("reference/tools") }] : []),
         {
           text: "ui-kit",
-          items: [
-            ...section(
-              "reference/ui-kit",
-              primitives.map((name) => ({ text: name, link: `/reference/ui-kit/${name}` })),
-            ),
-          ],
+          items: section("reference/ui-kit"),
         },
       ],
     },

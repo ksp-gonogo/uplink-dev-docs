@@ -557,14 +557,11 @@ function writeSidebar(pages, records) {
     const text = page.kind === "widget" ? recordOf(records, page).name : page.title;
     // The reference index heads the whole reference, so it sits in no section.
     if (!SECTIONS.some((s) => s.dir === sectionOf(page))) continue;
-    // A section's index page is its first entry.
-    const first = page.kind === "index";
-    (sections[sectionOf(page)] ??= []).push({ text: first ? "Overview" : text, link: urlOf(page), first });
+    // A section's index page is marked and sorted first.
+    const entry = page.kind === "index" ? { text: "Overview", link: urlOf(page), index: true } : { text, link: urlOf(page) };
+    (sections[sectionOf(page)] ??= []).push(entry);
   }
-  for (const items of Object.values(sections)) {
-    items.sort((a, b) => b.first - a.first || a.text.localeCompare(b.text));
-    for (const item of items) delete item.first;
-  }
+  for (const items of Object.values(sections)) items.sort((a, b) => Boolean(b.index) - Boolean(a.index) || a.text.localeCompare(b.text));
   writeFileSync(SIDEBAR, `${JSON.stringify(sections, null, 2)}\n`);
 }
 

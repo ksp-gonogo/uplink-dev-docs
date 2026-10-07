@@ -166,14 +166,14 @@ generated page that is committed or edited by hand (`npm run check:pages`).
   its packed record's. The generator lists any slot with no scaffolding story
 - **Contract types**: a `contract` module naming the C# types, with a template
   region under any type that has one
-- **Replacing a hand page**: generate at its path and delete it from
-  `scripts/hand-pages-debt.mjs` in the same commit, with its line in
-  `docs/.vitepress/config.mts` if the sidebar lists it
+- **An index page**: none to add. A section's index (`reference/client/`)
+  lists every page in its section, and the Topic list every Topic, as soon as
+  they are generated
 
 Every generated reference page gets its sidebar entry from the generator
 (`docs/.vitepress/sidebar.generated.json`), in its directory's group, named by
-its module's `title` or, for a widget, its record. A new page needs no config
-edit; only hand pages are listed in `config.mts`.
+its module's `title` or, for a widget, its record, with the section's index
+first. A new page needs no config edit.
 
 `reference/pages.mjs` documents every field a module takes.
 
