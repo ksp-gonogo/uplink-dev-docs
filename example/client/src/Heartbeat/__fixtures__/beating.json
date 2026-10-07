@@ -1,0 +1,26 @@
+{
+  "_meta": {
+    "notes": "A fixture is a scene the render harness mounts the widget in. Everything the widget reads has to be emitted in _stream, because the harness feeds it nothing by default."
+  },
+  "_scene": {
+    "widget": "example-heartbeat",
+    "hero": true,
+    "caption": "The Example Uplink publishing: 42 ticks since load, at UT 1,000,000",
+    "modes": [
+      "default",
+      "min"
+    ]
+  },
+  "_stream": {
+    "pinnedUt": 1000000,
+    "emits": [
+      {
+        "topic": "example.heartbeat",
+        "payload": {
+          "ut": 1000000,
+          "ticks": 42
+        }
+      }
+    ]
+  }
+}

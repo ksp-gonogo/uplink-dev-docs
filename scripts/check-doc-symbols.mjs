@@ -7,7 +7,7 @@
  *   1. Every `docs/reference/ui-kit/*.md` has a live subject. A page for a
  *      component that has been deleted fails.
  *   2. Every symbol a page names as importable is importable. Imports in
- *      snippets and in the `template/` sources they are included from, the
+ *      snippets and in the `example/` sources they are included from, the
  *      declarations a page writes out as the kit's type surface, and
  *      backticked names in the prose around them.
  *   3. Every internal link resolves to a page that exists.
@@ -160,10 +160,10 @@ const claimsToBeAnExport = (name) =>
 /**
  * Every claim the docs make, with where it was made.
  *
- * `template/` counts as doc content, not as a sample app: those files are
- * `<<<`-included into the pages, so an import in one is printed on a reference
- * page. It is also the half `tsc` cannot grade, because it compiles them
- * against the installed tarball.
+ * `example/` counts as doc content, not as a sample app: those files are
+ * `<<<`-included into the Guide, so an import in one is printed on a page. It
+ * is also the half `tsc` cannot grade, because it compiles them against the
+ * published release candidate rather than the source.
  */
 function collectClaims() {
   const claims = [];
@@ -230,8 +230,8 @@ function collectClaims() {
     });
   }
 
-  const templateSources = walk(resolve(ROOT, "template"), (f) => /\.tsx?$/.test(f));
-  for (const file of templateSources) {
+  const exampleSources = walk(resolve(ROOT, "example/client/src"), (f) => /\.tsx?$/.test(f));
+  for (const file of exampleSources) {
     const body = readFileSync(file, "utf8");
     for (const m of body.matchAll(KIT_IMPORT)) {
       const line = body.slice(0, m.index).split("\n").length;
@@ -239,7 +239,7 @@ function collectClaims() {
     }
   }
 
-  return { claims, pages, links, templateSources: templateSources.length };
+  return { claims, pages, links, exampleSources: exampleSources.length };
 }
 
 /* ------------------------------------------------------------------ *
@@ -299,13 +299,13 @@ export async function checkDocSymbols(write = (s) => process.stdout.write(s)) {
 
   const { names: exported, meta } = readSnapshot();
   const scan = collectClaims();
-  const { claims, pages, links, templateSources } = scan;
+  const { claims, pages, links, exampleSources } = scan;
   const referencePages = pages.filter((p) => p.isReference).length;
 
   write(
     `${exported.size} kit exports (snapshot of ${meta.source}), ` +
       `${pages.length} pages (${referencePages} ui-kit reference), ` +
-      `${templateSources} template sources, ` +
+      `${exampleSources} example sources, ` +
       `${claims.length} symbol claims, ${links.length} internal links.\n`,
   );
 
@@ -315,7 +315,7 @@ export async function checkDocSymbols(write = (s) => process.stdout.write(s)) {
     kitExports: exported.size,
     markdownPages: pages.length,
     referencePages,
-    templateSources,
+    exampleSources,
     claims: claims.length,
     internalLinks: links.length,
   };
@@ -434,8 +434,8 @@ export async function checkDocSymbols(write = (s) => process.stdout.write(s)) {
         "\n\nAn author copying this gets a build error. Name what replaced it, or\n" +
         "drop the sentence. If the symbol is one the kit should export, the fix\n" +
         "is in gonogo and this check is right to be red until it lands.\n" +
-        "`tsc` cannot see any of this: it compiles the template against the\n" +
-        "installed tarball, which is months behind and still exports them.",
+        "`tsc` cannot see any of this: it compiles the example against the\n" +
+        "published release candidate, which can lag the source these pages describe.",
     );
   }
 

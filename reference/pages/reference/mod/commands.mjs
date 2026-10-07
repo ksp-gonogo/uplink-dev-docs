@@ -4,8 +4,8 @@ export default {
   category: "Commands",
   lead: "CommandDeclaration",
   examples: {
-    CommandDeclaration: "template/mod/ExampleUplink/HostSurface.cs#commands",
-    SitrepCommandAttribute: "template/mod/ExampleUplink/Payloads.cs#args",
-    ICommandGateEvaluator: "template/mod/ExampleUplink/HostSurface.cs#gate",
+    CommandDeclaration: "reference/examples/mod/HostSurface.cs#commands",
+    SitrepCommandAttribute: "example/mod-contract/ExamplePayloads.cs#reset",
+    ICommandGateEvaluator: "reference/examples/mod/HostSurface.cs#gate",
   },
 };

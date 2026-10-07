@@ -1,0 +1,16 @@
+{
+  "id": "example",
+  "name": "Example",
+  "description": "The Uplink the Gonogo Uplink Guide builds: a heartbeat it publishes, a command that starts its count again, and a forward model that carries the count between samples.",
+  "author": "Uplink docs",
+  "repo": "https://github.com/ksp-gonogo/uplink-dev-docs",
+  "version": "0.0.1",
+  "minAppVersion": "0.0.0",
+  "apiVersion": "6.0.0",
+  "uiKitVersion": "0.1.0",
+  "contractMajor": 29,
+  "contractMinor": 22,
+  "bundleUrl": "example/example.client.js",
+  "integrity": "",
+  "sdkVersion": "0.2.0-rc.12"
+}

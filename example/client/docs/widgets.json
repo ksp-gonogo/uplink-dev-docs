@@ -1,0 +1,33 @@
+{
+  "widgets": [
+    {
+      "id": "example-heartbeat",
+      "name": "Heartbeat",
+      "description": "How many times the Example Uplink has published, and the universal time of the last sample.",
+      "tags": [
+        "example"
+      ],
+      "channels": [
+        "example.heartbeat"
+      ],
+      "optionalChannels": [],
+      "dataRequirements": [],
+      "fields": [],
+      "actions": [],
+      "augmentSlots": [],
+      "contributionSlots": [],
+      "requires": [],
+      "replaces": null,
+      "pushable": false,
+      "defaultSize": {
+        "w": 3,
+        "h": 3
+      },
+      "minSize": {
+        "w": 2,
+        "h": 2
+      },
+      "tiny": false
+    }
+  ]
+}

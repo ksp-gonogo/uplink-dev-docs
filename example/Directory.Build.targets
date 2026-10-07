@@ -1,0 +1,17 @@
+<Project>
+  <!-- Says what is wrong when a project references the game and the game was not
+       found, instead of leaving it to a page of "type or namespace not found".
+       A project with no reference under $(KspManaged) or $(KspGameData) is never
+       asked where KSP is. -->
+  <Target Name="RequireKspInstall" BeforeTargets="ResolveAssemblyReferences">
+    <ItemGroup>
+      <_KspReference Include="@(Reference)"
+                     Condition="'%(Reference.HintPath)' != '' And ($([System.String]::Copy('%(Reference.HintPath)').StartsWith('$(KspManaged)')) Or $([System.String]::Copy('%(Reference.HintPath)').StartsWith('$(KspGameData)')))" />
+      <_MissingKspReference Include="@(_KspReference)" Condition="!Exists('%(_KspReference.HintPath)')" />
+    </ItemGroup>
+    <Error Condition="'@(_MissingKspReference)' != '' And '$(KspRoot)' == 'KSP_ROOT-is-not-set'"
+           Text="This project references the game's assemblies (@(_MissingKspReference)) and does not know where KSP is. Set the KSP_ROOT environment variable to your KSP install, the folder holding KSP_Data and GameData, or pass -p:KspRoot=&lt;that folder&gt;. Directory.Build.props has the detail." />
+    <Error Condition="'@(_MissingKspReference)' != '' And '$(KspRoot)' != 'KSP_ROOT-is-not-set'"
+           Text="KspRoot is $(KspRoot), and these referenced assemblies are not under it: @(_MissingKspReference->'%(HintPath)'). KspRoot must be the folder holding KSP_Data (or KSP.app) and GameData." />
+  </Target>
+</Project>

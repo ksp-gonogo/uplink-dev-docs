@@ -4,7 +4,7 @@ export default {
   category: "Host and Kernel",
   lead: "IUplinkHost",
   examples: {
-    IUplinkHost: "template/mod/ExampleUplink/HostSurface.cs#publishing",
-    Kernel: "template/mod/ExampleUplink/HostSurface.cs#kernel",
+    IUplinkHost: "reference/examples/mod/HostSurface.cs#publishing",
+    Kernel: "reference/examples/mod/HostSurface.cs#kernel",
   },
 };

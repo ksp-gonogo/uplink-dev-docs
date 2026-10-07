@@ -1,0 +1,28 @@
+<Project>
+  <!-- Where your KSP install is, for a plugin that references the game's own
+       assemblies (Assembly-CSharp, UnityEngine and the rest). The scaffold's
+       heartbeat references none, so none of this is read until you add one:
+
+         <Reference Include="Assembly-CSharp" Private="false">
+           <HintPath>$(KspManaged)/Assembly-CSharp.dll</HintPath>
+         </Reference>
+
+       KspRoot is the folder that holds KSP_Data (or KSP.app on macOS) and
+       GameData. It comes from, in order: -p:KspRoot=... on the command line,
+       the KSP_ROOT environment variable, then ksp.local.props beside this file,
+       which is yours and kept out of git:
+
+         <Project><PropertyGroup><KspRoot>/path/to/KSP</KspRoot></PropertyGroup></Project>
+  -->
+  <PropertyGroup>
+    <KspRoot Condition="'$(KspRoot)' == ''">$(KSP_ROOT)</KspRoot>
+  </PropertyGroup>
+  <Import Project="$(MSBuildThisFileDirectory)ksp.local.props"
+          Condition="'$(KspRoot)' == '' And Exists('$(MSBuildThisFileDirectory)ksp.local.props')" />
+  <PropertyGroup>
+    <KspRoot Condition="'$(KspRoot)' == ''">KSP_ROOT-is-not-set</KspRoot>
+    <KspManaged Condition="'$(KspManaged)' == '' And Exists('$(KspRoot)/KSP.app/Contents/Resources/Data/Managed')">$(KspRoot)/KSP.app/Contents/Resources/Data/Managed</KspManaged>
+    <KspManaged Condition="'$(KspManaged)' == ''">$(KspRoot)/KSP_Data/Managed</KspManaged>
+    <KspGameData Condition="'$(KspGameData)' == ''">$(KspRoot)/GameData</KspGameData>
+  </PropertyGroup>
+</Project>

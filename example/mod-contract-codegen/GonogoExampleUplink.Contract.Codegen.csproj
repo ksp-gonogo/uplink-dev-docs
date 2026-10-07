@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Codegen-only twin of the contract slice: the same sources recompiled with
+       SITREP_CODEGEN defined. Nothing references it and nothing ships it.
+
+       It is built only by `uplink-tools codegen`, which passes GonogoCodegen: the
+       folder of the KspGonogo.Sitrep.Contract package holding the contract's own
+       twin and the props every twin takes its shape from. -->
+  <PropertyGroup>
+    <CodegenTwinSource>..\mod-contract</CodegenTwinSource>
+    <AssemblyName>GonogoExampleUplink.Contract</AssemblyName>
+    <RootNamespace>GonogoExampleUplink</RootNamespace>
+    <TargetFramework Condition="'$(GonogoCodegen)' == ''">netstandard2.0</TargetFramework>
+  </PropertyGroup>
+  <Import Project="$(GonogoCodegen)\CodegenTwin.props" Condition="'$(GonogoCodegen)' != ''" />
+
+  <ItemGroup Condition="'$(GonogoCodegen)' != ''">
+    <Reference Include="Sitrep.Contract">
+      <HintPath>$(GonogoCodegen)\Sitrep.Contract.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <Target Name="RequireCodegenCommand" BeforeTargets="CoreCompile" Condition="'$(GonogoCodegen)' == ''">
+    <Error Text="This project is the contract slice's codegen twin, and only one command builds it: npx uplink-tools codegen" />
+  </Target>
+</Project>

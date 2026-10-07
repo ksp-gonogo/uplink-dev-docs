@@ -4,6 +4,6 @@ export default {
   category: "Serialization",
   lead: "BinaryLane",
   examples: {
-    BinaryLane: "template/mod/ExampleUplink/HostSurface.cs#opaque",
+    BinaryLane: "reference/examples/mod/HostSurface.cs#opaque",
   },
 };

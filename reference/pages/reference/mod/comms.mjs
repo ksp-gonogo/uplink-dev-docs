@@ -4,6 +4,6 @@ export default {
   category: "Comms",
   lead: "CommsLink",
   examples: {
-    CommsDelay: "template/mod/ExampleUplink/HostSurface.cs#delay",
+    CommsDelay: "reference/examples/mod/HostSurface.cs#delay",
   },
 };

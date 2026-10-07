@@ -12,7 +12,7 @@
  * WHERE THE TRUTH COMES FROM. Not `node_modules`. The `@ksp-gonogo/ui-kit@0.1.0`
  * tarball this repo installs predates a large part of the kit these pages
  * describe, and it still exports every name the pages were caught claiming, so
- * an installed copy cannot see any of this and `tsc` over `template/` passes on
+ * an installed copy cannot see any of this and `tsc` over `example/` passes on
  * all of them. The truth is `packages/ui-kit/src/index.ts` in a gonogo checkout,
  * read through the TypeScript checker so `export *` chains are followed rather
  * than guessed. See `ui-kit-exports.json` for how that reaches CI.
@@ -97,9 +97,9 @@ export const FLOORS = {
   kitExports: 300,
   markdownPages: 20,
   referencePages: 15,
-  templateSources: 10,
+  exampleSources: 10,
   /*
-   * Claims come from the guide pages and the template. Reference pages are
+   * Claims come from the guide pages and the example. Reference pages are
    * generated and TypeDoc resolves every name on them, so they carry none. The
    * floor only has to sit well under the census; the planted dead and live
    * pages are what prove the scan is not blind.

@@ -4,8 +4,8 @@ export default {
   category: "Channels and emission",
   lead: "ChannelDeclaration",
   examples: {
-    ChannelDeclaration: "template/mod/ExampleUplink/ExampleUplink.cs#manifest",
-    IChannelPublisher: "template/mod/ExampleUplink/HostSurface.cs#publishing",
-    ISnapshotSampler: "template/mod/ExampleUplink/HostSurface.cs#sampler",
+    ChannelDeclaration: "example/mod/ExampleUplink.cs#manifest",
+    IChannelPublisher: "reference/examples/mod/HostSurface.cs#publishing",
+    ISnapshotSampler: "reference/examples/mod/HostSurface.cs#sampler",
   },
 };

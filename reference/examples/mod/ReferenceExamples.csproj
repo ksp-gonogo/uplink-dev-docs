@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The mod reference pages' examples, compiled against the contract the pages
+       are generated from: the packed KspGonogo.Sitrep.Contract that
+       `npm run reference` installs into .reference/. Nothing ships from here. -->
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <LangVersion>12</LangVersion>
+    <Nullable>enable</Nullable>
+    <AssemblyName>ReferenceExamples</AssemblyName>
+    <RootNamespace>ExampleUplink</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Sitrep.Contract" Private="false">
+      <HintPath>$(MSBuildThisFileDirectory)../../../.reference/contract/lib/net472/Sitrep.Contract.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+</Project>

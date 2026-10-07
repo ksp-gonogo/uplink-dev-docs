@@ -1,0 +1,7 @@
+node_modules/
+dist/
+renders/
+bin/
+obj/
+*.g.cs
+ksp.local.props

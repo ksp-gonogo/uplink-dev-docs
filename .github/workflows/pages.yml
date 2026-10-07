@@ -23,8 +23,9 @@ jobs:
       - uses: actions/checkout@v4
       # The generated reference is build output, written here from packages
       # packed out of one pinned gonogo commit, so every deploy publishes pages
-      # that match each other and the guides are checked against that same
-      # commit. Bump the pin in reference/artifacts.json to move the site.
+      # that match each other. Bump the pin in reference/artifacts.json to move
+      # the site. The Guide's worked Uplink is checked against the published
+      # release candidate instead, as an author installs it.
       - id: pin
         run: echo "sha=$(jq -er .gonogo reference/artifacts.json)" >> "$GITHUB_OUTPUT"
       - uses: actions/checkout@v4
@@ -51,9 +52,6 @@ jobs:
         working-directory: gonogo
       - run: npm ci
       - run: npx playwright install --with-deps chromium
-      # Sitrep.Contract references no KSP assembly, so it builds here, and the
-      # mod snippets compile against the same contract the mod ships.
-      - run: dotnet build gonogo/mod/Sitrep.Contract/Sitrep.Contract.csproj -c Release -f net472 -o "$RUNNER_TEMP/contract" --nologo -v q
       - run: npm run reference:pack
         env:
           GONOGO_REPO: ${{ github.workspace }}/gonogo
@@ -62,7 +60,6 @@ jobs:
       - run: npm run build
         env:
           GONOGO_REPO: ${{ github.workspace }}/gonogo
-          SITREP_CONTRACT_DLL: ${{ runner.temp }}/contract/Sitrep.Contract.dll
           # Live examples graded at once, sized to the runner's four cores.
           DEMO_PAGES: 4
       - uses: actions/upload-pages-artifact@v3

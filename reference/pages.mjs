@@ -25,7 +25,7 @@
  *   and for each command's `--help`, verbatim
  * - `contract`: C# types from the Sitrep.Contract package: those named in
  *   `types`, or `lead` then every type tagged `<category>` `category`. The
- *   compiled template region in `examples` is shown under its type. A
+ *   compiled region in `examples` is shown under its type. A
  *   category's page opens with the `<categoryDescription>` one of its types
  *   carries beside its `<category>`
  * - `index`: a section's index (`reference/client/index.mjs`): its package's

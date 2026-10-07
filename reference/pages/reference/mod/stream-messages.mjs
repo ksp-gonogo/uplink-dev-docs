@@ -4,6 +4,6 @@ export default {
   category: "Stream messages",
   lead: "Hello",
   examples: {
-    CommandResult: "template/mod/ExampleUplink/ExampleUplink.cs#command",
+    CommandResult: "example/mod/ExampleUplink.cs#command",
   },
 };

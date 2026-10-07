@@ -16,10 +16,12 @@ npm run build    # check, then build to docs/.vitepress/dist
 
 ## The dependency rule
 
-This repository depends on **published packages only**:
-`@ksp-gonogo/sitrep-sdk` and `@ksp-gonogo/ui-kit` from npm, plus react,
-styled-components and third-party packages. No workspace links, no `file:`
-dependencies, no path into another checkout.
+The Guide's worked Uplink, `example/`, depends on **published packages only**:
+`@ksp-gonogo/sitrep-sdk`, `@ksp-gonogo/ui-kit` and `@ksp-gonogo/uplink-tools`
+from npm and `KspGonogo.Sitrep.Contract` from nuget.org, at the release
+candidate `reference/artifacts.json` names, plus React, styled-components and
+third-party packages. No workspace links, no `file:` dependencies, no path into
+another checkout.
 
 That is what makes a compiling snippet mean something. If a page cannot be
 written without reaching past the published surface, the finding is that the
@@ -28,31 +30,30 @@ rather than being worked around.
 
 ## How snippets are checked
 
-Pages never contain hand-copied code that is meant to compile. Every such
-snippet is transcluded from a real source file under `template/`, using
-VitePress's `<<< path#region` include.
+Pages never contain hand-copied code that is meant to compile. Every snippet in
+the Guide is transcluded from a file under `example/`, and every reference
+example from `reference/examples/`, using VitePress's `<<< path#region`
+include.
 
-`npm run check` runs five gates. Every one of them runs whatever the ones before
-it did, and the verdict line at the end names each that failed: they go stale
-independently, so a red compile must not take the others offline with it.
+`example/` is `uplink-tools new example` as the published package writes it,
+plus the files the Guide adds or edits, each listed in
+`scripts/check-example.mjs` with the page that changes it. After changing one,
+run its own commands in `example/client/` (`npm run codegen`, `npm run page`,
+`npm test`, `dotnet test ../mod-tests`) and commit what they write.
+
+`npm run check` runs these gates. Every one of them runs whatever the ones
+before it did, and the verdict line at the end names each that failed: they go
+stale independently, so a red compile must not take the others offline with it.
 
 | Gate | Checks |
 | --- | --- |
-| client snippets against source | Every client snippet typechecks against the ui-kit and SDK **source** in a gonogo checkout, the shape the pages describe. Held to zero |
-| client snippets against published packages | Every client snippet typechecks against the **installed** npm packages, bar the ones listed in `scripts/template-types-debt.mjs` |
-| `dotnet build template/mod/ExampleUplink` | Every mod snippet compiles against `Sitrep.Contract.dll` |
+| the worked Uplink | `new` run again writes exactly the example's files, bar the listed edits; then `npm ci`, `bake`, `codegen:check`, `typecheck`, `npm test` and `dotnet test mod-tests` in it. Needs the .NET SDK and the network |
+| reference examples | Every file under `reference/examples/` typechecks against the packed artifacts, and the mod examples build against the packed contract |
 | include scan | Every `<<<` in `docs/` resolves to a real file, and to a real `#region` when one is named |
 | documented symbols | Every reference page has a live subject, every symbol it names is one the kit exports, and every internal link lands |
+| reference pages | Every page under `docs/reference/` is generated, and none is edited or committed |
 
-The two client passes grade against different truths, because the npm tarballs
-are behind the source the pages describe. The source pass needs a gonogo
-checkout, found the same way as the symbol check's below, and is skipped
-without one. The published pass lists every snippet that cannot compile against
-npm in `NEEDS_REPUBLISH` with its exact error count, and prints what each is
-missing, so the gap between the pages and what an author can install reads
-straight off the log. The list is exact in both directions: a snippet that
-starts compiling against npm fails until it leaves the list. Each pass compiles
-a planted snippet that must fail, and reports BLIND if it does not.
+Each gate grades a planted fault first, and reports BLIND if it does not find it.
 
 The include scan exists because VitePress renders a missing include as an error block
 inside the page instead of failing the build, so a broken include would ship
@@ -60,9 +61,8 @@ looking like content.
 
 The symbol check exists because nothing else can see a page for a component that has
 been deleted. Markdown compiles against nothing, and neither client pass can
-stand in for it: they compile the template, not the names in the prose, and the
-`@ksp-gonogo/ui-kit` tarball on npm is a long way behind the kit these pages
-describe and still exports names the kit dropped. That check therefore reads
+stand in for it: they compile the example, not the names in the prose, and the
+release candidate on npm can lag the kit these pages describe. That check therefore reads
 its truth from `packages/ui-kit/src/index.ts` in a gonogo checkout, through the
 TypeScript checker so `export *` chains are followed rather than guessed.
 
@@ -84,8 +84,9 @@ GONOGO_REPO=off npm run check                       # a machine with no checkout
 Known staleness lives in `scripts/doc-symbols-debt.mjs` as two ceilings. They
 shrink, never grow: a page added to one is a bug written down instead of fixed.
 
-`vitepress build` adds one more: it fails on a dead internal link. It does **not**
-check heading anchors, so a wrong `#fragment` still builds. Check those by hand.
+`vitepress build` fails on a dead internal link but not on a dead anchor.
+After the build, `npm run check:rendered` fails on either, and on a page whose
+server render left it empty.
 
 After the build, `npm run check:links` reads the built site. Every inline code
 span naming a documented symbol must link to its reference entry, and every
@@ -94,16 +95,6 @@ such link, anchor included, must land. The Markdown pass in
 index `npm run reference` writes, so prose links a symbol by naming it in
 backticks. A `{@link}` in a doc comment to a symbol with no reference entry
 fails `npm run reference`, bar the ceiling in `scripts/symbol-link-debt.mjs`.
-
-The mod gate needs `Sitrep.Contract.dll`, which is distributed in a KSP install
-rather than on a package registry. Locally it is skipped unless you point at one:
-
-```bash
-SITREP_CONTRACT_DLL="/path/to/GameData/Gonogo/Plugins/Sitrep.Contract.dll" npm run check
-```
-
-CI builds `Sitrep.Contract` from the same gonogo checkout, since it references
-no KSP assembly, and fails if `SITREP_CONTRACT_DLL` is unset.
 
 ## The generated reference
 
@@ -168,8 +159,8 @@ or edited by hand (`npm run check:pages`).
   `widgets.json`, so the module states none of it; generation fails if it
   does, and `npm run check:pages` fails on a widget page whose header is not
   its packed record's. The generator lists any slot with no scaffolding story
-- **Contract types**: a `contract` module naming the C# types, with a template
-  region under any type that has one
+- **Contract types**: a `contract` module naming the C# types, with a compiled
+  region (from `example/` or `reference/examples/mod/`) under any type that has one
 - **A concept**: write it in gonogo, in a doc comment beside the code it
   explains, as a `@concept <Name>` tag whose first line is the name and the
   rest the text; repack, and add a `concept` module naming it under
@@ -197,23 +188,20 @@ first. A new page needs no config edit.
 npm run reference -- --no-install            # regenerate from the installed artifacts
 npm run check:pages                          # generated or listed, never committed or edited
 npx vitepress build docs
-npm run check:rendered                       # no page's server render left it empty
+npm run check:rendered                       # no page left empty, every link and anchor lands
 npm run check:links                          # every symbol reference linked
 npm run check:demos -- --page widgets/crew   # the live examples on matching pages
 ```
 
-`npm run check` typechecks every example file with the template, and
-`npm run build` runs everything in the order CI does.
+`npm run check` compiles and tests every example, and `npm run build` runs
+everything in the order CI does.
 
 ## What is compiled and what is quoted
 
-- **Anything the reader writes** is transcluded compiled source.
-- **Signatures on reference pages** are quoted declarations of published API.
-  They cannot be transcluded, since this repository does not declare them.
-  `template/mod/ExampleUplink/HostSurface.cs` and
-  `template/client/src/sdkSurface.ts` exist to close that gap: they call every
-  member the reference documents, so a signature that has drifted fails the
-  build rather than reading correctly and being wrong.
+- **Anything the reader writes** is transcluded compiled source
+- **Signatures on reference pages** are generated from the packed packages'
+  declarations by TypeDoc and xmldocmd, so they cannot drift from what they
+  document
 
 ## Publishing
 
@@ -228,6 +216,7 @@ Pages must be set to deploy from GitHub Actions in the repository settings.
 
 ```
 docs/          the site
-template/      the starter an author copies, and the source of every snippet
+example/       the Guide's worked Uplink, and the source of every Guide snippet
+reference/     the generated reference's page modules, examples and fixtures
 scripts/       the doc gates, and the generated ui-kit export list they read
 ```
