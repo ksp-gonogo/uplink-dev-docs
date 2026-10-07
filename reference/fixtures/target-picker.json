@@ -1,0 +1,111 @@
+{
+  "_meta": {
+    "notes": "The scene Target Picker renders on."
+  },
+  "_stream": {
+    "emits": [
+      {
+        "channel": "target.available",
+        "value": {
+          "entries": [
+            {
+              "kind": 1,
+              "name": "Kerbin",
+              "bodyIndex": 1,
+              "distance": 720000,
+              "isCurrent": false
+            },
+            {
+              "kind": 1,
+              "name": "Mun",
+              "bodyIndex": 2,
+              "distance": 11880000,
+              "isCurrent": false
+            },
+            {
+              "kind": 1,
+              "name": "Minmus",
+              "bodyIndex": 3,
+              "distance": 46900000,
+              "isCurrent": false
+            },
+            {
+              "kind": 0,
+              "name": "Kerbin Station I",
+              "vesselId": "8f3c1d5a-2b47-4e19-9c60-71a4d2e8b035",
+              "vesselType": 1,
+              "situation": 3,
+              "distance": 168168.6356012916,
+              "isCurrent": true
+            },
+            {
+              "kind": 0,
+              "name": "Comsat Relay 4",
+              "vesselId": "b21e7f04-9d3a-4c52-8e77-16fa5c930d81",
+              "vesselType": 3,
+              "situation": 3,
+              "distance": null,
+              "isCurrent": false,
+              "source": 2,
+              "asOfUt": 0,
+              "via": "KSC"
+            },
+            {
+              "kind": 0,
+              "name": "Munar Transfer Stage",
+              "vesselId": "c47a90b6-5e18-4f2d-b3c9-08de6a417f52",
+              "vesselType": 0,
+              "situation": 4,
+              "distance": 1551805.4001710394,
+              "isCurrent": false
+            },
+            {
+              "kind": 0,
+              "name": "Ast. UQR-118",
+              "vesselId": "d95b2c73-6a04-41ef-8b15-2c7093ed4a6f",
+              "vesselType": 10,
+              "situation": 3,
+              "distance": 3107796.6471440825,
+              "isCurrent": false
+            },
+            {
+              "kind": 4,
+              "name": "Clamp-O-Tron Sr. (fore)",
+              "vesselId": "8f3c1d5a-2b47-4e19-9c60-71a4d2e8b035",
+              "partId": 142,
+              "situation": 3,
+              "distance": 168161.2,
+              "isCurrent": false
+            },
+            {
+              "kind": 4,
+              "name": "Clamp-O-Tron Sr. (aft)",
+              "vesselId": "8f3c1d5a-2b47-4e19-9c60-71a4d2e8b035",
+              "partId": 187,
+              "situation": 3,
+              "distance": 168176.9,
+              "isCurrent": false
+            }
+          ]
+        }
+      },
+      {
+        "channel": "vessel.target",
+        "value": {
+          "name": "Kerbin Station I",
+          "kind": 0,
+          "relativePosition": {
+            "x": 120400,
+            "y": -98300,
+            "z": 64200
+          },
+          "relativeVelocity": {
+            "x": -30.2,
+            "y": 24.66,
+            "z": -16.1
+          }
+        }
+      }
+    ]
+  }
+}
