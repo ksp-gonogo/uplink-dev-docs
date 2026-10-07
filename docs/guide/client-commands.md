@@ -1,26 +1,31 @@
 # Sending a command
 
-A command is a request with a `requestId` you generate, answered by a `command-response` carrying the same id. The `command` method on the [template client](/guide/client-stream) sends the frame and resolves when the matching response arrives.
+The plugin now accepts `example.reset` ([Accepting a command](/guide/commands)). This page gives the client its types and a button that sends it.
 
-## The result is untyped
+## The command, typed
 
-`command-response.result` is `unknown` on the wire. Nothing links a command name to its result type, so the cast is yours:
+<<< ../../example/client/src/topics.ts#maps
 
-<<< ../../template/client/src/sendCommand.ts#result
+The SDK types every core command's arguments in `CommandArgsMap` and its reply in `CommandReplyMap`. Your commands join them the way your Topics join `TopicPayloadMap`: the arguments type is the one `codegen` generated from the contract slice, and the reply is `CommandResult` for a handler that returns `CommandResult`, or `CommandResultOf` the payload type for one that returns data.
 
-`errorCode` is the id of the plugin's refusal, a string such as `"range"`, and is absent on success. The SDK's `CommandErrorCode` maps each root refusal to its id, so compare against its members rather than against a bare string.
+## The command, known at runtime
 
-## A command does not resolve when it takes effect
+<<< ../../example/client/src/topics.ts#command
 
-It resolves when the plugin's handler returns. For a `Delayed` command that is after the light-time delay has elapsed, so on an interplanetary vessel the promise can be minutes in flight.
+The declaration types the command; `registerUplinkCommand` makes the app know it exists. Its second argument, a `CommandRail`, says how the command travels, and must agree with the plugin: `delayed` is `false` for a `TrueNow` command and `true` for a `Delayed` one, and `replies` is `true` for a handler that returns a result. The app uses it to show the operator whether a sent command is still crossing the signal delay.
 
-Two consequences for the UI:
+## Sending it
 
-- Show the control as pending for the whole wait, not for a spinner's worth of it
-- Do not treat the resolved result as proof of the new state. Read the state back off its Topic
+<<< ../../example/client/src/Heartbeat/index.tsx#widget
 
-## Confirm anything destructive
+`useCommand` returns a handle for one command, a `UseCommandResult`. Its `send` takes the arguments and resolves with the reply once the command has run: a delayed command to a distant craft can take minutes. When the plugin refuses it, `send` rejects with the `CommandErrorCode` the handler returned, and when no reply comes in time it rejects too. Both are also recorded on the handle, so a `send` you do not wait on loses nothing.
 
-The delay makes a mistaken command unrecallable. Arm-then-confirm, rather than a bare click, for anything that stages, jettisons, terminates, or spends. `CommandButton` carries that step for you: give it a `confirmLabel` and the first press arms it, the second sends, and an arm left alone expires.
+Hand the handle to a `CommandButton` rather than wiring a plain button's click to `send`. The button shows the whole life of the command: pending while it travels, then refused, or no reply, with the reason, and it announces each outcome to a screen reader. `commandLabel` is what a refusal is named after.
 
-Next: [Building the UI](/guide/client-ui).
+## Destructive commands
+
+A command that stages, jettisons, spends or ends something cannot be recalled once it is sent, and under a signal delay the operator may not see its effect for minutes. Give its button a `confirmLabel`: the first press arms it, the second sends, and an armed button left alone returns to rest.
+
+A resolved `send` means the plugin ran the handler, not that the game is now in the state you asked for. Read the state back off its Topic, as the heartbeat's count shows the reset.
+
+Next: [Writing a reckoner](/guide/reckoners).

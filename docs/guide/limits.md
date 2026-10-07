@@ -1,39 +1,26 @@
 # Known limits
 
-What the published packages do not do, so you find out here rather than three days in.
+What the published packages, at the <Published field="name" /> <Published field="version" />, do not do, and what to do instead.
 
-## ui-kit does not load under Node
+## The plugin
 
-`@ksp-gonogo/ui-kit` ships ESM whose component barrels a bundler resolves and bare Node does not. Vite, webpack, esbuild and Rollup are unaffected. A Node-based test runner needs the package inlined into its transform pipeline: in Vitest, `server.deps.inline: [/@ksp-gonogo/]`. `@ksp-gonogo/sitrep-sdk` loads under Node as it is.
+- **A payload is a dictionary.** The Gonogo mod writes dictionaries, lists, strings, numbers and booleans, and its own contract's types, but not a class of yours, so `IChannelPublisher.Publish` takes `object?` and nothing checks a payload at compile time. Hold the dictionary's keys to the contract slice's type in the plugin's tests ([Publishing a Topic](/guide/topics#publishing))
+- **Command handlers run on the main thread because the shipped mod runs them there.** `Sitrep.Contract` does not promise it, so a handler written to be safe on any thread records the request and applies it from a main-thread capture
+- **A successful load is silent.** Look for the Uplink's data, not for a line in `KSP.log`
 
-## React 19 will not install
+## The client
 
-`@ksp-gonogo/ui-kit` declares `react@^18` as its peer dependency, so `npm install` fails with `ERESOLVE` against React 19. Pin React 18.
+- **React 18 only.** `@ksp-gonogo/ui-kit` declares `react@^18` as its peer, and npm refuses React 19 beside it
+- **ui-kit needs inlining in a Node test runner.** Its component modules resolve in a bundler and not in bare Node. The scaffold's `vitest.config.ts` already inlines every Gonogo package
+- **A command's client types are written by hand.** `codegen` generates the arguments type but not the command map, so each command needs its line in `CommandArgsMap` and `CommandReplyMap`, and a `registerUplinkCommand` call whose `delayed` agrees with the plugin's ([Sending a command](/guide/client-commands))
+- **A reckoner for an Uplink's Topic models the whole payload.** A model of some fields only is offered for a core Topic whose contract declares those fields, and never for an Uplink's ([Writing a reckoner](/guide/reckoners#the-model))
+- **The contract slice's doc comments do not reach the client.** `codegen` writes the interfaces without them, so an author reading `contract.ts` sees the shape and not the description
 
-## You cannot publish a type of your own
+## The tools
 
-The mod's serialiser writes dictionaries, arrays, strings, numbers, booleans, and the payload types the mod itself declares. There is no reflection over an arbitrary object, and no extension point for one.
-
-So your payloads are `Dictionary<string, object?>`, built by hand. The compiler cannot help, because `IChannelPublisher.Publish` takes `object?`.
-
-**The failure comes at runtime.** The first frame the serialiser cannot write marks your Uplink unavailable, and each subscriber gets an `error` frame with code `payload-serialization-error` naming the type it could not write.
-
-## No generated types for your own Topics
-
-The SDK's typed Topic map is generated from the Gonogo mod's own contract. Your Uplink's payloads are not in it, and outside the Gonogo Uplinks repository nothing generates them, so the C# class and the TypeScript interface are two hand-written declarations of one shape, and nothing checks that they agree.
-
-Keep them in one file each, next to each other in the repository, and change them together.
-
-## The Gonogo mod is not on CKAN or SpaceDock yet
-
-Players get it as a release candidate download for now. `Sitrep.Contract`, the assembly your plugin compiles against, is published on NuGet as `KspGonogo.Sitrep.Contract`, so you can reference it at a pinned version rather than building the mod.
-
-There is no CKAN identifier your Uplink can declare a dependency on yet, so nothing stops a player installing your Uplink without the mod. Record in your README which Gonogo version you built against.
-
-## A scaffolded Uplink does not build on its own yet
-
-`uplink-tools new` writes an Uplink whose client imports generated types that only the Gonogo Uplinks repository's codegen produces, and whose C# projects resolve `Sitrep.Contract` through `$(GonogoContract)` and `$(GonogoDevkit)`, MSBuild properties only that repository defines. Outside it, set both properties to a directory holding the contract assembly, and write the generated client types by hand from your contract slice, until the toolchain ships both.
-
-## Command handlers and the main thread
-
-The shipped Gonogo mod runs a command handler on the Unity main thread, so a handler may call the game. `Sitrep.Contract` does not promise it: a host that ran handlers elsewhere would still satisfy the contract. A handler that must stay safe against such a host records the request for the next main-thread capture to apply, as the [command page](/guide/commands) describes.
+- **The version is in three places**: `client/package.json`, `UPLINK_VERSION` in `client/src/uplink.ts`, and the folder in `client.url`. Change them together ([Releasing and installing](/guide/release#a-new-version))
+- **`client/uplink.md` is read by nothing.** The page's opening paragraph is the `description` in `src/uplink.ts` ([Documenting your Uplink](/guide/documenting#what-will-change))
+- **The generated page lists Topics and widgets, not commands**
+- **A changed client means a rebuilt plugin**, even with a development URL, because the app checks every bundle against the hash the plugin vouches for ([Releasing and installing](/guide/release#trying-a-client-before-you-publish-it))
+- **The netkan's install path and the zip's layout differ.** The zip's top folder is `GonogoExampleUplink/`, and the netkan installs `GameData/GonogoExampleUplink`. Set the netkan's `file` to the zip's folder before submitting it to CKAN
+- **`new` is tested on macOS and Linux**, not on Windows

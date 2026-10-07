@@ -1,81 +1,72 @@
 # The plugin class
 
-A plugin is one class that implements `ISitrepUplink` and carries a `[SitrepUplink]` attribute. Complete, this is the whole of it:
+The plugin is one class in `mod/`. This page covers what Gonogo needs from it: how it is found, what its manifest declares, where its work is wired up, and how it reports its own health.
 
-<<< ../../template/mod/ExampleUplink/MinimalUplink.cs#minimal{cs}
+## How Gonogo finds it
 
-That compiles, loads, and publishes the game clock once a second. The rest of this page turns it into the example Uplink, whose pieces are shown one at a time; [the whole file](#the-whole-file) is at the bottom.
+<<< ../../example/mod/ExampleUplink.cs#declaration{cs}
 
-<<< ../../template/mod/ExampleUplink/ExampleUplink.cs#declaration{cs}
+When the game loads, Gonogo scans every assembly that references `Sitrep.Contract` for a class carrying `SitrepUplinkAttribute`, and constructs it, so the class needs a public constructor with no parameters. The attribute's argument is the Uplink's id, the same id as in `uplink.json`.
 
-The attribute is how Gonogo finds you: at load it scans every assembly that references `Sitrep.Contract` for types carrying it. Its argument is your Uplink's id, unique across every Uplink installed. **Your class needs a public parameterless constructor**: Gonogo instantiates it directly.
-
-The interface is three members:
-
-```csharp
-UplinkManifest Manifest { get; }
-void Register(IUplinkHost host);
-UplinkHealth Health();
-```
+The class implements `ISitrepUplink`, which is three members: `Manifest`, `Register` and `Health`.
 
 ## The manifest
 
-`Manifest` declares everything you publish and everything you accept, before any of it runs. Gonogo validates the declarations at startup and refuses handlers for commands you did not declare.
+<<< ../../example/mod/ExampleUplink.cs#manifest{cs}
 
-<<< ../../template/mod/ExampleUplink/ExampleUplink.cs#manifest{cs}
+`UplinkManifest` declares everything the Uplink publishes and accepts before any of it runs, and Gonogo refuses a handler for a command the manifest does not declare.
 
-`Id` must match the attribute. `Channels` and `Commands` are covered on the next two pages.
+- **`Id`** must equal the attribute's id
+- **`Version`, `Name`, `Author` and `Repo`** come from `Provenance`, a class `bake` writes from `uplink.json` and `client/package.json`, so the plugin and the client always carry one version
+- **`ExpectedClientHash` and `ClientSource`** say where the client bundle is and which bundle this plugin vouches for. The app loads a client only for a plugin that vouches for its hash; [Releasing and installing](/guide/release) covers how the two meet
+- **`Channels`** lists the Topics the plugin publishes ([Publishing a Topic](/guide/topics))
+- **`Commands`** lists the commands it accepts ([Accepting a command](/guide/commands))
 
 ## Register
 
-`Register` is called once, on the main thread, at load. Wire your sources and handlers here and return.
+<<< ../../example/mod/ExampleUplink.cs#register{cs}
 
-<<< ../../template/mod/ExampleUplink/ExampleUplink.cs#register{cs}
+`Register` is called once, on the main thread, after the manifest is read. Wire up every source and handler here and return. An exception thrown out of `Register` marks this Uplink unavailable and leaves the rest of Gonogo running.
 
-If the mod you integrate is not installed, say so and return. `SetAvailability` marks the Uplink unavailable with a reason the operator can read; it does not stop the rest of Gonogo loading.
-
-An exception thrown out of `Register` takes down your Uplink and nothing else.
-
-There is no matching teardown. An Uplink lives as long as the game session, so anything you install in `Register`, a Harmony patch included, stays installed. Write it to be safe to leave in place.
+There is no matching teardown: the Uplink lives as long as the game does, so anything `Register` installs stays installed.
 
 ## Health
 
-`Health` is polled. Return one of three states, with an optional detail string.
+<<< ../../example/mod/ExampleUplink.cs#health{cs}
 
-<<< ../../template/mod/ExampleUplink/ExampleUplink.cs#health{cs}
+`Health` returns an `UplinkHealth`: `Healthy`, `Degraded` (working, with something it needs missing or wrong) or `Unavailable`, with a sentence the operator reads beside it. Gonogo calls it often and off the main thread, so it must be cheap, must not block, and must not touch the game. An Uplink wrapping another mod reports that mod's absence here.
 
-`UplinkHealth.Healthy` is the floor for an Uplink with nothing to report.
+When the mod you integrate is missing at load, also call `IUplinkHost.SetAvailability` from `Register` with `Availability.Unavailable` and a reason, and return without registering anything.
 
-## Reaching the mod you integrate
+## The sample
 
-Reflection, not a reference:
+<<< ../../example/mod/ExampleUplink.cs#sample{cs}
 
-<<< ../../template/mod/ExampleUplink/ExampleModAccess.cs#reflection{cs}
+`AddChannelSource` takes a function from the tick's `KspSnapshot` to the Topic's payload. It runs on the Courier thread, the background thread that writes the stream, so it may read the snapshot and its own fields and nothing in the game. Returning `null` publishes nothing for that tick, which a widget shows as still waiting. Never substitute a zero: downstream a made-up zero cannot be told from a real reading.
 
-Referencing the other mod's assembly is possible, and sometimes unavoidable. It costs you two things: your plugin fails to load when that mod is absent, rather than reporting itself unavailable, and its licence terms reach your combined work.
+## Calling the game
 
-### Reading a field is safe. Calling a method is safe once you have read its body
+A plugin that reads live game state, rather than the snapshot every source shares, needs two things:
 
-A parameterless getter looks harmless, and is not necessarily. Mods reach fatal-log helpers that abort the process from the default branch of an ordinary switch, and nothing in the signature says so. Before you invoke anything on another mod's object, decompile it and check what it can reach. If you cannot, derive the value from fields: a label you format yourself is safer than the mod's own formatter.
+- **A reference to KSP's assemblies**, added to `mod/GonogoExampleUplink.csproj` with `Private="false"` so they are never copied into your release:
 
-### A field you can read is not necessarily true
+  ```xml
+  <Reference Include="Assembly-CSharp" Private="false">
+    <HintPath>$(KspManaged)/Assembly-CSharp.dll</HintPath>
+  </Reference>
+  ```
 
-Ask what writes it:
+  `KspManaged` comes from where your KSP install is: set the `KSP_ROOT` environment variable to the folder holding `KSP_Data` (or `KSP.app`) and `GameData`, pass `-p:KspRoot=<that folder>`, or write it in a `ksp.local.props` beside `Directory.Build.props`, which tells you the exact form. A build that needs it and cannot find it says so
 
-| The field is | Read it |
-| --- | --- |
-| Operator state, or restored from the save | Whenever you like |
-| Recomputed by the mod's UI on each repaint | Only from a hook on that repaint, stamped with the UT you saw it at |
-| Written only while one of its windows is open | The same, and treat "never seen" as a state of its own |
+- **`IUplinkHost.AddSampledSource`** instead of `AddChannelSource`. It takes two functions: the first runs on the main thread, where reading the game is safe, and returns plain data; the second runs on the Courier thread with exactly what the first returned, and publishes it. Never pass a live game object, such as a `Vessel` or a `Part`, from the first to the second: reading one off the main thread can crash the game
 
-The last two are the trap. An unwritten field is not empty, it holds whatever its constructor set, which usually looks like a plausible value. For those, patch the render with a Harmony postfix, latch the value with `Planetarium.GetUniversalTime()` beside it, and publish it at that UT.
+## Reaching another mod
 
-Never publish absence from a source that cannot tell "none" from "not looked yet". Publish nothing, and the client shows the Topic as still waiting rather than empty.
+Reach the mod you integrate by reflection, not by referencing its assembly. A plugin that references a missing assembly fails to load at all, where one that uses reflection can report the mod missing in `Health`. A reference also brings that mod's licence terms to your combined work.
 
-## The whole file
+Two cautions about what you read:
 
-::: details ExampleUplink.cs
-<<< ../../template/mod/ExampleUplink/ExampleUplink.cs{cs}
-:::
+- **Read fields rather than call methods** unless you have read the method's body. A method that looks like a getter can do anything, including stopping the game, and nothing in its signature says so. A decompiler such as ILSpy shows you what it does
+- **A field is only as true as whatever writes it.** Some mods recompute a field only while one of their windows is open, so a field nobody has written yet still holds its starting value and looks like real data. For those, read the value at the moment the mod writes it, by patching that method with a library such as Harmony, and publish it with the game time it was true at
 
 Next: [Publishing a Topic](/guide/topics).

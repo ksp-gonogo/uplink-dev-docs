@@ -58,9 +58,9 @@ export default defineConfig({
         {
           text: "Guide",
           items: [
-            { text: "What an Uplink is", link: "/guide/" },
+            { text: "Start here", link: "/guide/" },
             { text: "Prerequisites", link: "/guide/prerequisites" },
-            { text: "Project layout", link: "/guide/project-layout" },
+            { text: "Your first Uplink", link: "/guide/first-uplink" },
           ],
         },
         {
@@ -69,23 +69,29 @@ export default defineConfig({
             { text: "The plugin class", link: "/guide/plugin" },
             { text: "Publishing a Topic", link: "/guide/topics" },
             { text: "Accepting a command", link: "/guide/commands" },
-            { text: "Build and install", link: "/guide/build" },
           ],
         },
         {
           text: "Client",
           items: [
-            { text: "Connecting", link: "/guide/client-stream" },
-            { text: "Reading a Topic", link: "/guide/client-topics" },
+            { text: "A widget", link: "/guide/client-widget" },
             { text: "Sending a command", link: "/guide/client-commands" },
-            { text: "Building the UI", link: "/guide/client-ui" },
+            { text: "Writing a reckoner", link: "/guide/reckoners" },
             { text: "Extensions", link: "/guide/extensions" },
           ],
         },
         {
           text: "Shipping",
           items: [
-            { text: "Distribution", link: "/guide/distribution" },
+            { text: "Testing", link: "/guide/testing" },
+            { text: "Documenting your Uplink", link: "/guide/documenting" },
+            { text: "Releasing and installing", link: "/guide/release" },
+          ],
+        },
+        {
+          text: "Background",
+          items: [
+            { text: "Concepts", link: "/guide/concepts" },
             { text: "Known limits", link: "/guide/limits" },
           ],
         },

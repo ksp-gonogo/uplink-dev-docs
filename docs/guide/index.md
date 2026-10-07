@@ -1,31 +1,42 @@
-# What an Uplink is
+# Start here
 
-An Uplink connects one KSP mod to Gonogo. It has two halves:
+This Guide takes you from an empty directory to an Uplink a player can install: what to type, what each file it gives you is for, and how to change it into yours. The [Reference](/reference/) documents every type and function it names.
 
-- **A plugin**, a .NET assembly that runs inside KSP next to the Gonogo mod. It reads the mod you are integrating and publishes data onto named **Topics**, and accepts **commands** sent back from the ground
-- **A client**, browser code that subscribes to those Topics and renders them
+## What an Uplink is
 
-The two halves never call each other. They meet at a WebSocket the Gonogo mod serves, carrying JSON messages whose shapes are typed in `@ksp-gonogo/sitrep-sdk`.
+An Uplink connects something in Kerbal Space Program to Gonogo, the mission control app. It has two halves, built and tested together:
 
-## What you can build today
+- **A plugin**, a .NET assembly KSP loads beside the Gonogo mod. It reads the game, or another mod, and publishes what it reads on named **Topics**. It can also accept **commands** sent from the app
+- **A client**, a JavaScript bundle the Gonogo app loads. It registers **widgets** that read those Topics and send those commands, and it can add to the app's own widgets
 
-The published packages cover both halves: the plugin, and a client that either registers widgets into the Gonogo dashboard or runs as a standalone page speaking the stream directly. [Known limits](/guide/limits) states what they do not do.
+The two halves never call each other. The plugin publishes onto the Gonogo mod's telemetry stream and the app reads it, so a widget written against a Topic works the same whether the value left the game a moment ago or several minutes ago across a signal delay.
 
-The command line is `@ksp-gonogo/uplink-tools`. `npx @ksp-gonogo/uplink-tools@rc new <id>` scaffolds an Uplink, and the same package bundles, renders and documents it. Each command answers `--help`, and [Command line](/reference/tools/command-line) prints every command's help.
+## The five commands
 
-## Vocabulary
+With Node and the .NET SDK installed ([Prerequisites](/guide/prerequisites)):
 
-| Term               | Meaning                                                                                                                             |
-| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
-| **Topic**          | A named stream of one payload shape, e.g. `vessel.orbit`. Clients subscribe by name.                                                |
-| **Command**        | A named request a client sends to the plugin, with typed arguments and a typed result.                                              |
-| **UT**             | Universal Time, the game's clock in seconds. Every published value is stamped with the UT it was true at.                           |
-| **Courier thread** | The background thread that packs and sends frames. It must never touch the game.                                                    |
-| **Command centre** | A control position an operator works from. A mission can have several, at different distances from the vessel.                      |
-| **Vantage**        | Which command centre a message entered from, and whose delay it is subject to. Relevant only if you care where a command came from. |
+```bash
+mkdir myuplink && cd myuplink
+npx @ksp-gonogo/uplink-tools@rc new myuplink --author "Your Name" --repo you/myuplink
+cd client
+npm test                     # the client's tests, including the page check
+dotnet test ../mod-tests     # the plugin's tests
+npm run release              # bundle, bake, compile, verify and zip
+```
 
-## The example in this guide
+That is a working Uplink: a plugin that publishes a heartbeat and a widget that shows it. Every later page changes something in it and says which command to run after.
 
-Every page builds one Uplink, `example`, integrating a fictional Example Mod. It publishes an `example.status` Topic and accepts an `example.setMode` command. Every snippet is compiled from the [template](/guide/project-layout) in this documentation's repository.
+## How the Guide goes
+
+1. [Prerequisites](/guide/prerequisites) and [Your first Uplink](/guide/first-uplink): install, scaffold, and what each file is
+2. The plugin: [the plugin class](/guide/plugin), [publishing a Topic](/guide/topics), [accepting a command](/guide/commands)
+3. The client: [a widget](/guide/client-widget), [sending a command](/guide/client-commands), [writing a reckoner](/guide/reckoners), [extending a built-in widget](/guide/extensions)
+4. Shipping: [testing](/guide/testing), [documenting your Uplink](/guide/documenting), [releasing and installing](/guide/release)
+
+[Concepts](/guide/concepts) explains the ideas the API is built on, such as what a reading's state means and why a command can arrive late. [Known limits](/guide/limits) lists what the published packages do not do yet.
+
+## The example in this Guide
+
+Every snippet comes from one Uplink, `example`, made with `uplink-tools new example` and then extended page by page: a reset command, a button that sends it, and a forward model that carries the count between samples. Its files are compiled and tested on every build of this site against the <Published field="name" /> the install lines name, and the build fails if a file `new` writes has drifted from what `new` writes today. Read it whole in the [documentation's repository](https://github.com/ksp-gonogo/uplink-dev-docs/tree/main/example).
 
 Next: [Prerequisites](/guide/prerequisites).

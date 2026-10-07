@@ -5,6 +5,11 @@ places an Uplink may add to, called slots, and each slot takes one of two
 kinds of extension: an augment or a contribution. Every widget's reference
 page lists its slots, for example [Crew Status](/reference/widgets/crew-status).
 
+An Uplink needs none of this to show its own widgets. Use it to put your
+mod's information inside one of the app's widgets, such as a badge on a crew
+row or a section in the Map View. The second half of the page is the
+reference for every type it names.
+
 ## Augments
 
 An augment is a React component. You register it against a slot id with
@@ -64,3 +69,5 @@ such as a meter list or a filter bar. Those appear on a widget's page only
 when that widget has them.
 
 <!-- rest -->
+
+Next: [Testing](/guide/testing).

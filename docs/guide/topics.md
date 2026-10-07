@@ -1,55 +1,61 @@
 # Publishing a Topic
 
-A Topic is a named stream carrying one payload shape. You declare it in the manifest and publish onto it.
+A Topic is a named stream of one payload shape, such as `example.heartbeat`. This page covers its three parts: the type that describes the payload, the declaration in the manifest, and the source that publishes it.
 
-## Declaring
+## The payload type
 
-<<< ../../template/mod/ExampleUplink/ExampleUplink.cs#manifest{cs}
+<<< ../../example/mod-contract/ExamplePayloads.cs#heartbeat{cs}
 
-Name Topics `<uplinkId>.<thing>`. The prefix is what keeps you clear of every other Uplink.
+Every Topic's payload is a class in the contract slice, `mod-contract/`, carrying three attributes:
 
-Four of the seven members matter for a first Topic:
+- **`SitrepContractAttribute`** marks it as a wire type
+- **`SitrepTopicAttribute`** names the Topic it is the payload of
+- **`TsInterface`**, inside `#if SITREP_CODEGEN`, tells codegen to write a TypeScript interface for it. The attribute exists only in the build `codegen` runs, never in the assembly you ship
 
-- **`Topic`**: the wire name
-- **`Delivery`**: `LossyLatest` drops superseded frames under load and is right for anything a later value replaces. `ReliableOrdered` keeps every frame in order, for events you cannot drop
-- **`Delay`**: `Delayed` rides the light-time delay, so the operator sees the value at the same time the signal would arrive. `TrueNow` bypasses it. Vessel state is `Delayed`. Ground facts, and bare "is this mod present" flags, are `TrueNow`
-- **`Emission`**: how often a frame goes out. `keyframeIntervalUt` is the maximum silence in game seconds; `quantum` is how much the value must move to emit early. `EmissionQuantum.Absolute(0)` emits on any change
+A property carrying `SitrepUnitAttribute` reaches the client as a quantity in that unit, such as `Value<"ut">` for `Units.UniversalTime`, so the client draws and converts it without knowing the number's unit. A nullable property reaches the client as a field that can be `null`.
 
-The other three change less common behaviour, and one of them decides whether "nothing to report" reaches the client at all. [Channels and emission](/reference/mod/channels-and-emission) covers all of them.
+Name Topics `<uplinkId>.<thing>`. The prefix keeps them clear of every other Uplink's.
 
-Emission cadence is denominated in UT, and time warp compresses UT into wall-clock time. A Topic emitting on any change at 100,000x is emitting a hundred thousand times faster than it looks on the page, so give anything that changes continuously a real `quantum`.
+## The client's types
 
-## The payload
+After changing a payload type, regenerate the client's types and commit what changes:
 
-**A dictionary, not a class of your own.** The mod's serialiser writes dictionaries, arrays, strings, numbers and booleans, plus the payload types the mod itself declares. It has no reflection over your properties. The first frame carrying a shape it cannot write marks your Uplink unavailable, and the subscriber gets a `payload-serialization-error` naming the type.
+```bash
+cd client
+npm run codegen
+```
 
-<<< ../../template/mod/ExampleUplink/Payloads.cs#payload{cs}
+It writes `client/src/__generated__/`: `contract.ts` with an interface per wire type, `topic-map.ts` mapping each Topic to its payload, and the unit maps. `npm run codegen:check` fails when the committed files no longer match the slice, which is the command to run in CI. [A widget](/guide/client-widget) shows how the client uses them.
 
-Three rules follow:
+## Declaring the Topic
 
-- **Keys are written exactly as you supply them**, so use camelCase and match your client
-- **An enum goes out as its integer value**, not its name, so declare the client side as a number
-- **Nest with more dictionaries and lists**, not with objects
+The manifest's `Channels` list declares each Topic, with a `ChannelDeclaration`:
 
-Nothing generates a TypeScript type from this. You declare the matching interface in your client by hand, and keeping them in step is your job.
+<<< ../../example/mod/ExampleUplink.cs#manifest{cs}
+
+- **`Topic`** is the name, exactly as the payload type's `SitrepTopicAttribute` gives it
+- **`Delivery`**: `Delivery.LossyLatest` drops a superseded sample under load, which is right for anything a later value replaces. `ReliableOrdered` keeps every sample in order, for events that cannot be dropped
+- **`Delay`**: `DelayRole.Delayed` holds each sample for the signal delay between the craft and the operator's command centre, so the operator sees it when a real signal would arrive. `TrueNow` skips the delay, for facts about the ground or about the connection itself, like this heartbeat. A fact about a craft is `Delayed`
+- **`Emission`**: an `EmissionPolicy`. `keyframeIntervalUt` is the longest a Topic goes without a sample, in game seconds; `quantum`, an `EmissionQuantum`, is how much a number must change before a new sample goes out early. `EmissionQuantum.Absolute(0)` sends one on any change
+
+Emission is measured in game time, and time warp compresses game time. A value that changes continuously, with a quantum of zero, is published on every tick at any warp, so give such a value a real quantum.
+
+The other members of `ChannelDeclaration` cover less common cases, such as [`AbsenceIsData`](/reference/mod/channels-and-emission#ChannelDeclaration.AbsenceIsData) for a Topic whose empty value is itself information. [Channels and emission](/reference/mod/channels-and-emission) documents them all.
 
 ## Publishing
 
-Reading the game must happen on the Unity main thread; packing and sending must not. `AddSampledSource` gives you both, as a pair.
+The heartbeat's source returns a dictionary, not an instance of `ExampleHeartbeat`:
 
-<<< ../../template/mod/ExampleUplink/ExampleUplink.cs#sampling{cs}
+<<< ../../example/mod/ExampleUplink.cs#sample{cs}
 
-The first function runs on the main thread at snapshot cadence, and is handed the tick's [`KspSnapshot`](/reference/mod/channels-and-emission#KspSnapshot) for its UT. Read the game there and return **plain data**. Never return a `Vessel`, a `Part`, or anything else live: the second function receives exactly that object, off the main thread, and touching a live game object from there will crash KSP.
+The Gonogo mod writes dictionaries, lists, strings, numbers and booleans, and its own contract's types, but not a class of yours. So build the payload as a `Dictionary<string, object?>` whose keys are the payload type's property names in camelCase (`ut`, `ticks`), with an enum as its number and a nested object as another dictionary. The payload type describes that dictionary to the client; nothing compares the two, so a key spelled differently arrives as a field the client never reads. The plugin's tests are where to hold them together, as the scaffold's `CarriesTheSnapshotUtAndACountThatAdvances` does.
 
-`AddSampledSource` has a second overload taking trailing Topic prefixes, which gates the capture on subscription: with nobody watching, neither function runs. A full Topic name is a prefix of itself, so `"example.status"` and `"example."` are both valid.
+A sample the mod cannot write marks the Uplink unavailable, and every subscriber receives an error naming the type it could not write.
 
-**Only gate a capture that does nothing but read.** The skip is total and silent, so a capture that also updates state something else depends on will stop doing it the moment the last subscriber goes. Where a capture writes, leave it ungated and check `host.IsAnyTopicSubscribed` at the publish instead.
+## The three ways to publish
 
-## The other two shapes
-
-`AddSampledSource` is the general case. Two narrower ones exist:
-
-- **`host.AddChannelSource(topic, map)`**: `map` runs on the courier thread with that tick's snapshot and returns the payload. Use it only for values that need no game access, such as a constant availability flag
-- **`host.Publisher(topic).Publish(payload, ut)`**: publish directly, from the main thread, when you have your own event to publish from rather than a cadence to sample on. `ut` is the time the value was true at, not the time you are sending it. Full signatures in [IUplinkHost](/reference/mod/host-and-kernel)
+- **`IUplinkHost.AddChannelSource`**, as here: a function from the tick's snapshot to the payload, run on the Courier thread. For values that need nothing from the game but the snapshot
+- **`IUplinkHost.AddSampledSource`**: a function on the main thread that reads the game, and one on the Courier thread that publishes ([The plugin class](/guide/plugin#calling-the-game))
+- **`IUplinkHost.Publisher`**: an `IChannelPublisher` you publish to yourself, from the main thread, when the value comes from an event of your own rather than a cadence. Pass the game time the value was true at, not the time you send it
 
 Next: [Accepting a command](/guide/commands).

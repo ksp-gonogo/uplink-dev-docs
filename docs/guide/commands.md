@@ -1,45 +1,45 @@
 # Accepting a command
 
-A command is a named request from a client, with typed arguments and a typed result.
+A command is a named request from the app to the plugin, with typed arguments and a typed reply. This page adds one to the example: `example.reset`, which starts the heartbeat's count again.
 
-## Declaring
+## The arguments type
 
-<<< ../../template/mod/ExampleUplink/ExampleUplink.cs#manifest{cs}
+<<< ../../example/mod-contract/ExamplePayloads.cs#reset{cs}
 
-`Subject` names the Topic whose vessel the command is addressed to, so the command waits for that vessel's light-time. A delayed command without one marks your Uplink unavailable.
+A command's arguments are a class in the contract slice, carrying `SitrepCommandAttribute` with the command's name. A command with no arguments still needs the class, empty, to carry the attribute. Add it to the configuration's wire types in `mod-contract/ExampleRtConfig.cs`, beside the payload types, and run `npm run codegen` so the client gets its TypeScript interface.
 
-Registering a handler for a command you did not declare throws at startup.
+`Delay` on the attribute says whether the command travels with the signal delay. It defaults to `DelayRole.Delayed`: an order to a craft takes as long to arrive as the craft's telemetry does, and runs when it gets there. `TrueNow` runs it on arrival, for a command about the ground or about the plugin itself, like this reset.
 
-## The arguments class
+Arguments arrive as JSON and are matched to the class's properties by name, ignoring case. A property the app did not send keeps its default, so an absent nullable stays `null`. An enum accepts its number or its member's name. A `string` accepts only a string and a `bool` only a boolean.
 
-<<< ../../template/mod/ExampleUplink/Payloads.cs#args{cs}
+## Declaring it
 
-The `[SitrepCommand]` tag names the command this class carries arguments for, and is where its delay is declared. It defaults to `Delayed`: the command rides the light-time delay and takes effect when the signal would have arrived. Write `[SitrepCommand("example.setMode", Delay = DelayRole.TrueNow)]` only for things that do not travel, such as ground-facility actions.
+The manifest's `Commands` list declares each command with a `CommandDeclaration`, as in the manifest on [the plugin class](/guide/plugin#the-manifest):
 
-Arguments arrive as generic JSON and are bound onto this class by property name, case-insensitively:
+<<< ../../example/mod/ExampleUplink.cs#commands{cs}
 
-- A key you did not send leaves that property at its default, so an absent nullable stays null rather than becoming zero
-- Enums bind from their numeric value, or from the member name
-- `string` accepts only a string and `bool` only a bool. Numbers are not coerced into either
+A delayed command about a craft also names a `Subject`: the Topic whose craft it is addressed to, so it travels with that Topic's delay and is held while that craft is out of contact. The reset is `TrueNow` and addressed to nothing, so it has none.
 
 ## The handler
 
-<<< ../../template/mod/ExampleUplink/ExampleUplink.cs#command{cs}
+<<< ../../example/mod/ExampleUplink.cs#register{cs}
 
-Return `CommandResult.Ok()`, or `CommandResult.Fail(code, detail)` with a code from `CommandErrorCode`.
+<<< ../../example/mod/ExampleUplink.cs#command{cs}
 
-**The shipped mod marshals a handler onto the Unity main thread before running it**, so a handler may call the game directly. The calling thread blocks until it does, which is why a handler must return promptly rather than waiting on anything itself.
+`IUplinkHost.AddCommandHandler` registers the handler for a declared command. It returns `CommandResult.Ok()`, or `CommandResult.Fail` with a `CommandErrorCode` and a sentence the operator reads, such as `CommandErrorCode.Range` for an argument out of bounds. Check arguments and state here and refuse with the code that fits: the app shows it.
 
-`Sitrep.Contract` does not promise that marshalling; it is how the shipped host is built. If you want to be safe against a host that does not, record the request in a field and apply it from your main-thread capture, reading and writing that field with `Interlocked`.
+The Gonogo mod runs a handler on the game's main thread, so a handler may call the game. The thread blocks until the handler returns, so return promptly and never wait on anything inside one.
 
-## Returning data
+The count is shared between the handler, on the main thread, and the sample, on the Courier thread, so both change it through `Interlocked`, never with a plain `+=`.
 
-`CommandResult<T>.Ok(payload)` puts `T` under a `payload` key beside `success` and `errorCode`, so the client reads `result.payload`. A non-generic `CommandResult` sends no `payload` key at all.
+## Replying with data
 
-`T` goes through the same serialiser as a Topic payload, so it is a dictionary, a list, or a primitive. Not a class of your own.
+A handler that returns data returns `CommandResult<T>` with `CommandResult<T>.Ok(payload)`, and names `T` in the attribute's `Payload`. The client reads it from the reply's `payload`. `T` is written like a Topic's payload: a dictionary, a list or a plain value.
 
-## Validate in the handler
+## Testing it
 
-Check ranges and state before you accept, and return a specific code. `CommandErrorCode` has values for the common refusals: `Range`, `NotFound`, `NoVessel`, `WrongScene`, `WrongState`, `InsufficientFunds`, `NotUnlocked`, `NoConnection`. The client shows the code.
+<<< ../../example/mod-tests/ExampleUplinkTests.cs#reset{cs}
 
-Next: [Build and install](/guide/build).
+The handler is `internal` and the test project compiles the plugin's sources, so a test calls it directly with no game running. Run them with `dotnet test ../mod-tests` from `client/`.
+
+Next: [A widget](/guide/client-widget).
