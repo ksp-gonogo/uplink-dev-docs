@@ -138,8 +138,6 @@ export default defineConfig({
         {
           text: "Mod API",
           items: section("reference/mod", [
-            { text: "Channels", link: "/reference/mod/channels" },
-            { text: "Commands", link: "/reference/mod/commands" },
           ]),
         },
         {

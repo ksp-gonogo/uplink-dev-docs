@@ -1,6 +1,6 @@
 # Binary frames
 
-Most of the stream is JSON. A channel declared with [`OpaquePayload`](/reference/mod/channels#opaquepayload) goes out on the binary lane instead: its payload is raw byte segments, because a JSON number array costs about seven times what the bytes do. Audio is the obvious use. The mod never looks inside the segments.
+Most of the stream is JSON. A channel declared with [`OpaquePayload`](/reference/mod/channels-and-emission#ChannelDeclaration.OpaquePayload) goes out on the binary lane instead: its payload is raw byte segments, because a JSON number array costs about seven times what the bytes do. Audio is the obvious use. The mod never looks inside the segments.
 
 The format is small enough to decode with anything that opens a WebSocket, in any language.
 

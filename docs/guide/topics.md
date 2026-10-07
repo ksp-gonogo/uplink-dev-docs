@@ -15,7 +15,7 @@ Four of the seven members matter for a first Topic:
 - **`Delay`**: `Delayed` rides the light-time delay, so the operator sees the value at the same time the signal would arrive. `TrueNow` bypasses it. Vessel state is `Delayed`. Ground facts, and bare "is this mod present" flags, are `TrueNow`
 - **`Emission`**: how often a frame goes out. `keyframeIntervalUt` is the maximum silence in game seconds; `quantum` is how much the value must move to emit early. `EmissionQuantum.Absolute(0)` emits on any change
 
-The other three change less common behaviour, and one of them decides whether "nothing to report" reaches the client at all. [Channels](/reference/mod/channels) covers all seven.
+The other three change less common behaviour, and one of them decides whether "nothing to report" reaches the client at all. [Channels and emission](/reference/mod/channels-and-emission) covers all of them.
 
 Emission cadence is denominated in UT, and time warp compresses UT into wall-clock time. A Topic emitting on any change at 100,000x is emitting a hundred thousand times faster than it looks on the page, so give anything that changes continuously a real `quantum`.
 

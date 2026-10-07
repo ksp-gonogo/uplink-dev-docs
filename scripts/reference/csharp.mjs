@@ -48,7 +48,8 @@ export function contractCategory(name) {
   const types = [];
   for (const [, id, doc] of xml.matchAll(/<member name="T:([^"]+)">([\s\S]*?)<\/member>/g)) {
     if (/<category>([^<]+)<\/category>/.exec(doc)?.[1].trim() !== name) continue;
-    const simple = id.split(".").pop().replace(/`\d+$/, "");
+    // xmldocmd writes a generic type to a file named by its arity, `StreamData-1.md`.
+    const simple = id.split(".").pop().replace(/`(\d+)$/, "-$1");
     if (isContractType(simple)) types.push(simple);
   }
   if (types.length === 0) throw new Error(`no public type in ${NAMESPACE} carries <category>${name}</category>`);
@@ -141,7 +142,9 @@ function typeMd(type, onPage, lead, example, index) {
       : `\`\`\`csharp\n${declaration}\n{\n${declarations.join("\n")}\n}\n\`\`\``,
   );
   const out = [];
-  if (!lead) out.push(`### ${type} {#${type}}`);
+  // A generic type's file is named by its arity; the page shows it as the author writes it.
+  const shown = type.replace(/-1$/, "&lt;T&gt;");
+  if (!lead) out.push(`### ${shown} {#${type}}`);
   const own = relink(tidyTables(whole.replace(/\n## Values\n/, "\n")), onPage, index);
   out.push(lead ? own : own.replace(/^## /gm, "#### "));
   if (lead && members.length > 0) out.push("## Members {#members}");
