@@ -38,7 +38,11 @@ There is no matching teardown: the Uplink lives as long as the game does, so any
 
 <<< ../../example/mod/ExampleUplink.cs#health{cs}
 
-`Health` returns an `UplinkHealth`, whose `UplinkHealthState` is `Healthy`, `Degraded` (working, with something it needs missing or wrong) or `Unavailable`, with a sentence the operator reads beside it. Gonogo polls it on every sample, up to ten times a second, and off the main thread, so it must be cheap, must not block, and must not touch the game. The heartbeat has nothing to report; an Uplink wrapping another mod reports that mod's state:
+`Health` returns an `UplinkHealth`: an `UplinkHealthState`, with a sentence the operator reads beside it.
+
+<!--@include: @/.vitepress/includes/uplink-health-states.md-->
+
+Gonogo polls it on every sample, up to ten times a second, and off the main thread, so it must be cheap, must not block, and must not touch the game. The heartbeat has nothing to report; an Uplink wrapping another mod reports that mod's state:
 
 <<< ../../reference/examples/mod/GuideExamples.cs#health{cs}
 

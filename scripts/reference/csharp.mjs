@@ -212,3 +212,29 @@ export function contractCategoryDescription(name, index) {
   }
   return found.length === 1 ? xmlDocMd(found[0].description, index) : "";
 }
+
+/** The `| a | b |` cells of a table row, unescaped pipes only. */
+const cells = (row) => row.replace(/^\||\|\s*$/g, "").split(/(?<!\\)\|/).map((c) => c.trim());
+
+/** An enumeration's values as a table of each name and what it means, linked through `index`. */
+export function contractEnumValuesMd(type, index) {
+  const table = /\n## Values\n+([\s\S]*?)(?=\n## |\n*$)/.exec(read(`${type}.md`))?.[1];
+  if (!table) throw new Error(`${type} is not an enumeration with a Values table`);
+  const rows = table.trim().split("\n").slice(2).map(cells);
+  if (rows.length === 0) throw new Error(`${type} lists no values`);
+  const lines = rows.map(([name, , description]) => `| \`${name}\` | ${relink(description, new Set(), index)} |`);
+  return `| Value | Meaning |\n| --- | --- |\n${lines.join("\n")}`;
+}
+
+/** Each `static readonly` member of a class of constants as a table of its name and what it means, each name linked to its entry. */
+export function contractConstantsMd(type, index) {
+  const members = /\n## Public Members\n+([\s\S]*?)(?=\n## |\n*$)/.exec(read(`${type}.md`))?.[1];
+  if (!members) throw new Error(`${type} has no Public Members table`);
+  const url = index?.url(type);
+  const rows = members.trim().split("\n").slice(2).map(cells).flatMap(([signature, description]) => {
+    const name = /^static\s+readonly\s+\[(\w+)\]/.exec(signature)?.[1];
+    return name ? [`| ${url ? `[\`${name}\`](${url}.${name})` : `\`${name}\``} | ${relink(description, new Set(), index)} |`] : [];
+  });
+  if (rows.length === 0) throw new Error(`${type} lists no constants`);
+  return `| Code | Meaning |\n| --- | --- |\n${rows.join("\n")}`;
+}

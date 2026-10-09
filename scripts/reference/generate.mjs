@@ -14,7 +14,7 @@ import { dirname, relative, resolve } from "node:path";
 import { ReflectionKind } from "typedoc";
 import { PAGES } from "../../reference/pages.mjs";
 import { cliPageMd } from "./cli.mjs";
-import { contractCategory, contractCategoryDescription, contractMd, contractSummary, isContractType, runXmldocmd } from "./csharp.mjs";
+import { contractCategory, contractCategoryDescription, contractConstantsMd, contractEnumValuesMd, contractMd, contractSummary, isContractType, runXmldocmd } from "./csharp.mjs";
 import { commandListMd, packageIndexMd, referenceIndexMd, SECTIONS, sectionOf, topicListMd, topicsPageMd } from "./indexes.mjs";
 import { installArtifacts } from "./install.mjs";
 import { DOCS, GENERATED_HASHES, hashOf, PLANTED_DEMO_FILE, PLANTED_DEMOS, PUBLISHED, ROOT, storybookRoot } from "./paths.mjs";
@@ -634,6 +634,8 @@ const SIDEBAR = resolve(DOCS, ".vitepress/sidebar.generated.json");
 const INCLUDES = {
   topics: resolve(DOCS, ".vitepress/includes/topics.md"),
   commands: resolve(DOCS, ".vitepress/includes/commands.md"),
+  healthStates: resolve(DOCS, ".vitepress/includes/uplink-health-states.md"),
+  commandErrorCodes: resolve(DOCS, ".vitepress/includes/command-error-codes.md"),
 };
 
 /**
@@ -818,6 +820,8 @@ export async function generate({ install = true } = {}) {
   mkdirSync(dirname(INCLUDES.topics), { recursive: true });
   writeFileSync(INCLUDES.topics, `${topicListMd(projects[SDK], index, 3)}\n`);
   writeFileSync(INCLUDES.commands, `${commandListMd(projects[SDK], index, 3)}\n`);
+  writeFileSync(INCLUDES.healthStates, `${contractEnumValuesMd("UplinkHealthState", index)}\n`);
+  writeFileSync(INCLUDES.commandErrorCodes, `${contractConstantsMd("CommandErrorCode", index)}\n`);
   writeSidebar(PAGES, records);
   writeFileSync(GUIDE_LINK_LIST, `${JSON.stringify([...GUIDE_LINKS].sort(), null, 2)}\n`);
   recordWritten(written);
