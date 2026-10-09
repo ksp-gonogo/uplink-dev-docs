@@ -1,5 +1,6 @@
 import {
   defineUplinkClient,
+  stillTrue,
   type SystemViewVesselStatusEntry,
 } from "@ksp-gonogo/sitrep-sdk";
 
@@ -15,7 +16,7 @@ uplink.registerContribution({
   contributes: "system-view.vessel-status",
   deps: ["vessel.identity"],
   compute: (topics): SystemViewVesselStatusEntry[] => {
-    const vessel = topics["vessel.identity"];
+    const vessel = stillTrue(topics["vessel.identity"], undefined);
     if (!vessel) return [];
     return [
       {

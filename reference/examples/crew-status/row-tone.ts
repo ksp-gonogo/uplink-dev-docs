@@ -1,6 +1,7 @@
 import {
   type CrewRowToneEntry,
   defineUplinkClient,
+  stillTrue,
 } from "@ksp-gonogo/sitrep-sdk";
 
 const uplink = defineUplinkClient({
@@ -15,7 +16,7 @@ uplink.registerContribution({
   contributes: "crew-status.row-tone",
   deps: ["vessel.crew"],
   compute: (topics): CrewRowToneEntry[] => {
-    const crew = topics["vessel.crew"]?.crew ?? [];
+    const crew = stillTrue(topics["vessel.crew"], undefined)?.crew ?? [];
     return crew.flatMap((kerbal) => {
       const rookie = kerbal.experienceLevel?.isZero() === true;
       if (!kerbal.name || !rookie) return [];

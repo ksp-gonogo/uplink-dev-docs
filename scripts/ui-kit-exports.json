@@ -1,7 +1,7 @@
 {
   "_": "Generated. Do not edit: node scripts/check-doc-symbols.mjs --sync",
   "source": "@ksp-gonogo/ui-kit packages/ui-kit/src/index.ts",
-  "count": 601,
+  "count": 604,
   "exports": [
     "ARM_TIMEOUT_MS",
     "ActionMenu",
@@ -531,6 +531,9 @@
     "gridFloor",
     "gridToPixels",
     "groupComboboxOptions",
+    "heldFigureOf",
+    "heldGradeOf",
+    "heldMarking",
     "heldWord",
     "kspCalendar",
     "kspYearDays",

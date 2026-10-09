@@ -1,5 +1,6 @@
 import {
   defineUplinkClient,
+  observedValue,
   type ShipMapPartMeterEntry,
 } from "@ksp-gonogo/sitrep-sdk";
 
@@ -17,7 +18,7 @@ uplink.registerContribution({
   contributes: "ship-map.part-meters",
   deps: ["vessel.parts"],
   compute: (topics): ShipMapPartMeterEntry[] => {
-    const parts = topics["vessel.parts"]?.parts ?? [];
+    const parts = observedValue(topics["vessel.parts"])?.parts ?? [];
     return parts.flatMap((part) => {
       const ore = part.resources.Ore;
       if (!ore) return [];

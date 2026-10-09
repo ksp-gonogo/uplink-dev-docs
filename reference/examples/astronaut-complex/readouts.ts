@@ -1,4 +1,8 @@
-import { defineUplinkClient, type StatEntry } from "@ksp-gonogo/sitrep-sdk";
+import {
+  defineUplinkClient,
+  observedValue,
+  type StatEntry,
+} from "@ksp-gonogo/sitrep-sdk";
 
 const uplink = defineUplinkClient({
   id: "crew-seats",
@@ -12,7 +16,7 @@ uplink.registerContribution({
   contributes: "astronaut-complex.readouts",
   deps: ["spaceCenter.astronautComplex"],
   compute: (topics): StatEntry[] => {
-    const complex = topics["spaceCenter.astronautComplex"];
+    const complex = observedValue(topics["spaceCenter.astronautComplex"]);
     if (!complex?.activeCrew || !complex.crewCapacity) return [];
     const free = complex.crewCapacity.magnitude - complex.activeCrew.magnitude;
     return [

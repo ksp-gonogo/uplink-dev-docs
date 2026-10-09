@@ -1,5 +1,6 @@
 import {
   defineUplinkClient,
+  observedValue,
   type ShipMapPartMetaEntry,
 } from "@ksp-gonogo/sitrep-sdk";
 
@@ -15,7 +16,7 @@ uplink.registerContribution({
   contributes: "ship-map.part-meta",
   deps: ["vessel.parts"],
   compute: (topics): ShipMapPartMetaEntry[] => {
-    const parts = topics["vessel.parts"]?.parts ?? [];
+    const parts = observedValue(topics["vessel.parts"])?.parts ?? [];
     return parts.flatMap((part) => {
       const engine = part.moduleStates.find((module) => module.type === "engine");
       if (!engine) return [];

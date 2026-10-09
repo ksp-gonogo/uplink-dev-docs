@@ -1,5 +1,6 @@
 import {
   defineUplinkClient,
+  stillTrue,
   type SystemViewProjection,
 } from "@ksp-gonogo/sitrep-sdk";
 
@@ -15,7 +16,7 @@ uplink.registerContribution({
   contributes: "system-view.projection",
   deps: ["system.bodies"],
   compute: (topics): SystemViewProjection[] => {
-    const bodies = topics["system.bodies"]?.bodies ?? [];
+    const bodies = stillTrue(topics["system.bodies"], undefined)?.bodies ?? [];
     return bodies.flatMap((body) => {
       if (body.parentIndex == null || body.parentIndex === body.index) return [];
       return [

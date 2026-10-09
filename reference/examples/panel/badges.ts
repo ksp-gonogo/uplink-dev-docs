@@ -1,4 +1,8 @@
-import { type BadgeEntry, defineUplinkClient } from "@ksp-gonogo/sitrep-sdk";
+import {
+  type BadgeEntry,
+  defineUplinkClient,
+  stillTrue,
+} from "@ksp-gonogo/sitrep-sdk";
 
 const uplink = defineUplinkClient({
   id: "crew-capacity",
@@ -12,7 +16,7 @@ uplink.registerContribution({
   contributes: "crew-status.badges",
   deps: ["vessel.crew"],
   compute: (topics): BadgeEntry[] | null => {
-    const crew = topics["vessel.crew"];
+    const crew = stillTrue(topics["vessel.crew"], undefined);
     if (!crew || crew.count.lessThan(crew.capacity)) return null;
     return [{ id: "full-cabin", label: "Cabin full", tone: "warn" }];
   },

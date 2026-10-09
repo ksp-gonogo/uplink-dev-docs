@@ -1,4 +1,8 @@
-import { defineUplinkClient, type PlotEntry } from "@ksp-gonogo/sitrep-sdk";
+import {
+  defineUplinkClient,
+  observedValue,
+  type PlotEntry,
+} from "@ksp-gonogo/sitrep-sdk";
 
 const uplink = defineUplinkClient({
   id: "descent-corridor",
@@ -15,7 +19,7 @@ uplink.registerContribution({
   contributes: "plots",
   deps: ["vessel.flight"],
   compute: (topics): PlotEntry[] => {
-    const flight = topics["vessel.flight"];
+    const flight = observedValue(topics["vessel.flight"]);
     const height = flight?.altitudeTerrain?.magnitude;
     const climb = flight?.verticalSpeed?.magnitude;
     if (height === undefined || climb === undefined || height > CEILING) return [];

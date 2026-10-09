@@ -1,5 +1,6 @@
 import {
   defineUplinkClient,
+  stillTrue,
   type SystemEntity,
 } from "@ksp-gonogo/sitrep-sdk";
 
@@ -18,7 +19,7 @@ uplink.registerContribution({
   contributes: "system-view.entities",
   deps: ["system.bodies"],
   compute: (topics): SystemEntity[] => {
-    const hasKerbin = topics["system.bodies"]?.bodies.some(
+    const hasKerbin = stillTrue(topics["system.bodies"], undefined)?.bodies.some(
       (body) => body.name === "Kerbin",
     );
     if (!hasKerbin) return [];
