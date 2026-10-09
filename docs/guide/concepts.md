@@ -8,7 +8,7 @@ A **Topic** is a named stream of one payload shape. The plugin publishes **sampl
 
 ## Readings
 
-A widget never reads a bare value. It reads a **reading**: the latest value together with how current it is, as one of five states (observed, held, pending, absent, unowned). The state is what lets a widget tell "nothing has arrived yet" from "the game says there is none" from "this stopped updating", three things a bare `null` or zero would make look the same. [A widget](/guide/client-widget#reading-a-topic) lists the states, and `TopicReading` defines them.
+A widget never reads a bare value. It reads a **reading**: the latest value together with how current it is, as one of a fixed set of states. The state is what lets a widget tell "nothing has arrived yet" from "the game says there is none" from "this stopped updating", three things a bare `null` or zero would make look the same. [A widget](/guide/client-widget#reading-a-topic) lists each state and what it means, and `TopicReading` defines them.
 
 **Held** is the state of a value that stopped arriving on schedule: the link dropped, or the craft is out of contact. The last value is still shown, marked as held, because an operator needs it, and needs to know it is old. See [Held](/reference/concepts/held).
 
@@ -26,7 +26,7 @@ Between samples, and across a signal delay, the last value received is older tha
 
 A quantity in a payload is a `Value`: a number with its unit, such as `Value<"m/s">`. Values convert between units and compare with each other, so a widget compares a speed with `lessThan` rather than with a bare number, and `Unit` draws a value in the unit its size suits, such as kilometres for a long distance, unless you pin one with its `format` or `as` prop. [Units and values](/reference/client/units-and-values) defines them.
 
-## Slots, augments and contributions
+## Extending the app's widgets
 
 The app's own widgets name **slots**, places an Uplink may add to. An **augment** is a component drawn in a slot; a **contribution** is data a widget draws for you, such as a badge. See [Augment, contribution and slot](/reference/concepts/augment-contribution-and-slot), and [Extensions](/guide/extensions) for both in use.
 

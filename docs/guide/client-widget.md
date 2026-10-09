@@ -18,7 +18,7 @@ The client is a package the Gonogo app loads into its own page, so a widget is a
 
 `src/index.ts` is what the bundle starts from, and the app runs it once when it loads the client. Registering happens as a module loads, so the entry imports every file that registers something; a file nothing imports never registers. The scaffold's entry imports `topics.js` and `Heartbeat/index.js`; the line importing `reckoner.js` is added on [Writing a reckoner](/guide/reckoners).
 
-## The Topics, typed
+## Typing the Topics {#the-topics-typed}
 
 `client/src/topics.ts`:
 

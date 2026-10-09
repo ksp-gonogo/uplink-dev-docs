@@ -2,7 +2,7 @@
 layout: home
 hero:
   name: Gonogo Uplink Docs
-  text: Documentation for creating your own Uplink
+  text: Build an Uplink that connects part of KSP to Gonogo
   actions:
     - theme: brand
       text: Start the guide
@@ -11,10 +11,13 @@ hero:
       text: Reference
       link: /reference/
 features:
-  - title: Mod side
-    details: Create an Uplink that interfaces with KSP, declares values for widgets, and claims capabilities.
-  - title: Client side
-    details: A React bundle that declares widgets, contributions, and augments that use any API value and render in the Gonogo app.
-  - title: Tooling
-    details: "@ksp-gonogo/sitrep-sdk for the API surface, with an extensive component library in @ksp-gonogo/ui-kit. Uplink structure enforced via Sitrep.Contract.dll."
+  - title: The plugin
+    details: A .NET assembly KSP loads beside the Gonogo mod. It reads the game or another mod, publishes Topics and accepts commands.
+    link: /guide/plugin
+  - title: The client
+    details: A React bundle the Gonogo app loads. It registers widgets that read those Topics and send those commands, and adds to the app's own widgets.
+    link: /guide/client-widget
+  - title: The tools
+    details: "@ksp-gonogo/uplink-tools scaffolds, generates, builds and releases an Uplink. @ksp-gonogo/sitrep-sdk and @ksp-gonogo/ui-kit are what the client imports."
+    link: /guide/first-uplink
 ---

@@ -24,7 +24,7 @@ dotnet test ../mod-tests     # the plugin's tests
 npm run release              # build both halves and zip the plugin
 ```
 
-On a terminal, `new` asks seven questions, such as the Uplink's id and your name ([Your first Uplink](/guide/first-uplink#scaffold) lists them). Every answer is also a flag, so a script or an agent with no terminal passes them instead: `--yes` takes the default for any question not answered by a flag, and `--no-repo` and `--no-ksp` decline the two that depend on your machine. With no terminal and no `--yes`, `new` writes nothing and names each flag it is missing.
+On a terminal, `new` asks what it was not told, such as the Uplink's id and your name ([Your first Uplink](/guide/first-uplink#scaffold) covers them). Every answer is also a flag, so a script or an agent with no terminal passes them instead: `--yes` takes the default for any question not answered by a flag, and `--no-repo` and `--no-ksp` decline the two that depend on your machine. With no terminal and no `--yes`, `new` writes nothing and names each flag it is missing.
 
 That is a working Uplink: a plugin that publishes a heartbeat and a widget that shows it. `release` builds the client, writes the plugin's generated files describing it (`bake`), compiles the plugin, checks the two agree and zips the plugin. Every later page changes something in the Uplink and says which command to run after.
 
@@ -32,10 +32,20 @@ That is a working Uplink: a plugin that publishes a heartbeat and a widget that 
 
 To try the Uplink in the game you need KSP, the Gonogo mod and the Gonogo app:
 
-- **The Gonogo mod** is on [Gonogo's releases page](https://github.com/ksp-gonogo/gonogo/releases), as a zip to unpack into KSP's `GameData` folder
+- **The Gonogo mod** is a zip to unpack into KSP's `GameData` folder. For the <Published field="name" /> it is the `Gonogo-zip` artifact of the newest successful run of [the `rc.yml` workflow](https://github.com/ksp-gonogo/gonogo/actions/workflows/rc.yml) in the Gonogo repository, which GitHub lets a signed-in account download. A release attaches the zip to [Gonogo's releases page](https://github.com/ksp-gonogo/gonogo/releases) instead
 - **The Gonogo app** runs in a browser, at [ksp-gonogo.github.io/rc](https://ksp-gonogo.github.io/rc/) for the <Published field="name" /> this Guide documents
 
 Nothing before [Releasing and installing](/guide/release) needs either.
+
+## Building against the release candidate
+
+The Guide documents the <Published field="name" />, <Published field="version" />. The three npm packages and the NuGet package are published at that one version and pin each other exactly, so an Uplink builds only against all four at once. `new` writes every pin for you. To add one by hand, install the three npm packages together under the `rc` tag, since one beside a release of another fails to resolve:
+
+```bash
+npm install @ksp-gonogo/sitrep-sdk@rc @ksp-gonogo/ui-kit@rc @ksp-gonogo/uplink-tools@rc
+```
+
+NuGet has no tags, so a C# project names the exact version in its `PackageReference` to `KspGonogo.Sitrep.Contract`. The [`/rc/` app](https://ksp-gonogo.github.io/rc/) is the one built to load an Uplink made this way. [Prerequisites](/guide/prerequisites#the-packages) lists what each package is.
 
 ## The pages
 

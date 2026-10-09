@@ -36,7 +36,7 @@ The Gonogo mod runs every handler on the game's main thread, so a handler may ca
 
 The count is shared between this handler, on the main thread, and the sample, on the Courier thread, so both change it through `Interlocked`, never with a plain `+=`.
 
-## A command to a craft, with a reply
+## A command about a craft
 
 A delayed command about a craft names a `Subject` in its declaration: the Topic that describes the craft, so the command travels with that Topic's delay and is held while the craft is out of contact. A handler that replies with data returns `CommandResult<T>`, and its arguments' attribute names `T` as its `Payload`:
 

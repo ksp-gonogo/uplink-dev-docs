@@ -2,7 +2,7 @@
 
 The plugin now accepts `example.reset` ([Accepting a command](/guide/commands)). This page gives the client its types and a button that sends it.
 
-## The command, typed
+## Typing the command
 
 In `client/src/topics.ts`, the commands' half of the `declare module` block the Topics use, which `new` already wrote, so there is nothing to add:
 
@@ -10,7 +10,7 @@ In `client/src/topics.ts`, the commands' half of the `declare module` block the 
 
 The SDK types every core command's arguments in `CommandArgsMap` and its reply in `CommandReplyMap`. Your commands join them through the two maps `codegen` writes into `client/src/__generated__/command-map.ts`, one row per `SitrepCommandAttribute` in the contract slice: the arguments type it generated, and the reply, `CommandResult` for a handler that returns `CommandResult` or `CommandResultOf` the payload type for one that returns data. A command you add to the slice is typed after `npm run codegen`, with no line of yours to add.
 
-## The command, known at runtime
+## Registering the command {#the-command-known-at-runtime}
 
 Further down `client/src/topics.ts`:
 
