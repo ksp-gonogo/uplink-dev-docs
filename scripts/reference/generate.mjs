@@ -19,6 +19,7 @@ import { commandListMd, declarationFieldsMd, packageIndexMd, readingStatesMd, re
 import { installArtifacts } from "./install.mjs";
 import { DOCS, GENERATED_HASHES, hashOf, PLANTED_DEMO_FILE, PLANTED_DEMOS, PUBLISHED, ROOT, storybookRoot } from "./paths.mjs";
 import { AMBIGUOUS_SYMBOLS } from "../ambiguous-symbols.mjs";
+import { linkDebtFaults } from "../debt-ratchet.mjs";
 import { UNRESOLVED_LINK_DEBT } from "../symbol-link-debt.mjs";
 import { anchorOf, assertModulesStateNoRecordFacts, loadWidgetRecords, recordOf, widgetHeaderMd } from "./widgets.mjs";
 import { AMBIGUOUS_TERMS, CONCEPT_TERMS, termsOf } from "../concept-terms.mjs";
@@ -829,12 +830,10 @@ export async function generate({ install = true } = {}) {
   writeSidebar(PAGES, records);
   writeFileSync(GUIDE_LINK_LIST, `${JSON.stringify([...GUIDE_LINKS].sort(), null, 2)}\n`);
   recordWritten(written);
-  const debt = new Set(UNRESOLVED_LINK_DEBT);
-  const unresolved = index.missed.filter((name) => !debt.has(name));
+  const { unresolved, stale } = linkDebtFaults(index.missed, UNRESOLVED_LINK_DEBT);
   if (unresolved.length > 0) {
     throw new Error(`a doc comment links to ${unresolved.join(", ")}, which has no reference entry. Give it a @category, or name it without {@link}.`);
   }
-  const stale = [...debt].filter((name) => !index.missed.includes(name));
   if (stale.length > 0) throw new Error(`scripts/symbol-link-debt.mjs lists ${stale.join(", ")}, which now resolves. Delete the entry.`);
   console.log(`Generated ${written.length} reference pages:\n  ${written.join("\n  ")}`);
   console.log(`Wired ${writeDemoLoaders()}.`);

@@ -27,6 +27,7 @@ import {
   MISSING_SYMBOL_DEBT,
   STALE_PAGE_DEBT,
 } from "./doc-symbols-debt.mjs";
+import { againstDebt } from "./debt-ratchet.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const SNAPSHOT = resolve(ROOT, "scripts/ui-kit-exports.json");
@@ -270,21 +271,6 @@ const tally = (rows, key) => {
   for (const row of rows) out[row[key]] = (out[row[key]] ?? 0) + 1;
   return out;
 };
-
-/** Counts over a ceiling, and entries whose violation is already gone. */
-function againstDebt(counts, debt) {
-  const over = [];
-  const stale = [];
-  for (const [file, count] of Object.entries(counts)) {
-    const allowed = debt[file] ?? 0;
-    if (count > allowed) over.push({ file, count, allowed });
-  }
-  for (const [file, allowed] of Object.entries(debt)) {
-    const count = counts[file] ?? 0;
-    if (count < allowed) stale.push({ file, count, allowed });
-  }
-  return { over, stale };
-}
 
 /* ------------------------------------------------------------------ *
  * Entry point.
