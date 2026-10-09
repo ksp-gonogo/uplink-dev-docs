@@ -26,7 +26,7 @@ The manifest's `Commands` list declares each command with a `CommandDeclaration`
 
 <<< ../../example/mod/ExampleUplink.cs#command{cs}
 
-`IUplinkHost.AddCommandHandler` registers the handler for a declared command. It returns `CommandResult.Ok()`, or `CommandResult.Fail` with a [`CommandErrorCode`](/reference/mod/stream-messages#CommandErrorCode) and a sentence the operator reads, such as `CommandErrorCode.Range` for an argument out of bounds. Check arguments and state here and refuse with the code that fits: the app shows it.
+`IUplinkHost.AddCommandHandler` registers the handler for a declared command. It returns `CommandResult.Ok()`, or `CommandResult.Fail(code, detail)`, where `code` is a `RefusalCode` taken from the [`CommandErrorCode`](/reference/mod/stream-messages#CommandErrorCode) class, such as `CommandErrorCode.Range` for an argument out of bounds, and `detail` is a sentence the operator reads. Check arguments and state here and refuse with the code that fits: the app shows it.
 
 The Gonogo mod runs every handler on the game's main thread, so a handler may call the game. The thread waits for the handler, so return promptly and never wait on anything inside one. (`Sitrep.Contract` itself does not promise the main thread; [Known limits](/guide/limits#the-plugin) says what to do if you need to be safe without it.)
 
