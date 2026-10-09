@@ -24,7 +24,7 @@ dotnet test ../mod-tests     # the plugin's tests
 npm run release              # build both halves and zip the plugin
 ```
 
-On a terminal, `new` asks seven questions, such as the Uplink's id and your name ([Your first Uplink](/guide/first-uplink#scaffold) lists them). Every answer is also a flag, so a script or an agent with no terminal passes them instead.
+On a terminal, `new` asks seven questions, such as the Uplink's id and your name ([Your first Uplink](/guide/first-uplink#scaffold) lists them). Every answer is also a flag, so a script or an agent with no terminal passes them instead: `--yes` takes the default for any question not answered by a flag, and `--no-repo` and `--no-ksp` decline the two that depend on your machine. With no terminal and no `--yes`, `new` writes nothing and names each flag it is missing.
 
 That is a working Uplink: a plugin that publishes a heartbeat and a widget that shows it. `release` builds the client, writes the plugin's generated files describing it (`bake`), compiles the plugin, checks the two agree and zips the plugin. Every later page changes something in the Uplink and says which command to run after.
 

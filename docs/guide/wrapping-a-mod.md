@@ -16,7 +16,7 @@ Reflection is the default: it keeps your plugin loadable without the mod, and ke
 
 ## Finding the mod's API
 
-Every name a plugin binds, by reflection or by a reference, comes from the mod's own source. Look in its repository first for a file meant for other mods: many ship a wrapper or an API class, such as Kerbal Alarm Clock's `KACWrapper.cs`, which names the types and members the mod keeps stable for callers, and that is the surface to bind. Without one, read the classes that hold the state you want, and treat every member you bind as one the mod may rename. Note the version you read, for `builtAgainst` in [`uplink.json`](#in-uplink-json), and bind against the release a player installs, since a repository's default branch can be ahead of it.
+Every name a plugin binds, by reflection or by a reference, comes from the mod's own source. Look in its repository first for a file meant for other mods: many ship a wrapper or an API class, such as Kerbal Alarm Clock's [`KACWrapper.cs`](https://github.com/TriggerAu/KerbalAlarmClock/blob/master/KerbalAlarmClock_APITester/KACWrapper.cs), which names the types and members the mod keeps stable for callers, and that is the surface to bind. Without one, read the classes that hold the state you want, and treat every member you bind as one the mod may rename. Note the version you read, for `builtAgainst` in [`uplink.json`](#in-uplink-json), and bind against the release a player installs, since a repository's default branch can be ahead of it.
 
 ## By reflection
 

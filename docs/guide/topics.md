@@ -14,7 +14,7 @@ Every Topic's payload is a class in the contract slice, carrying three attribute
 - **`SitrepTopicAttribute`** names the Topic it is the payload of
 - **`TsInterface`**, from the [Reinforced.Typings](https://www.nuget.org/packages/Reinforced.Typings) package codegen runs, tells codegen to write a TypeScript interface for it. It sits inside `#if SITREP_CODEGEN` because it exists only in the build `codegen` runs, never in the assembly you ship, and so does the file's `using Reinforced.Typings.Attributes;` at its top
 
-A property carrying `SitrepUnitAttribute` reaches the client as a quantity in that unit, such as `Value<"ut">` for `Units.UniversalTime`. [`Units`](/reference/mod/serialization#Units) lists every unit; the ones an Uplink reaches for most:
+A property carrying `SitrepUnitAttribute` reaches the client as a quantity in that unit, such as `Value<"ut">` for `Units.UniversalTime`. [`Units`](/reference/mod/serialization#Units), on the Serialization page, lists every unit; the ones an Uplink reaches for most:
 
 | Member | For |
 | --- | --- |
@@ -27,6 +27,8 @@ A property carrying `SitrepUnitAttribute` reaches the client as a quantity in th
 | `Units.Count` | a whole number of things, such as crew or samples |
 | `Units.Funds`, `Units.Science`, `Units.Reputation` | a career resource |
 | `Units.Id`, `Units.Text`, `Units.Flag`, `Units.Enumeration` | a field that is not a quantity: an identifier, a string, a boolean, a member of an enum |
+
+A string meant to be read by a person, such as a name or a status message, takes `Units.Text`; a string that identifies something and is never read as prose takes `Units.Id`. A property that holds a list of a nested payload type, such as `List<Alarm>`, is supported: codegen writes `Alarm[]`, the nested type needs its own entry in the wire types below, and the units on its fields do the describing, so the list property itself carries no `SitrepUnitAttribute`.
 
 A nullable property reaches the client as a field that can be `null`. The doc comments reach the client too, so say what each field is, its unit and when it is `null`. A paragraph inside `<internal>` stays in the C#, for notes meant only for whoever maintains the plugin.
 

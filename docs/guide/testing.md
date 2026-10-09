@@ -65,7 +65,7 @@ A plugin that reaches the game or a mod only by reflection names no KSP type, so
 
 ## In CI
 
-From `client/`, every command an Uplink's CI needs, none of them needing the game or a browser:
+From `client/`, every command an Uplink's CI needs, none of them needing the game or a browser. `dotnet test` does bind a port on the local machine to talk to its test host, so a sandbox that blocks local network binding stops it:
 
 ```bash
 npm ci
