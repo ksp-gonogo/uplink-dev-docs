@@ -9,6 +9,7 @@ const uplink = defineUplinkClient({
   id: "crew-training",
   version: "1.0.0",
   name: "Crew Training",
+  description: "Reference example: Crew Training.",
 });
 
 const COURSES: Record<string, string> = {

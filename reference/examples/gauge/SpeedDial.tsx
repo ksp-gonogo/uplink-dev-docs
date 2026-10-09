@@ -5,7 +5,7 @@ export function SpeedDial() {
   const flight = useTelemetry("vessel.flight");
   return (
     <Dial
-      ariaLabel="Surface speed"
+      aria-label="Surface speed"
       value={flight.surfaceSpeed}
       min={value("m/s", 0)}
       max={value("m/s", 2400)}

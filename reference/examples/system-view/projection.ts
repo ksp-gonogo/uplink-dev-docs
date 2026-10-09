@@ -7,6 +7,7 @@ const uplink = defineUplinkClient({
   id: "pair-frames",
   version: "1.0.0",
   name: "Pair Frames",
+  description: "Reference example: Pair Frames.",
 });
 
 uplink.registerContribution({

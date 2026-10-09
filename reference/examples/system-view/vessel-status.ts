@@ -7,6 +7,7 @@ const uplink = defineUplinkClient({
   id: "check-in-watch",
   version: "1.0.0",
   name: "Check-in Watch",
+  description: "Reference example: Check-in Watch.",
 });
 
 uplink.registerContribution({

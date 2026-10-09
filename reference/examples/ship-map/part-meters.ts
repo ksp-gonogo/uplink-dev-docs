@@ -7,6 +7,7 @@ const uplink = defineUplinkClient({
   id: "ore-meters",
   version: "1.0.0",
   name: "Ore Meters",
+  description: "Reference example: Ore Meters.",
 });
 
 const LOW_ORE = 0.25;

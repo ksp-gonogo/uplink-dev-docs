@@ -7,6 +7,7 @@ const uplink = defineUplinkClient({
   id: "seismic-pods",
   version: "1.0.0",
   name: "Seismic Pods",
+  description: "Reference example: Seismic Pods.",
 });
 
 const storedResults = uplink.registerProcessor({

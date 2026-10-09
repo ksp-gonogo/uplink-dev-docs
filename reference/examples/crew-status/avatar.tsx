@@ -9,6 +9,7 @@ const uplink = defineUplinkClient({
   id: "crew-portraits",
   version: "1.0.0",
   name: "Crew Portraits",
+  description: "Reference example: Crew Portraits.",
 });
 
 function Initials({ crewName }: SlotProps<"crew-status.avatar">) {

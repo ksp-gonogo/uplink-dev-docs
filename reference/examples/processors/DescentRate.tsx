@@ -5,6 +5,7 @@ const uplink = defineUplinkClient({
   id: "descent",
   version: "1.0.0",
   name: "Descent",
+  description: "Reference example: Descent.",
 });
 
 const DESCENT_RATE = uplink.registerProcessor({

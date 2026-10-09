@@ -10,6 +10,7 @@ const uplink = defineUplinkClient({
   id: "transmit-value",
   version: "1.0.0",
   name: "Transmit Value",
+  description: "Reference example: Transmit Value.",
 });
 
 function TransmitValue({

@@ -8,7 +8,7 @@ const climb = Array.from({ length: 24 }, (_, i) => ({
 export function AltitudeTrend() {
   return (
     <LineGraph
-      ariaLabel="Altitude over the last four minutes"
+      aria-label="Altitude over the last four minutes"
       height={120}
       series={[{ id: "altitude", color: TONE_MARK.go, points: climb }]}
       thresholds={[{ id: "karman", value: 70, valueText: "70 km" }]}

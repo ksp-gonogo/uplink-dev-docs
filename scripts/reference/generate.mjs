@@ -54,14 +54,32 @@ const frontmatter = (page) =>
 const htmlEscape = (text) => text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
 /**
+ * A doc comment wrapped inside a code span can leave a line that starts with a
+ * generic such as `<int>`; at the start of a line Markdown reads that as an HTML
+ * block, and Vue then fails the page on an unclosed element. Folding the line
+ * back into the span it belongs to renders identically.
+ */
+function joinCodeSpanTags(lines) {
+  const joined = [];
+  let fenced = false;
+  for (const line of lines) {
+    if (/^\s*```/.test(line)) fenced = !fenced;
+    const previous = joined.at(-1);
+    const openSpan = previous !== undefined && (previous.match(/`/g) ?? []).length % 2 === 1;
+    if (!fenced && openSpan && /^<[A-Za-z]/.test(line)) joined[joined.length - 1] = `${previous} ${line}`;
+    else joined.push(line);
+  }
+  return joined;
+}
+
+/**
  * VitePress compiles a page as a Vue template, and Vue reads `{{` in inline
  * code as an interpolation. Fenced blocks are marked `v-pre` already; an
  * inline code span holding `{{` becomes a `<code v-pre>` of its own.
  */
 function vueSafe(md) {
   let fenced = false;
-  return md
-    .split("\n")
+  return joinCodeSpanTags(md.split("\n"))
     .map((line) => {
       if (/^\s*```/.test(line)) fenced = !fenced;
       if (fenced || !line.includes("{{")) return line;

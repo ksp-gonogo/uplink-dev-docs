@@ -10,6 +10,7 @@ const uplink = defineUplinkClient({
   id: "fleet-silence-notes",
   version: "1.0.0",
   name: "Fleet Silence Notes",
+  description: "Reference example: Fleet Silence Notes.",
 });
 
 function SilenceNote({

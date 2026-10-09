@@ -10,6 +10,7 @@ const uplink = defineUplinkClient({
   id: "admin-notes",
   version: "1.0.0",
   name: "Admin Notes",
+  description: "Reference example: Admin Notes.",
 });
 
 uplink.registerContribution({

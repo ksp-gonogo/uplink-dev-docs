@@ -7,6 +7,7 @@ const uplink = defineUplinkClient({
   id: "relay-ring",
   version: "1.0.0",
   name: "Relay Ring",
+  description: "Reference example: Relay Ring.",
 });
 
 const SYNCHRONOUS_SMA = 3_463_330;
@@ -32,13 +33,13 @@ uplink.registerContribution({
     };
     const ring: SystemEntity = {
       id: "relay-ring:orbit",
-      position: { ...orbit, trueAnomaly: 0 },
+      position: orbit,
       shape: { kind: "orbit-path" },
       style: { tone: "info" },
     };
     const relays = Array.from({ length: RELAYS }, (_, i): SystemEntity => ({
       id: `relay-ring:relay-${i + 1}`,
-      position: { ...orbit, trueAnomaly: (360 / RELAYS) * i },
+      position: { ...orbit, epoch: 0, meanAnomalyAtEpoch: (2 * Math.PI * i) / RELAYS },
       shape: { kind: "point", radiusPx: 5 },
       style: { tone: "info" },
       meta: { Relay: `Relay ${i + 1}` },

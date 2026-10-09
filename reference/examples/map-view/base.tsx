@@ -10,6 +10,7 @@ const uplink = defineUplinkClient({
   id: "survey-zones",
   version: "1.0.0",
   name: "Survey Zones",
+  description: "Reference example: Survey Zones.",
 });
 
 const LAYER_ID = "survey-zones-tint";

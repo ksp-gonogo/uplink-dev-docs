@@ -11,6 +11,7 @@ const uplink = defineUplinkClient({
   id: "ascent-goals",
   version: "1.0.0",
   name: "Ascent Goals",
+  description: "Reference example: Ascent Goals.",
 });
 
 const SPACE_ALTITUDE = value("m", 70_000);

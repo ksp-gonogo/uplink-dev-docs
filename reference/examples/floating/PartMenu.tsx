@@ -9,7 +9,7 @@ export function PartMenu() {
       {anchor && (
         <Floating anchor={anchor}>
           <ActionMenu
-            ariaLabel="Parachute actions"
+            aria-label="Parachute actions"
             style={{ position: "static" }}
             items={[
               { key: "deploy", label: "Deploy chute" },

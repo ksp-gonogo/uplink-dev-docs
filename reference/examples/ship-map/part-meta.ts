@@ -7,6 +7,7 @@ const uplink = defineUplinkClient({
   id: "engine-status",
   version: "1.0.0",
   name: "Engine Status",
+  description: "Reference example: Engine Status.",
 });
 
 uplink.registerContribution({

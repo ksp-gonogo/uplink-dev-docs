@@ -9,6 +9,7 @@ const uplink = defineUplinkClient({
   id: "dock-angles",
   version: "1.0.0",
   name: "Dock Angles",
+  description: "Reference example: Dock Angles.",
 });
 
 function AngleReadout({

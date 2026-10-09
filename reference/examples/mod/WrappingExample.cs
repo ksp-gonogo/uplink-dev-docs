@@ -129,7 +129,7 @@ namespace ExampleUplink
             var ut = host.Publisher(UtTopic);
             host.AddSampledSource(
                 captureOnMainThread: _ => _mod.ReadUt(),
-                handleOnCourier: captured =>
+                handleOffMainThread: captured =>
                 {
                     if (captured is double value) ut.Publish(new Dictionary<string, object?> { ["ut"] = value }, value);
                 },

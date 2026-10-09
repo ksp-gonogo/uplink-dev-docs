@@ -10,6 +10,7 @@ const uplink = defineUplinkClient({
   id: "crew-nerve",
   version: "1.0.0",
   name: "Crew Nerve",
+  description: "Reference example: Crew Nerve.",
 });
 
 const FEARLESS = 0.6;

@@ -4,6 +4,7 @@ const uplink = defineUplinkClient({
   id: "crew-experience",
   version: "1.0.0",
   name: "Crew Experience",
+  description: "Reference example: Crew Experience.",
 });
 
 const TOP_LEVEL = 5;

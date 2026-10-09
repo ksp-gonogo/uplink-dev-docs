@@ -9,6 +9,7 @@ const uplink = defineUplinkClient({
   id: "crew-copy",
   version: "1.0.0",
   name: "Crew Copy",
+  description: "Reference example: Crew Copy.",
 });
 
 function CopyNames() {

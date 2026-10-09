@@ -4,6 +4,7 @@ const uplink = defineUplinkClient({
   id: "crew-capacity",
   version: "1.0.0",
   name: "Crew Capacity",
+  description: "Reference example: Crew Capacity.",
 });
 
 uplink.registerContribution({

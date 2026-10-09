@@ -4,6 +4,7 @@ const uplink = defineUplinkClient({
   id: "descent-corridor",
   version: "1.0.0",
   name: "Descent Corridor",
+  description: "Reference example: Descent Corridor.",
 });
 
 const CEILING = 400;

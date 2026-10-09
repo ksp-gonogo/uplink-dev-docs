@@ -4,6 +4,7 @@ const uplink = defineUplinkClient({
   id: "gear-guide",
   version: "1.0.0",
   name: "Gear Guide",
+  description: "Reference example: Gear Guide.",
 });
 
 const gearHeight: PlotEntry = {

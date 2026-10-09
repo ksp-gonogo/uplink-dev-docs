@@ -4,6 +4,7 @@ const uplink = defineUplinkClient({
   id: "crew-free-seats",
   version: "1.0.0",
   name: "Crew Free Seats",
+  description: "Reference example: Crew Free Seats.",
 });
 
 uplink.registerContribution({

@@ -9,6 +9,7 @@ const uplink = defineUplinkClient({
   id: "crew-traits",
   version: "1.0.0",
   name: "Crew Traits",
+  description: "Reference example: Crew Traits.",
 });
 
 function Traits() {

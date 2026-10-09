@@ -29,11 +29,11 @@ namespace ExampleUplink
 
             host.AddSampledSource(
                 captureOnMainThread: snapshot => snapshot?.Ut,
-                handleOnCourier: captured => publisher.Publish(captured, 0.0));
+                handleOffMainThread: captured => publisher.Publish(captured, 0.0));
 
             host.AddSampledSource(
                 captureOnMainThread: snapshot => snapshot?.Ut,
-                handleOnCourier: captured => publisher.Publish(captured, 0.0),
+                handleOffMainThread: captured => publisher.Publish(captured, 0.0),
                 subscriptionTopicPrefixes: "example.");
 
             if (host.IsAnyTopicSubscribed("example."))

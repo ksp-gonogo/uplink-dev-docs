@@ -7,6 +7,7 @@ const uplink = defineUplinkClient({
   id: "pad-expansion",
   version: "1.0.0",
   name: "Pad Expansion",
+  description: "Reference example: Pad Expansion.",
 });
 
 uplink.registerContribution({

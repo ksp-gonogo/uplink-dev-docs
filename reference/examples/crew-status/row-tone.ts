@@ -7,6 +7,7 @@ const uplink = defineUplinkClient({
   id: "crew-rookies",
   version: "1.0.0",
   name: "Crew Rookies",
+  description: "Reference example: Crew Rookies.",
 });
 
 uplink.registerContribution({

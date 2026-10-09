@@ -9,6 +9,7 @@ const uplink = defineUplinkClient({
   id: "system-scale",
   version: "1.0.0",
   name: "System Scale",
+  description: "Reference example: System Scale.",
 });
 
 const BAR_METRES = 1_000_000;

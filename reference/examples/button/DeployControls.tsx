@@ -13,7 +13,7 @@ export function DeployControls() {
       </ButtonGroup>
       <Cluster gap="related-compact">
         {RATES.map((r) => (
-          <ToggleButton key={r} size="sm" active={r === rate} onClick={() => setRate(r)}>
+          <ToggleButton key={r} size="sm" pressed={r === rate} onClick={() => setRate(r)}>
             {r}x
           </ToggleButton>
         ))}

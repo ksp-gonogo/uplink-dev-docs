@@ -10,6 +10,7 @@ const uplink = defineUplinkClient({
   id: "science-worth",
   version: "1.0.0",
   name: "Science Worth",
+  description: "Reference example: Science Worth.",
 });
 
 function Worth({ subjectId }: SlotProps<"science-data.aboard-row">) {

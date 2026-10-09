@@ -54,7 +54,7 @@ namespace ExampleUplink
             var publisher = host.Publisher("example.status");
             host.AddSampledSource(
                 captureOnMainThread: snapshot => snapshot?.Ut,
-                handleOnCourier: captured =>
+                handleOffMainThread: captured =>
                 {
                     // No game time read means nothing to publish this tick, never a made-up zero.
                     if (captured is double ut) publisher.Publish(new Dictionary<string, object?> { ["ut"] = ut }, ut);

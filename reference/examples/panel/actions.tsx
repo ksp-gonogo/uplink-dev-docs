@@ -8,6 +8,7 @@ const uplink = defineUplinkClient({
   id: "crew-roster",
   version: "1.0.0",
   name: "Crew Roster",
+  description: "Reference example: Crew Roster.",
 });
 
 registerAugment({

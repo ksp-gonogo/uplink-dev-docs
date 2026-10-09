@@ -4,6 +4,7 @@ const uplink = defineUplinkClient({
   id: "crew-seats",
   version: "1.0.0",
   name: "Crew Seats",
+  description: "Reference example: Crew Seats.",
 });
 
 uplink.registerContribution({

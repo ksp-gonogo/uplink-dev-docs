@@ -11,6 +11,7 @@ const uplink = defineUplinkClient({
   id: "warp-cruise",
   version: "1.0.0",
   name: "Warp Cruise",
+  description: "Reference example: Warp Cruise.",
 });
 
 const CRUISE_RATE = 100;

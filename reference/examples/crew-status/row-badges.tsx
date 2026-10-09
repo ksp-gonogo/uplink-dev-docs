@@ -10,6 +10,7 @@ const uplink = defineUplinkClient({
   id: "crew-levels",
   version: "1.0.0",
   name: "Crew Levels",
+  description: "Reference example: Crew Levels.",
 });
 
 function LevelBadge({ crewIndex }: SlotProps<"crew-status.row-badges">) {
