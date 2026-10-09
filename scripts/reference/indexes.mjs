@@ -221,3 +221,49 @@ export function topicsPageMd(page, { sdk, index, version, leadOf }) {
     topicListMd(sdk, index),
   ];
 }
+
+/** A comment's summary as one line of Markdown, empty when it has none. */
+const summaryMd = (comment, index) => (comment?.summary?.length ? cellSafe(partsMd(comment.summary, index).trim().replace(/\s*\n\s*/g, " ")).replace(/(?<!\\)\|/g, "\\|") : "");
+
+/**
+ * The values a reading's `state` takes, each with the doc comment on that
+ * variant of `TopicCurrency`.
+ */
+export function readingStatesMd(sdk, index) {
+  const alias = sdk.getChildByName("TopicCurrency")?.type;
+  if (alias?.type !== "union") throw new Error(`TopicCurrency is not a union in ${sdk.name}`);
+  const rows = alias.types.map((variant) => {
+    const state = variant.declaration?.children?.find((c) => c.name === "state");
+    const value = state?.type?.value;
+    if (typeof value !== "string") throw new Error("a TopicCurrency variant has no literal `state`");
+    const meaning = summaryMd(state.comment, index);
+    if (!meaning) throw new Error(`the "${value}" variant of TopicCurrency has no doc comment on its state`);
+    return `| ${code(`"${value}"`)} | ${meaning} |`;
+  });
+  return `| ${code("state")} | Meaning |\n| --- | --- |\n${rows.join("\n")}`;
+}
+
+/** The commands a `@readBy` tag names, in the order it lists them. */
+const readByOf = (member) => {
+  const tag = member.comment?.blockTags?.find((t) => t.tag === "@readBy");
+  return tag ? tag.content.map((p) => p.text).join("").split(",").map((c) => c.trim()).filter(Boolean) : [];
+};
+
+/**
+ * Every field of `UplinkDeclaration`: its name linked to its entry, the
+ * `uplink-tools` commands its `@readBy` tag names, and the opening sentence of
+ * its comment.
+ */
+export function declarationFieldsMd(manifest, index) {
+  const declaration = manifest.getChildByName("UplinkDeclaration");
+  if (!declaration) throw new Error(`${manifest.name} does not export UplinkDeclaration`);
+  const owner = index.url("UplinkDeclaration")?.split("#")[0];
+  const rows = (declaration.children ?? []).map((field) => {
+    const readers = readByOf(field);
+    if (readers.length === 0) throw new Error(`UplinkDeclaration.${field.name} has no @readBy tag`);
+    const name = owner ? `[${code(field.name)}](${owner}#UplinkDeclaration.${field.name})` : code(field.name);
+    const what = cellSafe(firstSentence(partsMd(field.comment?.summary ?? [], index))).replace(/(?<!\\)\|/g, "\\|");
+    return `| ${name} | ${readers.map(code).join(", ")} | ${what} |`;
+  });
+  return `| Field | Read by | What it is |\n| --- | --- | --- |\n${rows.join("\n")}`;
+}

@@ -51,13 +51,7 @@ This is the finished widget. The one `new` writes is the same less three things 
 
 `useTelemetry` returns the Topic's `TopicReading`: its latest value together with how current that value is. `state` is one of:
 
-| `state` | Meaning |
-| --- | --- |
-| `"observed"` | The newest value that could have reached the operator. `value` holds it |
-| `"held"` | Updates stopped arriving, such as across a loss of signal. `value` holds the last one received |
-| `"pending"` | Nothing has arrived yet |
-| `"absent"` | The game confirmed there is no value, such as no target set |
-| `"unowned"` | Nothing will ever publish this Topic: no installed Uplink declares it |
+<!--@include: @/.vitepress/includes/reading-states.md-->
 
 The widget `new` writes draws the values while the reading is observed or [held](/reference/concepts/held), and says which of the other three it is otherwise, never a zero: a value you have not received is not a value of zero, and the two mean opposite things to an operator. The example adds the modelled count and the reset button to it.
 
