@@ -26,6 +26,8 @@ The contract has one name per place you meet it: `KspGonogo.Sitrep.Contract` is 
 
 All four are published at the same version, and the scaffold pins them exactly, so both halves build against one contract. The `rc` in `npx @ksp-gonogo/uplink-tools@rc` is the npm tag of the <Published field="name" />.
 
+Adding a package by hand, or building against another candidate, is covered in [Building against the release candidate](/guide/#building-against-the-release-candidate).
+
 ## What an Uplink may reference
 
 | Half | Allowed | Not allowed |

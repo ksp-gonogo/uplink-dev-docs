@@ -42,7 +42,7 @@ There is no matching teardown: the Uplink lives as long as the game does, so any
 
 <!--@include: @/.vitepress/includes/uplink-health-states.md-->
 
-Gonogo polls it on every sample, up to ten times a second, and off the main thread, so it must be cheap, must not block, and must not touch the game. The heartbeat has nothing to report; an Uplink wrapping another mod reports that mod's state:
+Gonogo polls it repeatedly, once per `system.uplinks` sample and off the main thread, so it must be cheap, must not block, and must not touch the game. The heartbeat has nothing to report; an Uplink wrapping another mod reports that mod's state:
 
 <<< ../../reference/examples/mod/GuideExamples.cs#health{cs}
 
@@ -54,7 +54,7 @@ When the mod you integrate is missing at load, `Register` also calls [`IUplinkHo
 
 <<< ../../example/mod/ExampleUplink.cs#sample{cs}
 
-`AddChannelSource` takes a function from the tick's `KspSnapshot` to the Topic's payload. A **tick** is one round of the Courier's sampling, up to ten a second; the snapshot holds what the Gonogo mod read from the game for it, such as the game time. The function runs on the Courier thread, so it may read the snapshot and its own fields and nothing in the game. Returning `null` publishes nothing for that tick, which a widget shows as still waiting. Never substitute a zero: downstream a made-up zero cannot be told from a real reading.
+`AddChannelSource` takes a function from the tick's `KspSnapshot` to the Topic's payload. A **tick** is one round of the Courier's sampling; the snapshot holds what the Gonogo mod read from the game for it, such as the game time. The function runs on the Courier thread, so it may read the snapshot and its own fields and nothing in the game. Returning `null` publishes nothing for that tick, which a widget shows as still waiting. Never substitute a zero: downstream a made-up zero cannot be told from a real reading.
 
 ## Calling the game
 
