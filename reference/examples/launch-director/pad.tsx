@@ -6,7 +6,7 @@ import {
 import { Badge } from "@ksp-gonogo/ui-kit";
 
 const uplink = defineUplinkClient({
-  id: "pad-turnaround",
+  id: "padturnaround",
   version: "1.0.0",
   name: "Pad Turnaround",
   description: "Adds a turnaround note to each pad in the Launch Director.",
@@ -26,7 +26,7 @@ function Turnaround({
 }
 
 registerAugment({
-  id: "pad-turnaround-note",
+  id: "padturnaround-note",
   augments: "launch-director.pad",
   component: Turnaround,
   owner: uplink,

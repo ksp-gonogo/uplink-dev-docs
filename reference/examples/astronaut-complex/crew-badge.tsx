@@ -7,7 +7,7 @@ import {
 import { Badge } from "@ksp-gonogo/ui-kit";
 
 const uplink = defineUplinkClient({
-  id: "crew-nerve",
+  id: "crewnerve",
   version: "1.0.0",
   name: "Crew Nerve",
   description: "Badges a fearless applicant in the Astronaut Complex.",
@@ -33,7 +33,7 @@ function FearlessBadge({
 }
 
 registerAugment({
-  id: "crew-nerve-fearless",
+  id: "crewnerve-fearless",
   augments: "astronaut-complex.crew-badge",
   component: FearlessBadge,
   channels: ["spaceCenter.astronautComplex"],

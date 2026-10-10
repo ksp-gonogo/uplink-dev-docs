@@ -6,7 +6,7 @@ import {
 import { TONE_MARK, TONE_TEXT } from "@ksp-gonogo/ui-kit";
 
 const uplink = defineUplinkClient({
-  id: "system-scale",
+  id: "systemscale",
   version: "1.0.0",
   name: "System Scale",
   description: "Draws a scale bar over the System View.",
@@ -41,7 +41,7 @@ function ScaleBar({ width, height, plotScale }: SlotProps<"system-view.overlay">
 }
 
 registerAugment({
-  id: "system-scale-bar",
+  id: "systemscale-bar",
   augments: "system-view.overlay",
   component: ScaleBar,
   owner: uplink,

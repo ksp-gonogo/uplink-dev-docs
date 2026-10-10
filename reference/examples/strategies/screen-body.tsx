@@ -7,7 +7,7 @@ import {
 import { Section, Text } from "@ksp-gonogo/ui-kit";
 
 const uplink = defineUplinkClient({
-  id: "admin-notes",
+  id: "adminnotes",
   version: "1.0.0",
   name: "Admin Notes",
   description: "Adds a Notes screen to the Strategies widget for the Operations department.",
@@ -32,7 +32,7 @@ function Notes({ screenId }: SlotProps<"strategies.screen-body">) {
 }
 
 registerAugment({
-  id: "admin-notes-body",
+  id: "adminnotes-body",
   augments: "strategies.screen-body",
   component: Notes,
   owner: uplink,

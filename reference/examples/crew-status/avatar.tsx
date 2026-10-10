@@ -6,7 +6,7 @@ import {
 import { Text } from "@ksp-gonogo/ui-kit";
 
 const uplink = defineUplinkClient({
-  id: "crew-portraits",
+  id: "crewportraits",
   version: "1.0.0",
   name: "Crew Portraits",
   description: "Draws a kerbal's initials as their avatar in Crew Status.",
@@ -21,7 +21,7 @@ function Initials({ crewName }: SlotProps<"crew-status.avatar">) {
 }
 
 registerAugment({
-  id: "crew-portraits-initials",
+  id: "crewportraits-initials",
   augments: "crew-status.avatar",
   component: Initials,
   owner: uplink,

@@ -6,7 +6,7 @@ import {
 import { Badge, Box } from "@ksp-gonogo/ui-kit";
 
 const uplink = defineUplinkClient({
-  id: "engine-stages",
+  id: "enginestages",
   version: "1.0.0",
   name: "Engine Stages",
   description: "Marks the engines of each stage on the Ship Map.",
@@ -31,7 +31,7 @@ function EngineStages({ parts }: SlotProps<"ship-map.overlay">) {
 }
 
 registerAugment({
-  id: "engine-stages-marks",
+  id: "enginestages-marks",
   augments: "ship-map.overlay",
   component: EngineStages,
   owner: uplink,

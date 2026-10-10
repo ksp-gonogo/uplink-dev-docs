@@ -5,7 +5,7 @@ import {
 } from "@ksp-gonogo/sitrep-sdk";
 
 const uplink = defineUplinkClient({
-  id: "descent-corridor",
+  id: "descentcorridor",
   version: "1.0.0",
   name: "Descent Corridor",
   description: "Draws the corridor of descent speeds a lander can still stop from.",
@@ -15,7 +15,7 @@ const CEILING = 400;
 const BRAKING = 2;
 
 uplink.registerContribution({
-  id: "descent-corridor-plot",
+  id: "descentcorridor-plot",
   contributes: "plots",
   deps: ["vessel.flight"],
   compute: (topics): PlotEntry[] => {
@@ -27,7 +27,7 @@ uplink.registerContribution({
     const heights = Array.from({ length: 21 }, (_, i) => (CEILING * i) / 20);
     return [
       {
-        subject: "descent-corridor",
+        subject: "descentcorridor",
         title: "Descent corridor",
         frame: { xDomain: [0, 50], yDomain: [0, CEILING], xUnit: "m/s", yUnit: "m" },
         layers: [

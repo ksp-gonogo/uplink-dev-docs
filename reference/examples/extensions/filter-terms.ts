@@ -1,7 +1,7 @@
 import { defineUplinkClient } from "@ksp-gonogo/sitrep-sdk";
 
 const uplink = defineUplinkClient({
-  id: "science-terms",
+  id: "scienceterms",
   version: "1.0.0",
   name: "Science Terms",
   description: "Adds a one-press filter for results from a mod's experiments to the Experiments list.",

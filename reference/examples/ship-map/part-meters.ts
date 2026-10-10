@@ -5,7 +5,7 @@ import {
 } from "@ksp-gonogo/sitrep-sdk";
 
 const uplink = defineUplinkClient({
-  id: "ore-meters",
+  id: "oremeters",
   version: "1.0.0",
   name: "Ore Meters",
   description: "Adds an ore level meter to each tank on the Ship Map.",

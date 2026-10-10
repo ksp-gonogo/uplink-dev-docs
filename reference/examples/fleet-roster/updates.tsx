@@ -7,7 +7,7 @@ import {
 import { Badge, Text } from "@ksp-gonogo/ui-kit";
 
 const uplink = defineUplinkClient({
-  id: "fleet-silence-notes",
+  id: "fleetsilencenotes",
   version: "1.0.0",
   name: "Fleet Silence Notes",
   description: "Adds a note to the Fleet Roster updates when a vessel has gone silent.",

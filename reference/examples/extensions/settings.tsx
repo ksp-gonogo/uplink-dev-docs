@@ -6,7 +6,7 @@ import {
 import { Section, Text, useAugmentSettings } from "@ksp-gonogo/ui-kit";
 
 const uplink = defineUplinkClient({
-  id: "crew-names",
+  id: "crewnames",
   version: "1.0.0",
   name: "Crew Names",
   description: "Adds a crew names section to Crew Status with a setting for first names only.",
@@ -14,7 +14,7 @@ const uplink = defineUplinkClient({
 
 function Names() {
   const crew = useTelemetry("vessel.crew");
-  const { values } = useAugmentSettings("crew-names-section");
+  const { values } = useAugmentSettings("crewnames-section");
   if (crew.state !== "observed") return null;
   const short = values.short !== false;
   return (
@@ -29,7 +29,7 @@ function Names() {
 }
 
 registerAugment({
-  id: "crew-names-section",
+  id: "crewnames-section",
   augments: "crew-status.sections",
   component: Names,
   channels: ["vessel.crew"],

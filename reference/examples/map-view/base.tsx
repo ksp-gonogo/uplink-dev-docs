@@ -7,13 +7,13 @@ import {
 import { useEffect, useRef } from "react";
 
 const uplink = defineUplinkClient({
-  id: "survey-zones",
+  id: "surveyzones",
   version: "1.0.0",
   name: "Survey Zones",
   description: "Draws survey zones as the base layer of the Map View.",
 });
 
-const LAYER_ID = "survey-zones-tint";
+const LAYER_ID = "surveyzones-tint";
 /** Four cells to a degree, across the whole body. */
 const WIDTH = 1440;
 const HEIGHT = 720;

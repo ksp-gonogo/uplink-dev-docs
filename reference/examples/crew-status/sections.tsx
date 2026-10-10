@@ -6,7 +6,7 @@ import {
 import { Section, Text } from "@ksp-gonogo/ui-kit";
 
 const uplink = defineUplinkClient({
-  id: "crew-traits",
+  id: "crewtraits",
   version: "1.0.0",
   name: "Crew Traits",
   description: "Adds a section of crew traits to Crew Status.",
@@ -24,7 +24,7 @@ function Traits() {
 }
 
 registerAugment({
-  id: "crew-traits-section",
+  id: "crewtraits-section",
   augments: "crew-status.sections",
   component: Traits,
   channels: ["vessel.crew"],

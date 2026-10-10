@@ -4,7 +4,7 @@ import {
 } from "@ksp-gonogo/sitrep-sdk";
 
 const uplink = defineUplinkClient({
-  id: "admin-tabs",
+  id: "admintabs",
   version: "1.0.0",
   name: "Admin Tabs",
   description: "Adds a tab per department to the Strategies widget.",

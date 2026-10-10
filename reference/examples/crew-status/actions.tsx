@@ -6,7 +6,7 @@ import {
 import { Button } from "@ksp-gonogo/ui-kit";
 
 const uplink = defineUplinkClient({
-  id: "crew-copy",
+  id: "crewcopy",
   version: "1.0.0",
   name: "Crew Copy",
   description: "Adds a button to Crew Status that copies the crew names.",
@@ -24,7 +24,7 @@ function CopyNames() {
 }
 
 registerAugment({
-  id: "crew-copy-names",
+  id: "crewcopy-names",
   augments: "crew-status.actions",
   component: CopyNames,
   channels: ["vessel.crew"],

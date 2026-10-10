@@ -9,7 +9,7 @@ What to install before running `uplink-tools new`, and what an Uplink may depend
 - **Chromium for Playwright**, only to draw your widget's pictures (`npm run render`, `npm run docs` and `npm run docs:check`): `npx playwright install chromium`, a download of about 100 MB from `cdn.playwright.dev` into Playwright's browser cache (`~/Library/Caches/ms-playwright` on macOS, `~/.cache/ms-playwright` on Linux, or the folder `PLAYWRIGHT_BROWSERS_PATH` names), once per machine. No other command in the Guide needs a browser
 - **KSP, the Gonogo mod and the Gonogo app**, only to try the Uplink in the game ([Start here](/guide/#what-else-you-need) says where to get them). Nothing before [Releasing and installing](/guide/release) needs them, except trying a client in the app as you build it ([See your Uplink in the app](/guide/dev-loop), which also needs a checkout of the app)
 
-No clone of any repository is needed to build, test and release an Uplink, and no KSP assembly unless your plugin calls the game directly ([The plugin class](/guide/plugin#calling-the-game)).
+No clone of any repository is needed to build, test and release an Uplink (only the optional [checkout of the app](/guide/dev-loop#with-a-checkout-of-the-app) for the dev loop, which uses pnpm), and no KSP assembly unless your plugin calls the game directly ([The plugin class](/guide/plugin#calling-the-game)).
 
 ## The packages
 

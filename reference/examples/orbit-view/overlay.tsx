@@ -7,7 +7,7 @@ import {
 import { TONE_MARK, TONE_TEXT } from "@ksp-gonogo/ui-kit";
 
 const uplink = defineUplinkClient({
-  id: "synchronous-orbit",
+  id: "synchronousorbit",
   version: "1.0.0",
   name: "Synchronous Orbit",
   description: "Draws the synchronous orbit as a ring on the Orbit View.",
@@ -53,7 +53,7 @@ function SynchronousRing({ center, scale }: SlotProps<"orbit-view.overlay">) {
 }
 
 registerAugment({
-  id: "synchronous-orbit-ring",
+  id: "synchronousorbit-ring",
   augments: "orbit-view.overlay",
   component: SynchronousRing,
   channels: ["vessel.identity", "system.bodies"],

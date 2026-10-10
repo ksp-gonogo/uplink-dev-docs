@@ -91,14 +91,14 @@ An Uplink that reports itself unavailable or degraded, through `Health` or `SetA
 While you work on the client, the app can load it straight from your machine, with no hash and no rebuild of the plugin after each change. Build the plugin once with a development URL and no bundle, from `client/`:
 
 ```bash
-npx uplink-tools bake --dev-path http://localhost:8000/example.client.js
+npx uplink-tools bake --dev-path http://localhost:5173/example.client.js
 dotnet build ../mod -c Release
 ```
 
 Copy the two `.dll` files from `mod/bin/Release/` into `GameData/GonogoExampleUplink/Plugins/`, start the game, and leave the plugin there. Then serve the client:
 
 ```bash
-npx uplink-tools bundle --serve 8000
+npx uplink-tools bundle --serve 5173
 ```
 
 It rebuilds the bundle on every save and serves it at the URL you baked. Edit, save, and reload the app's page to load the new client.

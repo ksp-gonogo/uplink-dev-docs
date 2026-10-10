@@ -4,7 +4,7 @@ import {
 } from "@ksp-gonogo/sitrep-sdk";
 
 const uplink = defineUplinkClient({
-  id: "seismic-pods",
+  id: "seismicpods",
   version: "1.0.0",
   name: "Seismic Pods",
   description: "Lists seismic pods, with their stored results, among the Experiments instruments.",

@@ -40,7 +40,7 @@ Open Settings, then Uplinks. A **Local builds** tab leads the row of tabs, with 
 | The line says | What it means |
 |---|---|
 | `Client: loaded` | The bundle passed its checks and registered its widgets |
-| `Client: quarantined: <reason>` | The app refused it. The reason names the check, usually a contract or API version the bundle was built against that this app does not speak, or a hash that does not match the bytes served |
+| `Client: quarantined: <reason>` | The app refused it. The reason names the check, usually a contract or API version the bundle was built against that this app does not speak, or, for an Uplink installed from a release rather than built from your checkout, a hash that does not match the bytes served |
 | `Client: waiting for the first build` | The watch build has not produced a bundle yet, or is not running |
 | `Client: not loaded yet` | A bundle exists and the app has not finished loading it |
 | `Client: build failed: <message>` | The last save did not compile. This is the first line of the error, and the last good build is still the one loaded |
@@ -55,8 +55,11 @@ Against an app that is already running, build the plugin once with a development
 
 ```bash
 npx uplink-tools bake --dev-path http://localhost:5173/example.client.js
+dotnet build ../mod -c Release
 npx uplink-tools bundle --serve 5173
 ```
+
+`bake` writes the development URL into the plugin's sources, so build the plugin after it and copy its two `.dll` files into `GameData/GonogoExampleUplink/Plugins/` as [Releasing and installing](/guide/release#trying-a-client-before-you-publish-it) shows; `bundle --serve` then serves the client the plugin points at.
 
 `--serve` watches like `--watch` and serves the bundle and its sidecar at `http://localhost:<port>/<id>.client.js`. The app loads a client from a `localhost` address with no hash to check and says on screen that it is an unvouched development client. [Releasing and installing](/guide/release#trying-a-client-before-you-publish-it) has the whole sequence, and why a plugin baked this way is never one to release.
 

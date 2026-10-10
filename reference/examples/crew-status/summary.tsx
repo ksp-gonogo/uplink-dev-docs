@@ -6,7 +6,7 @@ import {
 import { Grid, Stat, Unit } from "@ksp-gonogo/ui-kit";
 
 const uplink = defineUplinkClient({
-  id: "crew-seats",
+  id: "crewseats",
   version: "1.0.0",
   name: "Crew Seats",
   description: "Adds a seat count to the Crew Status summary.",
@@ -27,7 +27,7 @@ function Seats() {
 }
 
 registerAugment({
-  id: "crew-seats-summary",
+  id: "crewseats-summary",
   augments: "crew-status.summary",
   component: Seats,
   channels: ["vessel.crew"],

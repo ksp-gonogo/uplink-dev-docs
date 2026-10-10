@@ -7,7 +7,7 @@ import {
 import { Badge, Unit } from "@ksp-gonogo/ui-kit";
 
 const uplink = defineUplinkClient({
-  id: "crew-levels",
+  id: "crewlevels",
   version: "1.0.0",
   name: "Crew Levels",
   description: "Adds each kerbal's level as a badge on their Crew Status row.",
@@ -26,7 +26,7 @@ function LevelBadge({ crewIndex }: SlotProps<"crew-status.row-badges">) {
 }
 
 registerAugment({
-  id: "crew-levels-badge",
+  id: "crewlevels-badge",
   augments: "crew-status.row-badges",
   component: LevelBadge,
   channels: ["vessel.crew"],

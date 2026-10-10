@@ -8,7 +8,7 @@ import {
 import { Meter, Section } from "@ksp-gonogo/ui-kit";
 
 const uplink = defineUplinkClient({
-  id: "chute-load",
+  id: "chuteload",
   version: "1.0.0",
   name: "Chute Load",
   description: "Adds a parachute load section to the Action Group widget.",
@@ -34,7 +34,7 @@ function ChuteLoad({ groupId }: SlotProps<"action-group.subsystem">) {
 }
 
 registerAugment({
-  id: "chute-load-section",
+  id: "chuteload-section",
   augments: "action-group.subsystem",
   component: ChuteLoad,
   channels: ["vessel.flight"],

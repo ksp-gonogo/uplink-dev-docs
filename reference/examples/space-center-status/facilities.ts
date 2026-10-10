@@ -4,7 +4,7 @@ import {
 } from "@ksp-gonogo/sitrep-sdk";
 
 const uplink = defineUplinkClient({
-  id: "pad-expansion",
+  id: "padexpansion",
   version: "1.0.0",
   name: "Pad Expansion",
   description: "Adds a four-tier launch pad to the Space Center Status facilities.",

@@ -6,7 +6,7 @@ import {
 import { Stat, Unit } from "@ksp-gonogo/ui-kit";
 
 const uplink = defineUplinkClient({
-  id: "altitude-board",
+  id: "altitudeboard",
   version: "1.0.0",
   name: "Altitude Board",
   description: "A widget that draws the craft's altitude above sea level.",
@@ -22,7 +22,7 @@ export function AltitudeWidget() {
 }
 
 registerComponent({
-  id: "altitude-board-altitude",
+  id: "altitudeboard-altitude",
   name: "Altitude",
   description: "The active vessel's altitude above sea level.",
   tags: ["telemetry"],

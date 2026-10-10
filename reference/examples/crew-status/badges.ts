@@ -5,7 +5,7 @@ import {
 } from "@ksp-gonogo/sitrep-sdk";
 
 const uplink = defineUplinkClient({
-  id: "crew-free-seats",
+  id: "crewfreeseats",
   version: "1.0.0",
   name: "Crew Free Seats",
   description: "Badges Crew Status with the number of free seats.",

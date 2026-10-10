@@ -6,7 +6,7 @@ import {
 import { Section, Text } from "@ksp-gonogo/ui-kit";
 
 const uplink = defineUplinkClient({
-  id: "crew-pilots",
+  id: "crewpilots",
   version: "1.0.0",
   name: "Crew Pilots",
   description: "Adds a section listing the pilots aboard to Crew Status.",
@@ -25,7 +25,7 @@ function Pilots() {
 }
 
 registerAugment({
-  id: "crew-pilots-section",
+  id: "crewpilots-section",
   augments: "crew-status.sections",
   component: Pilots,
   channels: ["vessel.crew"],

@@ -4,7 +4,7 @@ import {
 } from "@ksp-gonogo/sitrep-sdk";
 
 const uplink = defineUplinkClient({
-  id: "check-in-watch",
+  id: "checkinwatch",
   version: "1.0.0",
   name: "Check-in Watch",
   description: "Flags a vessel on the System View when its check-in is overdue.",

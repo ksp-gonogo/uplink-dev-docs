@@ -172,6 +172,8 @@ export function typeMd(type, index) {
  * shapes reads as its arms rather than as one line to scroll.
  */
 function declarationText(type) {
+  const signature = type?.type === "reflection" ? type.declaration.signatures?.[0] : undefined;
+  if (signature?.typeParameters?.length && !type.declaration.children?.length) return ` ${methodText(signature)}`;
   if (type?.type === "union" && type.toString().length > 80) {
     return `\n  | ${type.types.map((m) => m.toString()).join("\n  | ")}`;
   }
@@ -588,7 +590,7 @@ function aliasParts(alias) {
   for (const arm of arms) {
     if (arm?.type === "reflection" && arm.declaration.children?.length) parts.push({ members: arm.declaration.children });
     else if (arm?.type === "reference" && arm.reflection?.kind === ReflectionKind.Interface) parts.push({ members: ownMembers(arm.reflection).own, from: arm.reflection });
-    else if (arm?.type === "reference") parts.push({ unread: arm.name });
+    else if (arm?.type === "reference") parts.push({ unread: arm.name, say: unreadSentence(arm) });
     else if (arm?.type === "union" && arm.types.every((t) => t.type === "reflection")) {
       parts.push({ choices: arm.types.map((t) => (t.declaration.children ?? []).filter((c) => String(c.type) !== "never")) });
     }
@@ -596,15 +598,31 @@ function aliasParts(alias) {
   return parts.some((part) => !part.unread) ? parts : [];
 }
 
+/**
+ * What an arm the package cannot list adds to the props, said in words. A
+ * built-in utility type is read through to the type it wraps rather than named.
+ */
+function unreadSentence(arm) {
+  const [subject, keys] = arm.typeArguments ?? [];
+  const named = subject?.type === "reference" ? code(subject.name) : undefined;
+  if (named && ["Readonly", "Partial", "Required"].includes(arm.name)) return `It also takes every prop of ${named}, which the package does not export.`;
+  if (named && arm.name === "Omit") {
+    const left = keys?.type === "literal" ? ` except ${code(String(keys.value))}` : keys?.type === "union" ? ` except ${keys.types.map((t) => code(String(t.value ?? t))).join(" and ")}` : "";
+    return `It also takes every prop of ${named}${left}, which the package does not export.`;
+  }
+  return `It also takes every prop of ${code(arm.name)}, which the package does not export.`;
+}
+
 /** The props table of a type alias built of object types, with what it cannot list said in words. */
 function aliasPropsMd(alias, index) {
   const parts = aliasParts(alias);
   if (parts.length === 0) return "";
-  const members = parts.flatMap((part) => part.members ?? part.choices?.flat() ?? []);
+  const alternative = (m) => Object.create(m, { flags: { value: { ...m.flags, isOptional: true } } });
+  const members = parts.flatMap((part) => part.members ?? part.choices?.flat().map(alternative) ?? []);
   const unique = [...new Map(members.map((m) => [m.name, m])).values()];
   const notes = [];
   for (const part of parts) {
-    if (part.unread) notes.push(`It also takes every prop of ${code(part.unread)}, which the package does not export.`);
+    if (part.unread) notes.push(part.say);
     if (part.choices) {
       const sets = part.choices.map((arm) => arm.map((m) => code(m.name)).join(" and "));
       notes.push(`Pass exactly one of ${sets.join(" or ")}.`);

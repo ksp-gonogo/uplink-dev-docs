@@ -5,7 +5,7 @@ import {
 } from "@ksp-gonogo/sitrep-sdk";
 
 const uplink = defineUplinkClient({
-  id: "crew-seats",
+  id: "crewseats",
   version: "1.0.0",
   name: "Crew Seats",
   description: "Adds a free seats readout to the Astronaut Complex.",

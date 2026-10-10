@@ -5,7 +5,7 @@ import {
 } from "@ksp-gonogo/sitrep-sdk";
 
 const uplink = defineUplinkClient({
-  id: "crew-experience",
+  id: "crewexperience",
   version: "1.0.0",
   name: "Crew Experience",
   description: "Adds an experience meter to each kerbal in Crew Status.",

@@ -6,7 +6,7 @@ import {
 import { Badge, Box } from "@ksp-gonogo/ui-kit";
 
 const uplink = defineUplinkClient({
-  id: "dock-angles",
+  id: "dockangles",
   version: "1.0.0",
   name: "Dock Angles",
   description: "Reads out the docking approach angles over the Targeting view.",
@@ -37,7 +37,7 @@ function AngleReadout({
 }
 
 registerAugment({
-  id: "dock-angles-readout",
+  id: "dockangles-readout",
   augments: "targeting.overlay",
   component: AngleReadout,
   owner: uplink,

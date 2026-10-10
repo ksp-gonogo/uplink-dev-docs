@@ -6,7 +6,7 @@ import {
 import { Badge, Section, Text } from "@ksp-gonogo/ui-kit";
 
 const uplink = defineUplinkClient({
-  id: "crew-check",
+  id: "crewcheck",
   version: "1.0.0",
   name: "Crew Check",
   description: "Warns in the Launch Director preflight when no crew is picked.",
@@ -23,7 +23,7 @@ function CrewCheck({ selectedCrew }: SlotProps<"launch-director.preflight">) {
 }
 
 registerAugment({
-  id: "crew-check-preflight",
+  id: "crewcheck-preflight",
   augments: "launch-director.preflight",
   component: CrewCheck,
   owner: uplink,

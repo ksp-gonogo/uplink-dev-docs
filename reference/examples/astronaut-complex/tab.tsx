@@ -6,7 +6,7 @@ import {
 import { Section, Stat, Unit } from "@ksp-gonogo/ui-kit";
 
 const uplink = defineUplinkClient({
-  id: "crew-budget",
+  id: "crewbudget",
   version: "1.0.0",
   name: "Crew Budget",
   description: "Adds a Budget tab to the Astronaut Complex.",
@@ -27,7 +27,7 @@ function Budget() {
 }
 
 registerAugment({
-  id: "crew-budget-tab",
+  id: "crewbudget-tab",
   augments: "astronaut-complex.tab",
   label: "Budget",
   component: Budget,

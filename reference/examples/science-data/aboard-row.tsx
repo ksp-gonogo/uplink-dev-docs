@@ -7,7 +7,7 @@ import {
 import { Text, Unit } from "@ksp-gonogo/ui-kit";
 
 const uplink = defineUplinkClient({
-  id: "science-worth",
+  id: "scienceworth",
   version: "1.0.0",
   name: "Science Worth",
   description: "Adds the science worth of each file to the Science Data aboard rows.",
@@ -26,7 +26,7 @@ function Worth({ subjectId }: SlotProps<"science-data.aboard-row">) {
 }
 
 registerAugment({
-  id: "science-worth-row",
+  id: "scienceworth-row",
   augments: "science-data.aboard-row",
   component: Worth,
   channels: ["science.experiments"],

@@ -8,7 +8,7 @@ import {
 import { Button } from "@ksp-gonogo/ui-kit";
 
 const uplink = defineUplinkClient({
-  id: "warp-cruise",
+  id: "warpcruise",
   version: "1.0.0",
   name: "Warp Cruise",
   description: "Adds a button to the Warp Control stepper that warps to cruise speed.",
@@ -35,7 +35,7 @@ function CruiseButton() {
 }
 
 registerAugment({
-  id: "warp-cruise-button",
+  id: "warpcruise-button",
   augments: "warp-control.stepper",
   component: CruiseButton,
   channels: ["time.warp"],

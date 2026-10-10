@@ -5,7 +5,7 @@ import {
 } from "@ksp-gonogo/sitrep-sdk";
 
 const uplink = defineUplinkClient({
-  id: "engine-status",
+  id: "enginestatus",
   version: "1.0.0",
   name: "Engine Status",
   description: "Marks an engine part on the Ship Map when it has flamed out.",

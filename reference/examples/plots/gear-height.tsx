@@ -1,7 +1,7 @@
 import { defineUplinkClient, type PlotEntry } from "@ksp-gonogo/sitrep-sdk";
 
 const uplink = defineUplinkClient({
-  id: "gear-guide",
+  id: "gearguide",
   version: "1.0.0",
   name: "Gear Guide",
   description: "Draws the height at which landing gear should be down on a plot.",

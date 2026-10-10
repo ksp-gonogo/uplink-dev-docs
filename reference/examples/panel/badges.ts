@@ -5,7 +5,7 @@ import {
 } from "@ksp-gonogo/sitrep-sdk";
 
 const uplink = defineUplinkClient({
-  id: "crew-capacity",
+  id: "crewcapacity",
   version: "1.0.0",
   name: "Crew Capacity",
   description: "Badges the Crew Status header when the cabin is full.",

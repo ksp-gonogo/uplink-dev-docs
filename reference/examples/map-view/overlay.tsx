@@ -6,7 +6,7 @@ import {
 import { TONE_MARK, TONE_TEXT } from "@ksp-gonogo/ui-kit";
 
 const uplink = defineUplinkClient({
-  id: "launch-sites",
+  id: "launchsites",
   version: "1.0.0",
   name: "Launch Sites",
   description: "Marks the launch sites on the Map View.",
@@ -43,7 +43,7 @@ function KerbalSpaceCenter({
 }
 
 registerAugment({
-  id: "launch-sites-ksc",
+  id: "launchsites-ksc",
   augments: "map-view.overlay",
   component: KerbalSpaceCenter,
   owner: uplink,

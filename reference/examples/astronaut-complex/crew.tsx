@@ -6,7 +6,7 @@ import {
 import { Text } from "@ksp-gonogo/ui-kit";
 
 const uplink = defineUplinkClient({
-  id: "crew-training",
+  id: "crewtraining",
   version: "1.0.0",
   name: "Crew Training",
   description: "Adds a training course to each kerbal in the Astronaut Complex.",
@@ -28,7 +28,7 @@ function Course({ kerbalName }: SlotProps<"astronaut-complex.crew">) {
 }
 
 registerAugment({
-  id: "crew-training-course",
+  id: "crewtraining-course",
   augments: "astronaut-complex.crew",
   component: Course,
   owner: uplink,

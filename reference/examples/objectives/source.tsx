@@ -8,7 +8,7 @@ import {
 } from "@ksp-gonogo/sitrep-sdk";
 
 const uplink = defineUplinkClient({
-  id: "ascent-goals",
+  id: "ascentgoals",
   version: "1.0.0",
   name: "Ascent Goals",
   description: "Adds ascent goals to the Objectives widget as a source of its own.",
@@ -33,7 +33,7 @@ function AscentGoals({ Section }: SlotProps<"objectives.source">) {
 }
 
 registerAugment({
-  id: "ascent-goals-source",
+  id: "ascentgoals-source",
   augments: "objectives.source",
   component: AscentGoals,
   channels: ["vessel.flight"],

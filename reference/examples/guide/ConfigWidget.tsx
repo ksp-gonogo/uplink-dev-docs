@@ -3,7 +3,7 @@ import { ConfigForm, Panel, Section, Switch, Text, Unit, useModalSaveBar } from 
 import { useMemo, useState } from "react";
 
 const uplink = defineUplinkClient({
-  id: "altitude-board-settings",
+  id: "altitudeboardsettings",
   version: "1.0.0",
   name: "Altitude Board",
   description: "A widget that draws the craft's altitude, with settings an operator changes.",
@@ -40,7 +40,7 @@ function AltitudeBoard({ config }: Readonly<{ config?: AltitudeConfig }>) {
 }
 
 registerComponent<AltitudeConfig>({
-  id: "altitude-board-settings",
+  id: "altitudeboardsettings",
   name: "Altitude Board",
   description: "The craft's altitude, with vertical speed an operator can switch on in the widget's settings.",
   tags: ["telemetry"],
