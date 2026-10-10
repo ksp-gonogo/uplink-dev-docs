@@ -20,7 +20,7 @@ Every name a plugin binds, by reflection or by a reference, comes from the mod's
 
 ## By reflection
 
-A class holding everything the plugin reads from the mod, found once, when the game loads. This example reaches KSP's own `Planetarium` as a stand-in, so it compiles and runs with no mod installed; a real Uplink names its mod's assembly, types and members in the same places:
+A class holding everything the plugin reads from the mod, found once, when the game loads. This example reaches KSP's own `Planetarium` as a stand-in, so it compiles and runs with no mod installed (in a unit test outside the game it reports the mod missing, as `Assembly-CSharp` is not loaded); a real Uplink names its mod's assembly, types and members in the same places:
 
 <<< ../../reference/examples/mod/WrappingExample.cs#binder{cs}
 
@@ -40,7 +40,7 @@ Add the mod's DLL to `mod/<GameData name>.csproj` with `Private="false"`, so it 
 </Reference>
 ```
 
-`KspGameData` is your KSP install's `GameData` folder, set the same way as `KspManaged` ([The plugin class](/guide/plugin#calling-the-game)): `new --ksp`, `KSP_ROOT`, or `ksp.local.props`. Then:
+`KspGameData` is your KSP install's `GameData` folder, found from the same `KspRoot` that gives `KspManaged` ([The plugin class](/guide/plugin#calling-the-game)): `new --ksp`, `KSP_ROOT`, or `ksp.local.props`. The backslashes are MSBuild's, which accepts them on every platform. Then:
 
 - **Make the mod a dependency** in `mod/<GameData name>.netkan`'s `depends`, so CKAN never installs your Uplink without it
 - **Check the version you were given** before you use it. SCANsat's and MechJeb's Uplinks probe the mod's assembly in `Register` for every type and member they call and for a known-good version range, and go unavailable with the reason when the probe fails: [SCANsat's VersionGuard.cs](https://github.com/ksp-gonogo/gonogo-uplinks/blob/addc1fa21877b9de1e60909f4ec572d3b51a86ef/uplinks/scansat/mod/VersionGuard.cs)
@@ -51,13 +51,13 @@ A build server has no KSP install, so a plugin that references the game or a mod
 
 <<< ../../reference/examples/mod/WrappingExample.cs#manifest{cs}
 
-The manifest is trimmed to what this section is about; a real one also carries `Name`, `Author`, `Repo` and the client fields, as on [The plugin class](/guide/plugin#the-manifest). `AvailableTopic` and `UtTopic` are the class's constants for `clock.available` and `clock.ut`, and `_mod` the binder above, constructed with the plugin.
+The manifest is trimmed to what this section is about: the `Id` and `Version` are written out here, where a real one takes `Version`, `Name`, `Author` and `Repo` from `Provenance` and carries the client fields, as on [The plugin class](/guide/plugin#the-manifest). `AvailableTopic` and `UtTopic` are the class's constants for `clock.available` and `clock.ut`, and `_mod` is the binder above, which the plugin's constructor creates once with `new` (the binder finds the mod when it is constructed).
 
 <<< ../../reference/examples/mod/WrappingExample.cs#register{cs}
 
 <<< ../../reference/examples/mod/WrappingExample.cs#health{cs}
 
-- **Publish `<id>.available`** (here `clock.available`), a boolean the plugin answers whether or not the mod is there, declared `TrueNow` because it is a fact about this install. Most of the gonogo-uplinks Uplinks that publish Topics do. A client tells "the mod is not installed" (`false`) from "nothing has arrived yet" (pending)
+- **Publish `<id>.available`** (here `clock.available`), a boolean the plugin answers whether or not the mod is there, declared `TrueNow` because it is a fact about this install. A client tells "the mod is not installed" (`false`) from "nothing has arrived yet" (pending)
 - **Return early from `Register`** when the mod is missing, after `IUplinkHost.SetAvailability` with the reason, so no source runs against a mod that is not there
 - **Report it from `Health`**, with the same reason as the `UplinkHealth`'s `Detail`, its second argument: the app draws it in place of the Uplink's widgets
 - **Declare commands only when the mod is there.** TestFlight's manifest lists its repair command only when TestFlight loaded, so on an install without it the command does not exist rather than failing when sent
@@ -70,7 +70,7 @@ Its payload is a bare boolean, so it needs no wire type in the contract slice: t
 
 `registerBarePrimitiveTopic` makes the id known at runtime, the way the generated Topics are, and its reference entry has the detail.
 
-`<id>.available` also makes the Uplink's id a [Domain](/reference/concepts/domain-and-seat): a client's augment that names it in `requires` mounts once the Topic has published anything, `true` or `false`, which says the Uplink is installed. Read its value for whether the mod is.
+`<id>.available` also makes the Uplink's id a [Domain](/reference/concepts/domain-and-seat): an [augment](/reference/concepts/augment-contribution-and-slot) a client registers with the Uplink's id in its `requires` list mounts once the Topic has published anything, `true` or `false`, which says the Uplink is installed. Read its value for whether the mod is.
 
 ## Reading on the main thread
 
@@ -78,9 +78,11 @@ Every read of a mod's state goes in the first function of `IUplinkHost.AddSample
 
 ## What the save has not unlocked
 
-Some of a mod's state is not the operator's to see until the career has earned it, such as a scanner's data before the part is researched. A `ChannelDeclaration` or `CommandDeclaration` takes `Requires`, an array of `CommandRequirement`: what the save must have unlocked before the channel carries anything or the command runs, checked by Gonogo, so neither the plugin nor a widget checks it. Each requirement names a `Kind`, and an evaluator registered under that kind decides it. When the rule is the mod's own, write the evaluator, an `ICommandGateEvaluator`, and register it with `IUplinkHost.AddGateEvaluator`:
+Some of a mod's state is not the operator's (the person using the app) to see until the career has earned it, such as a scanner's data before the part is researched. A `ChannelDeclaration` or `CommandDeclaration` takes `Requires`, an array of `CommandRequirement`: what the save must have unlocked before the channel carries anything or the command runs, checked by Gonogo, so neither the plugin nor a widget checks it. Each requirement names a `Kind`, and an evaluator registered under that kind decides it. When the rule is the mod's own, write the evaluator, an `ICommandGateEvaluator`, and register it with `IUplinkHost.AddGateEvaluator`:
 
 <<< ../../reference/examples/mod/WrappingExample.cs#gate{cs}
+
+In that snippet `unlocked` stands for however your plugin learns the state, such as a flag the main-thread read of the mod sets.
 
 `Evaluate` returns `GateVerdict.Pass()`, a refusal such as `GateVerdict.NotUnlocked` with the sentence the operator reads, or `GateVerdict.Unknown` when the state it needs has not been read. A kind a declaration names with no evaluator registered for it is a startup failure, checked once every Uplink has registered, so a gate cannot silently not exist. MechJeb's Uplink locks its autopilot commands by MechJeb's own unlock check, in [MechJebUnlockGate.cs](https://github.com/ksp-gonogo/gonogo-uplinks/blob/addc1fa21877b9de1e60909f4ec572d3b51a86ef/uplinks/mechjeb/mod/MechJebUnlockGate.cs).
 

@@ -2,7 +2,7 @@
 
 The plugin is one class in `mod/`, `ExampleUplink.cs`. This page covers what Gonogo needs from it: how it is found, what its manifest declares, where its work is wired up, and how it reports its own health.
 
-The snippets on this page come from the finished example, so they already carry the `example.reset` command (`ResetCommand`, its declaration and its handler) that [Accepting a command](/guide/commands) adds. The file `new` writes is the same without those lines.
+The snippets on this page come from the finished example, so they already carry the `example.reset` command (`ResetCommand`, its declaration and its handler) that [Accepting a command](/guide/commands) adds. The file `new` writes is the same without those lines. The Health, unavailable and sampled-source snippets come from a separate file of sketches, compiled against the contract: they are not in the example, and their fields (`_modLoaded`, `_staleSamples`) stand for state your own plugin finds when the game loads, which [Wrapping a mod](/guide/wrapping-a-mod) shows being found.
 
 Two threads matter throughout. The **main thread** is the game's own, the only one that may touch KSP. The **Courier thread** is the Gonogo mod's background thread, which samples every Topic and writes the stream; code running on it must never touch the game.
 
@@ -10,7 +10,7 @@ Two threads matter throughout. The **main thread** is the game's own, the only o
 
 <<< ../../example/mod/ExampleUplink.cs#declaration{cs}
 
-When the game loads, Gonogo scans every assembly that references `Sitrep.Contract`, as the scaffold's project does, for a class carrying `SitrepUplinkAttribute`, and constructs it, so the class needs a public constructor with no parameters. The attribute's argument is the Uplink's id, the same id as in `uplink.json`.
+When the game loads, The Gonogo mod scans every assembly that references `Sitrep.Contract`, as the scaffold's project does, for a class carrying `SitrepUplinkAttribute`, and constructs it, so the class needs a public constructor with no parameters. The attribute's argument is the Uplink's id, the same id as in `uplink.json`.
 
 The class implements `ISitrepUplink`, which is three members: `Manifest`, `Register` and `Health`.
 
@@ -23,7 +23,7 @@ The class implements `ISitrepUplink`, which is three members: `Manifest`, `Regis
 - **`Id`** must equal the attribute's id
 - **`Version`, `Name`, `Author` and `Repo`** come from `Provenance`, a class `bake` writes into `mod/Provenance.g.cs` from `uplink.json` and `client/package.json`, so the plugin and the client always carry one version
 - **`ExpectedClientHash` and `ClientSource`**, also written by `bake`, say where the client bundle is and which bundle this plugin vouches for. The app loads a client only for a plugin that vouches for its hash ([Releasing and installing](/guide/release#how-the-app-loads-a-client))
-- **`Channels`** lists the Topics the plugin publishes ([Publishing a Topic](/guide/topics))
+- **`Channels`** lists the Topics the plugin publishes ([Publishing a Topic](/guide/topics)): `Delivery`, `Emission` and `keyframeIntervalUt` in the heartbeat's declaration are covered there
 - **`Commands`** lists the commands it accepts ([Accepting a command](/guide/commands))
 
 ## Register
@@ -38,11 +38,11 @@ There is no matching teardown: the Uplink lives as long as the game does, so any
 
 <<< ../../example/mod/ExampleUplink.cs#health{cs}
 
-`Health` returns an `UplinkHealth`: an `UplinkHealthState`, with a sentence the operator reads beside it.
+`Health` returns an `UplinkHealth`: an `UplinkHealthState`, with a sentence the operator (the person using the app) reads beside it.
 
 <!--@include: @/.vitepress/includes/uplink-health-states.md-->
 
-Gonogo polls it repeatedly, once per sample of the `system.uplinks` Topic, the one Topic that reports every Uplink's health and off the main thread, so it must be cheap, must not block, and must not touch the game. The heartbeat has nothing to report; an Uplink wrapping another mod reports that mod's state:
+The Gonogo mod polls it repeatedly: once per sample of the `system.uplinks` Topic, which reports every Uplink's health, and off the main thread. So it must be cheap, must not block, and must not touch the game. The heartbeat has nothing to report; an Uplink wrapping another mod reports that mod's state:
 
 <<< ../../reference/examples/mod/GuideExamples.cs#health{cs}
 
@@ -68,7 +68,7 @@ A plugin that reads live game state, rather than the snapshot every source share
 </Reference>
 ```
 
-`KspManaged` comes from your KSP folder, the one holding `KSP_Data` (or `KSP.app`) and `GameData`. Give it as `new --ksp <folder>`, as the `KSP_ROOT` environment variable, as `-p:KspRoot=<folder>` on a build, or in a `ksp.local.props` beside `Directory.Build.props`:
+`KspManaged` is KSP's `Managed` assemblies folder, which the build finds from your KSP folder (`KspRoot`), the one holding `KSP_Data` (or `KSP.app`) and `GameData`. Give that folder as `new --ksp <folder>`, as the `KSP_ROOT` environment variable, as `-p:KspRoot=<folder>` on a build, or in a `ksp.local.props` beside `Directory.Build.props`:
 
 ```xml
 <Project><PropertyGroup><KspRoot>/path/to/KSP</KspRoot></PropertyGroup></Project>
@@ -79,6 +79,8 @@ A build that needs it and cannot find it says which of these to set.
 **A source registered with `IUplinkHost.AddSampledSource`** rather than `AddChannelSource`. It takes two functions: the first runs on the main thread, where reading the game is safe, and returns plain data; the second runs on the Courier thread with exactly what the first returned, and publishes it.
 
 <<< ../../reference/examples/mod/GuideExamples.cs#sampled{cs}
+
+The comment in that snippet assumes a `ChannelDeclaration` for `example.status` in the manifest's `Channels`, as the manifest above declares `example.heartbeat`: `host.Publisher` for a Topic the manifest does not declare is refused. The second argument to `Publish` is the game time the payload was true at.
 
 A second overload takes, after the two functions, the Topic prefixes the source publishes (an exact Topic is its own prefix), and skips the main-thread read on every tick no client is watching them; [Wrapping a mod](/guide/wrapping-a-mod#reading-on-the-main-thread) uses it. Never pass a live game object, such as a `Vessel` or a `Part`, from the first function to the second: reading one off the main thread can crash the game.
 

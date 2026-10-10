@@ -1,6 +1,6 @@
 # Concepts
 
-Some of the API is built on ideas no single type holds: what "current" means for a value that crossed a signal delay, where an operator is sitting, what a model may claim. This page introduces each one, in the order a new author meets them. The Reference's concept pages, written beside the code they explain, give each its full definition.
+Some of the API is built on ideas no single type holds: what "current" means for a value that crossed a signal delay, where an operator is sitting, what a model may claim. This page introduces each one, in the order a new author meets them. The Reference's concept pages give each its full definition.
 
 ## Topics and samples
 
@@ -14,7 +14,7 @@ A widget never reads a bare value. It reads a **reading**: the latest value toge
 
 ## Signal delay and command centres
 
-Gonogo can model the time a radio signal takes to cross space. An operator works from a **command centre**, and a craft far from it is seen as it was when its signal left: its telemetry arrives after the delay, and a command sent to it arrives after the delay too. A mission can have several command centres at different distances from the same craft.
+Gonogo can model the time a radio signal takes to cross space. An operator works from a **command centre**, and a craft far from it is seen as it was when its signal left: its telemetry arrives after the delay, and a command sent to it arrives after the delay too. A mission can have several command centres at different distances from the same craft; a **vantage** is the view from one of them.
 
 This is why each channel, in its declaration, and each command, in its arguments' attribute, declares a delay role: `Delayed` for anything about a craft, which waits for the signal, and `TrueNow` for anything about the ground or the connection, which does not. A command's `send` resolves only once the command has run, which can be minutes after it was sent, and `CommandDelay` shows the operator where it is. See [Delay and vantage](/reference/concepts/delay-and-vantage).
 
@@ -24,7 +24,7 @@ Between samples, and across a signal delay, the last value received is older tha
 
 ## Values and units
 
-A quantity in a payload is a `Value`: a number with its unit, such as `Value<"m/s">`. Values convert between units and compare with each other, so a widget compares a speed with `lessThan` rather than with a bare number, and `Unit` draws a value in the unit its size suits, such as kilometres for a long distance, unless you pin one with its `format` or `as` prop. [Units and values](/reference/client/units-and-values) defines them.
+A quantity in a payload is a `Value`: a number with its unit, such as `Value<"m/s">`. The unit id on the client (`"m/s"`, `"ut"`, `"count"`, `"ratio"`) is what the plugin's `Units.MetresPerSecond`, `Units.UniversalTime`, `Units.Count` and `Units.Ratio` arrive as; [Publishing a Topic](/guide/topics#the-payload-type) lists the C# side. Values convert between units and compare with each other, so a widget compares a speed with `lessThan` rather than with a bare number, and `Unit` draws a value in the unit its size suits, such as kilometres for a long distance, unless you pin one with its `format` or `as` prop. [Units and values](/reference/client/units-and-values) defines them.
 
 ## Extending the app's widgets
 

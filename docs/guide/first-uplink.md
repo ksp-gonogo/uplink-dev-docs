@@ -24,9 +24,10 @@ What the answers do:
 
 - **The id** names the Uplink everywhere: lower-case letters and digits, 2 to 30 of them, starting with a letter. It prefixes the Topics (`example.heartbeat`), the widget ids (`example-heartbeat`) and the C# names: the namespace and assembly are `Gonogo` + the id capitalised + `Uplink` (`GonogoExampleUplink`), and the plugin class is the id capitalised + `Uplink` (`ExampleUplink`). Choose one no other Uplink a player might install is likely to use
 - **`--name`** is the display name, shown in the app and on the generated page
-- **The author** is shown to the operator when the app asks whether to load your client
+- **The author** is shown to the operator (the person using the app) when it asks whether to load your client
 - **`--repo`** sets where the released client bundle is fetched from ([Releasing and installing](/guide/release#hosting-the-client)). `acme/example` becomes `https://github.com/acme/example` in `uplink.json`. Use your own GitHub owner: an owner named `you` is the placeholder, and `release` refuses it
-- **`--topics core`** makes an Uplink that publishes nothing of its own: its widget reads one of Gonogo's own Topics, and it has no contract slice. This Guide builds one with Topics of its own
+- **`--topics core`** makes an Uplink that publishes nothing of its own: its widget reads a Topic Gonogo already publishes, and the plugin exists only to announce the client, so it has no contract slice. **`--topics own`**, the default, adds the contract slice and generated types this Guide uses. This Guide builds one with Topics of its own
+- **`--no-repo`** and **`--no-ksp`** decline the two answers that depend on your machine: a GitHub repository, and a KSP folder
 - **`--workflows`** writes a GitHub Actions workflow that checks both halves on every push
 - **`--ksp`** writes your KSP folder into `ksp.local.props`, for a plugin that calls the game ([The plugin class](/guide/plugin#calling-the-game)). It is kept out of git
 
@@ -48,7 +49,7 @@ example/
 │                                   written by bake, never committed
 ├── mod-contract/                 the contract slice: the Uplink's own wire types
 │   ├── ExamplePayloads.cs          the payload of each Topic, the arguments of each command
-│   ├── ExampleRtConfig.cs          the Reinforced.Typings configuration codegen runs:
+│   ├── ExampleRtConfig.cs          the [Reinforced.Typings](https://www.nuget.org/packages/Reinforced.Typings) configuration (the library that writes TypeScript from C#) codegen runs:
 │                                     which of those types it turns into TypeScript
 │   └── GonogoExampleUplink.Contract.csproj
 ├── mod-contract-codegen/         the build codegen runs, never shipped
@@ -57,11 +58,12 @@ example/
 │   └── GonogoExampleUplink.Tests.csproj
 └── client/                       the client package
     ├── package.json
-    ├── tsconfig.json, tsconfig.nodenext.json
+    ├── tsconfig.json, tsconfig.nodenext.json  the client's types, checked twice: under the
+    │                               bundler's resolution and under Node's (npm run typecheck)
     ├── vitest.config.ts            the test runner's settings
     ├── README.md                   the generated page
-    ├── gonogo-uplink.json          what the app reads about the client
-    ├── docs/widgets.json           a record of each widget
+    ├── gonogo-uplink.json          the client's id, version and integrity hash, which the app reads before it loads the bundle
+    ├── docs/widgets.json           each widget's registration (name, description, channels, sizes) as data
     └── src/
         ├── index.ts                the bundle's entry: imports every registration
         ├── uplink.ts               the client's identity
@@ -78,7 +80,7 @@ The **contract slice** is a small assembly holding the C# classes that describe 
 
 <<< ../../example/uplink.json
 
-This is the example's, made with `--author "Uplink docs"` and `--repo ksp-gonogo/uplink-dev-docs`; yours holds your own answers. The Uplink's identity, where its plugin and client go, and how codegen runs. [uplink.json](/guide/uplink-json) lists each field and the command that reads it. The version lives in `client/package.json` instead, and two other places repeat it: `UPLINK_VERSION` in `client/src/uplink.ts`, and the version folder in `client.url`.
+This is the example's, made with `--author "Uplink docs"` and `--repo ksp-gonogo/uplink-dev-docs`; yours holds your own answers, and `client.url` is where the released bundle will be fetched from ([Releasing and installing](/guide/release#hosting-the-client)). The file holds the Uplink's identity, where its plugin and client go, and how codegen runs. [uplink.json](/guide/uplink-json) lists each field and the command that reads it. The version lives in `client/package.json` instead, and two other places repeat it: `UPLINK_VERSION` in `client/src/uplink.ts`, and the version folder in `client.url`.
 
 ## Prove it works
 
@@ -92,7 +94,7 @@ dotnet test ../mod-tests
 
 ## What to commit
 
-Everything except what `.gitignore` names: `node_modules`, the build outputs, `ksp.local.props`, and the three `*.g.cs` files `bake` writes into `mod/`, of which `ClientSource.g.cs` can hold a path on the machine that baked it (`DevPath`). Commit `client/src/__generated__/`, the generated page files and `package-lock.json`: a reader of your repository, and CI, use them without running the generators.
+Everything except what `.gitignore` names: `node_modules`, the build outputs, `ksp.local.props`, and the three `*.g.cs` files `bake` writes into `mod/`, of which `ClientSource.g.cs` can hold a path on the machine that baked it (`DevPath`, the local address a development build loads the client from: [See your Uplink in the app](/guide/dev-loop)). Commit `client/src/__generated__/`, the generated page files and `package-lock.json`: a reader of your repository, and CI, use them without running the generators.
 
 ## The heartbeat
 
@@ -104,8 +106,8 @@ The heartbeat is a placeholder for your own Topics and widgets, and `new` writes
 
 - **The `description`** in `client/src/uplink.ts`, which the closing message names
 - **The heartbeat widget**: `client/src/Heartbeat/`, with its test `index.test.tsx` and its fixture `__fixtures__/beating.json`, and the two lines of `client/src/index.ts` that import and export it
-- **Every `<id>.heartbeat` reference**: `HeartbeatTopic` and its channel and source in `mod/<Id>Uplink.cs`, the payload class in `mod-contract/<Id>Payloads.cs`, its entry in the wire types of `mod-contract/<Id>RtConfig.cs`, its line in the `declare module` block of `client/src/topics.ts` and that file's example comment, and the test in `mod-tests/<Id>UplinkTests.cs` that names it
-- **The netkan** `mod/<GameData name>.netkan`: its `abstract` describes the heartbeat, and its `depends` names only `GonogoCore`, so add the mod you wrap ([Wrapping a mod](/guide/wrapping-a-mod#by-a-compile-time-reference)); its `license` is `MIT` until you change it
+- **Every `<id>.heartbeat` reference**: `HeartbeatTopic` and its channel and source in `mod/<Id>Uplink.cs`, the payload class in `mod-contract/<Id>Payloads.cs`, its `typeof(...)` line in the wire-types array of `mod-contract/<Id>RtConfig.cs` ([Publishing a Topic](/guide/topics#generating-the-client-s-types)), its line in the `declare module` block of `client/src/topics.ts` and that file's example comment, and the test in `mod-tests/<Id>UplinkTests.cs` that names it
+- **The netkan** `mod/<GameData name>.netkan`: its `abstract` describes the heartbeat, and its `depends` names only `GonogoCore` (the Gonogo mod, as CKAN, the mod manager players install from, knows it), so add the mod you wrap ([Wrapping a mod](/guide/wrapping-a-mod#by-a-compile-time-reference)); its `license` is `MIT` until you change it
 - **`"mod": null`** in `uplink.json`, which names the mod you wrap, if any ([Wrapping a mod](/guide/wrapping-a-mod#in-uplink-json))
 
 `npm test` and `dotnet test ../mod-tests` both pass on what `new` wrote, so run them after each change: a code reference left behind fails to compile or fails a test. The netkan, the description and `uplink.json` fail nothing when left as they are, so read them over before a release.

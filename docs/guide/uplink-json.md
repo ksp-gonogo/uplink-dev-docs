@@ -1,12 +1,12 @@
 # uplink.json
 
-`uplink.json`, at the top of the Uplink, says what the Uplink is as a thing you distribute: its identity, where its plugin and client go, and how codegen runs. `new` writes it from your answers, and the commands read it. [`UplinkDeclaration`](/reference/client/uplink-manifest/manifest#UplinkDeclaration) documents every field, generated from the sdk's own doc comments, with [`UplinkWrappedMod`](/reference/client/uplink-manifest/manifest#UplinkWrappedMod) for `mod` and [`UplinkCodegenDeclaration`](/reference/client/uplink-manifest/manifest#UplinkCodegenDeclaration) for `codegen`. This page adds which command reads each one.
+`uplink.json`, at the top of the Uplink, says what the Uplink is as a thing you distribute: its identity, where its plugin and client go, and how codegen runs. `new` writes it from your answers, and the commands read it. [`UplinkDeclaration`](/reference/client/uplink-manifest/manifest#UplinkDeclaration) documents every field, so it cannot disagree with what reads it, with [`UplinkWrappedMod`](/reference/client/uplink-manifest/manifest#UplinkWrappedMod) for `mod` and [`UplinkCodegenDeclaration`](/reference/client/uplink-manifest/manifest#UplinkCodegenDeclaration) for `codegen`. This page adds which command reads each one.
 
 <<< ../../example/uplink.json
 
 <!--@include: @/.vitepress/includes/uplink-declaration-fields.md-->
 
-The version is not here: it is `version` in `client/package.json`, which `bake` writes into the plugin and `page` into the generated page.
+`minAppVersion` is the oldest Gonogo app release the Uplink is known to work with: the app warns below it and still loads the client. `new` writes `0.0.0`, which claims nothing; raise it to the app release you tested against. The version is not here: it is `version` in `client/package.json`, which `bake` writes into the plugin and `page` into the generated page.
 
 ## What `release` refuses
 

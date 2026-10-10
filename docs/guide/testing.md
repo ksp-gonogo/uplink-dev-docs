@@ -23,7 +23,7 @@ A widget rendered alone has no data, which is the waiting state, and worth a tes
 
 <<< ../../example/client/src/Heartbeat/index.test.tsx#reckoned
 
-`setupStreamFixture` builds the app's telemetry pipeline over a transport the test feeds by hand. Render inside its `Provider`, then `emit` payloads in the form the plugin sends them, plain numbers included, with the game time each was true at. `pinnedUt` fixes the operator's clock. Wrap emits in `act` and end with `store.beginFrame()`, so React and the pipeline both settle before you assert.
+`setupStreamFixture` builds the app's telemetry pipeline over a transport the test feeds by hand. Render inside its `Provider`, then `emit` payloads in the form the plugin sends them, plain numbers included, with the game time each was true at. `pinnedUt` fixes the game time the operator's screen is at (1000000 when a fixture names none; a test calling `setupStreamFixture` states it itself). Wrap emits in `act` and end with `store.beginFrame()`, so React and the pipeline both settle before you assert.
 
 `stopArriving` drops the link, so every reading the widget drew becomes [held](/reference/concepts/held). Further down the same file, with its own import so the block above stands alone:
 
@@ -50,7 +50,7 @@ The [`@ksp-gonogo/uplink-tools` README](https://www.npmjs.com/package/@ksp-gonog
 
 ## The plugin's tests
 
-`mod-tests/` is an xunit project that compiles the plugin's own sources, so a test constructs the plugin class and calls it directly: its manifest, its sample function, its command handlers. On a test project the `KspGonogo.Sitrep.Contract` package also brings `Sitrep.Contract.TestSupport`, with fake hosts and checks of the rules a manifest must follow, among them `CommandRegistrationAssertion` (every handler and publisher the plugin registers is one its manifest declares), `UnitCoverageAssertion` (every field of the contract slice names its unit), `ReckonabilityAssertion` (a field marked reckonable publishes what its model needs), `WirePayload` (a payload serialised the way the Gonogo mod writes it) and `ClockedUplinkHost` (a host that records what the plugin publishes). The Reference has no page for them yet; their doc comments are in the package. Run them with `dotnet test ../mod-tests` from `client/`.
+`mod-tests/` is an xunit project that compiles the plugin's own sources, so a test constructs the plugin class and calls it directly: its manifest, its sample function, its command handlers. On a test project the `KspGonogo.Sitrep.Contract` package also brings `Sitrep.Contract.TestSupport`, with fake hosts and checks of the rules a manifest must follow, among them `CommandRegistrationAssertion` (every handler and publisher the plugin registers is one its manifest declares), `UnitCoverageAssertion` (every field of the contract slice names its unit), `ReckonabilityAssertion` (a field the client has a reckoner for publishes what its model needs, [Writing a reckoner](/guide/reckoners)), `WirePayload` (a payload serialised the way the Gonogo mod writes it) and `ClockedUplinkHost` (a host that records what the plugin publishes). The Reference has no page for them yet; their doc comments are in the package. Run them with `dotnet test ../mod-tests` from `client/`.
 
 A plugin that references KSP's or a mod's assemblies has code the test project cannot compile, since it has no KSP. Keep that code in a file of its own, and leave that file out in `mod-tests/GonogoExampleUplink.Tests.csproj`, beside the line that compiles the plugin's sources:
 
@@ -82,7 +82,7 @@ dotnet test ../mod-tests
 
 `npx uplink-tools check` reads the client with the TypeScript compiler and reports what is wrong with it, with the one command that heals each finding. It exits 0 when nothing is found, 1 when findings remain, and 2 when it could not run. `--fix` writes the files `check` owns and then verifies again, and is refused when `CI` is set. `--only` and `--skip` take a comma-separated list of groups, and `--json` prints the findings and nothing else.
 
-A read `check` cannot name, such as a Topic chosen at runtime, takes a `// gonogo:reads <topic or family>` comment above the call. The groups are `declarations`, `page`, `manifest`, `bake`, `codegen`, `imports`, `plugin`, `actions` and `docs-prose`.
+A read `check` cannot name, such as a Topic chosen at runtime, takes a `// gonogo:reads <topic or family>` comment above the call, where a family is a pattern for a set of Topic ids with whole-segment `<name>` placeholders, such as one Topic per body. The groups are `declarations`, `page`, `manifest`, `bake`, `codegen`, `imports`, `plugin`, `actions` and `docs-prose`, one per part of the Uplink the rules read, and `docs-prose` has no rules yet so it is reported skipped.
 
 ## Checking the pictures
 

@@ -12,7 +12,7 @@ A command's arguments are a class in the contract slice, carrying `SitrepCommand
 
 The attribute is where a command's delay is declared. Its `Delay` defaults to `DelayRole.Delayed`: an order to a craft takes as long to arrive as the craft's telemetry does, and runs when it gets there. `TrueNow` runs it on arrival, for a command about the ground or about the plugin itself, like this reset.
 
-Arguments arrive as JSON and are matched to the class's properties by name, ignoring case. A property the app did not send keeps its default, so an absent nullable stays `null`. An enum accepts its number or its member's name in any case: for a property `Delay` of type `DelayRole`, `{ "delay": 1 }` and `{ "delay": "truenow" }` arrive as the same member. A `string` accepts only a string and a `bool` only a boolean.
+Arguments arrive as JSON and are matched to the class's properties by name, ignoring case. A property the app did not send keeps its default, so an absent nullable stays `null`. An enum accepts its number or its member's name in any case: for a property `Delay` of type `DelayRole`, `{ "delay": 1 }` and `{ "delay": "truenow" }` arrive as the same member (`DelayRole.TrueNow` is declared second, so its number is 1). A `string` accepts only a string and a `bool` only a boolean.
 
 ## Declaring it
 
@@ -26,19 +26,19 @@ The manifest's `Commands` list declares each command with a `CommandDeclaration`
 
 <<< ../../example/mod/ExampleUplink.cs#command{cs}
 
-`IUplinkHost.AddCommandHandler` registers the handler for a declared command. It returns `CommandResult.Ok()`, or `CommandResult.Fail(code, detail)`, where `code` is a `RefusalCode` taken from the [`CommandErrorCode`](/reference/mod/stream-messages#CommandErrorCode) class, such as `CommandErrorCode.Range` for an argument out of bounds, and `detail` is a sentence the operator reads. Check arguments and state here and refuse with the code that fits: the app shows it.
+`IUplinkHost.AddCommandHandler` registers the handler for a declared command. It returns `CommandResult.Ok()`, or `CommandResult.Fail(code, detail)`, where `code` is a [`RefusalCode`](/reference/mod/stream-messages#RefusalCode), one of the constants of the [`CommandErrorCode`](/reference/mod/stream-messages#CommandErrorCode) class, such as `CommandErrorCode.Range` for an argument out of bounds, and `detail` is a sentence the operator reads. Check arguments and state here and refuse with the code that fits: the app shows it.
 
-The codes are:
+The codes are, with what each means:
 
 <!--@include: @/.vitepress/includes/command-error-codes.md-->
 
-The Gonogo mod runs every handler on the game's main thread, so a handler may call the game. The thread waits for the handler, so return promptly and never wait on anything inside one. (`Sitrep.Contract` itself does not promise the main thread; [Known limits](/guide/limits#the-plugin) says what to do if you need to be safe without it.)
+The Gonogo mod runs every handler on the game's main thread, so a handler may call the game, and `Sitrep.Contract` itself does not promise that: write a handler that needs the main thread as the shipped mod gives it, and see [Known limits](/guide/limits#the-plugin) if you need to be safe without it. The thread waits for the handler, so return promptly and never wait on anything inside one.
 
 The count is shared between this handler, on the main thread, and the sample, on the Courier thread, so both change it through `Interlocked`, never with a plain `+=`.
 
 ## A command about a craft
 
-A delayed command about a craft names a `Subject` in its declaration: the Topic that describes the craft, so the command travels with that Topic's delay and is held while the craft is out of contact. A handler that replies with data returns `CommandResult<T>`, and its arguments' attribute names `T` as its `Payload`:
+A delayed command about a craft names a `Subject` in its declaration: the Topic that describes the craft, so the command travels with that Topic's delay and is held while the craft is out of contact (it has no signal path to the command centre). A handler that replies with data returns `CommandResult<T>`, and its arguments' attribute names `T` as its `Payload`:
 
 <<< ../../reference/examples/mod/Payloads.cs#args{cs}
 

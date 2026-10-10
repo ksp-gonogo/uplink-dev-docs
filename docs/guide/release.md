@@ -12,11 +12,11 @@ npm run release
 
 `release` runs five steps, in an order that matters:
 
-1. **Bundle** (`uplink-tools bundle`) the client into `client/dist/example/example.client.js` (the `dist/` inside `client/`), with `gonogo-uplink.json` beside it
-2. **Bake** (`uplink-tools bake`) into the plugin's generated files where the bundle will be hosted and the bundle's hash, a SHA-256 written `sha256-<hex>`
+1. **Bundle** (`uplink-tools bundle`) the client into `client/dist/example/example.client.js` (the `dist/` inside `client/`; the command runs from `client/`), with `gonogo-uplink.json` beside it
+2. **Bake** (`uplink-tools bake`) two things into the plugin's generated files: the URL the bundle will be hosted at, and the bundle's hash, a SHA-256 written `sha256-<hex>`
 3. **Compile** the plugin in Release
 4. **Check** that the compiled plugin carries the URL and hash that were baked
-5. **Package** (`uplink-tools package`) the plugin as `dist/GonogoExampleUplink.zip` in the Uplink's own folder, beside `client/` and not inside it, holding `GameData/GonogoExampleUplink/Plugins/` with the plugin and its contract slice, and nothing else, with the netkan beside it
+5. **Package** (`uplink-tools package`) the plugin as `dist/GonogoExampleUplink.zip` in the Uplink's own folder, beside `client/` and not inside it, holding `GameData/GonogoExampleUplink/Plugins/` with the plugin and its contract slice, and nothing else. The netkan (CKAN's metadata, see below) is written beside the zip, not inside it
 
 The app loads a client only when the plugin vouches for the exact bundle it fetched, so the bundle must be built and hashed before the plugin is compiled. A plugin compiled first builds and passes its tests, and the app shows none of its widgets. `release` refuses to run while `client.url` in `uplink.json` is still the placeholder `new` writes without a repository, and while the version's three places disagree ([A new version](#a-new-version)).
 
@@ -30,13 +30,15 @@ So a player needs only your plugin installed: the client follows from it.
 
 ## Hosting the client
 
-`client.url` in `uplink.json` is where the app fetches the bundle. With `--repo acme/example`, `new` points it at jsDelivr, which serves files from a GitHub repository:
+The order is: set the repository in `uplink.json` (`new --repo`), run `npm run release`, publish the bundle it built at `client.url`, then install the zip. `client.url` in `uplink.json` is where the app fetches the bundle, and it must be set before `release` bakes it, though the file need not exist there until a player's app loads it. With `--repo acme/example`, `new` points it at jsDelivr, which serves files from a GitHub repository:
 
 ```
 https://cdn.jsdelivr.net/gh/acme/example@releases/releases/example/0.0.1/example.client.js
 ```
 
-That is the file `releases/example/0.0.1/example.client.js` on your repository's `releases` branch. To publish the first version, from the Uplink's folder, with git 2.42 or later (the folder must be a git repository with at least one commit and an `origin` remote; run `git init`, commit and add the remote first if it is not):
+That is the file `releases/example/0.0.1/example.client.js` on your repository's `releases` branch. To publish the first version, from the Uplink's folder, with git 2.42 or later (`git --version` shows it; the folder must be a git repository with at least one commit and an `origin` remote; run `git init`, commit and add the remote first if it is not):
+
+`git worktree add --orphan` makes a worktree on a new branch with no history, so the bundles stay off your source branch; `../example-releases` is any folder beside the Uplink's.
 
 ```bash
 git worktree add --orphan -b releases ../example-releases
@@ -50,7 +52,7 @@ In PowerShell, `mkdir -p` and `cp` are `New-Item -ItemType Directory -Force` and
 
 `new` writes this URL only when it knows the repository, from `--repo` or this directory's GitHub remote. With `--no-repo`, or an owner named `you`, it writes a placeholder, and `release` refuses to run until you set `repo` and `client.url` in `uplink.json` to where the bundle will really be published ([uplink.json](/guide/uplink-json#what-release-refuses)).
 
-Never change a published file. The plugin vouches for one exact bundle, and jsDelivr keeps serving what it first fetched from a path; a new release is a new version folder. Any other host that serves files over HTTPS works too: put its URL in `client.url` before running `release`.
+Never change a published file. The plugin vouches for one exact bundle, and jsDelivr keeps serving what it first fetched from a path, so a changed file is refused as a hash mismatch. A wrong file published is fixed with a new version: bump the version ([A new version](#a-new-version)), release again and publish that version's folder. Any other host that serves files over HTTPS works too: put its URL in `client.url` before running `release`.
 
 ## A new version
 
@@ -64,18 +66,18 @@ Then run `npm run page`, since the page records the version, and `npm run releas
 
 ## Installing
 
-The zip holds the `GameData` folder, so unzip `dist/GonogoExampleUplink.zip` into the KSP folder that holds `GameData`:
+The zip holds the `GameData` folder and no netkan, so unzip `dist/GonogoExampleUplink.zip` into the KSP folder that holds `GameData`:
 
 ```
 KSP/GameData/GonogoExampleUplink/Plugins/GonogoExampleUplink.dll
 KSP/GameData/GonogoExampleUplink/Plugins/GonogoExampleUplink.Contract.dll
 ```
 
-Never put it inside `GameData/Gonogo/`, and never add a copy of `Sitrep.Contract.dll`: the Gonogo mod provides it. Start the game and connect the app ([Start here](/guide/#what-else-you-need) says where to get both). With KSP on the same computer the app connects to `localhost` on port 8090 with nothing to set; for another computer, set its address in the app's **Settings**, **Connection** tab, **Telemetry stream** row ([Connecting the dashboard to KSP](https://github.com/ksp-gonogo/gonogo/blob/main/docs/KSP-SETUP.md#connecting-the-dashboard-to-ksp)).
+Never put it inside `GameData/Gonogo/`, and never add a copy of `Sitrep.Contract.dll`: the Gonogo mod provides it. Start the game and connect the app ([Start here](/guide/#what-else-you-need) says where to get both). With KSP on the same computer the app connects to `localhost` on port 8090 with nothing to set; for another computer, set its address in the app's **Settings**, **Connection** tab, **Telemetry stream** row ([Connecting the dashboard to KSP](https://github.com/ksp-gonogo/gonogo/blob/main/docs/KSP-SETUP.md#connecting-the-dashboard-to-ksp), in the Gonogo repository).
 
 ## Checking it loaded
 
-A successful load writes nothing to `KSP.log`, so look for the Uplink's data: add its widget in the app, and it shows a value once the game is running a save. Two failures do write a line, marked `[ChannelEngine]`:
+A successful load writes nothing to `KSP.log`, so there is no line to search for; look for the Uplink's data: add its widget in the app, and it shows a value once the game is running a save. Two failures do write a line, marked `[ChannelEngine]`:
 
 ```
 uplink "example" marked UNAVAILABLE: registration threw: <message>
@@ -96,18 +98,18 @@ dotnet build ../mod -c Release
 Copy the two `.dll` files from `mod/bin/Release/` into `GameData/GonogoExampleUplink/Plugins/`, start the game, and leave the plugin there. Then serve the client:
 
 ```bash
-npm run bundle -- --serve 8000
+npx uplink-tools bundle --serve 8000
 ```
 
 It rebuilds the bundle on every save and serves it at the URL you baked. Edit, save, and reload the app's page to load the new client.
 
-A plugin with a development URL and no hash vouches for nothing, so the app loads its client unchecked, and only from `localhost`: each of its widgets says "Unvouched development client" on its panel, and the Uplink's status page says why. A station takes its clients from the main screen, which never passes on an unvouched one. Before releasing, rebuild with `npm run release`, which bakes the released URL and the bundle's hash: a plugin built for development is never one to install anywhere but your own machine. `release --dev-path` still bakes the bundle's hash, so it is not the loop above, and it does not zip what it builds.
+A plugin with a development URL and no hash vouches for nothing, so the app loads its client unchecked, and only from `localhost`: each of its widgets says "Unvouched development client" on its panel, and the Uplink's tab in the app's **Settings**, **Uplinks** says why. A station (another screen that takes its data from the main screen, the one connected to the game) takes its clients from the main screen, which never passes on an unvouched one. Before releasing, rebuild with `npm run release`, which bakes the released URL and the bundle's hash: a plugin built for development is never one to install anywhere but your own machine. `release --dev-path` still bakes the bundle's hash, so it is not the loop above, and it does not zip what it builds.
 
 ## CKAN and SpaceDock
 
-`release` writes `dist/GonogoExampleUplink.netkan` beside the zip: the metadata CKAN indexes a mod from, naming `GonogoCore`, the Gonogo mod's CKAN identifier, as a dependency, and installing the zip's `GameData/GonogoExampleUplink` folder. If your Uplink integrates another mod, add that mod to `mod/GonogoExampleUplink.netkan`'s `depends` (or `recommends`, when the Uplink is useful without it).
+`release` writes `dist/GonogoExampleUplink.netkan` beside the zip, a copy of `mod/GonogoExampleUplink.netkan`: the metadata CKAN indexes a mod from, naming `GonogoCore`, the Gonogo mod's CKAN identifier, as a dependency, and installing the zip's `GameData/GonogoExampleUplink` folder. If your Uplink integrates another mod, add that mod to `mod/GonogoExampleUplink.netkan`'s `depends` (or `recommends`, when the Uplink is useful without it).
 
-The netkan `new` writes has no `$kref`, the line telling CKAN where each release's zip is downloaded from, and CKAN needs one. Attach the zip to a release on your repository and add `"$kref": "#/ckan/github/<owner>/<repo>"`, or upload it to SpaceDock and add `"$kref": "#/ckan/spacedock/<mod id>"`. Submitting follows CKAN's own process:
+The netkan `new` writes, and so the copy `release` makes of it, has no `$kref`, the line telling CKAN where each release's zip is downloaded from, and CKAN needs one. Add it to `mod/GonogoExampleUplink.netkan`. Attach the zip to a release on your repository and add `"$kref": "#/ckan/github/<owner>/<repo>"`, or upload it to SpaceDock and add `"$kref": "#/ckan/spacedock/<mod id>"`. Submitting follows CKAN's own process:
 
 - [CKAN's guide to adding a mod](https://github.com/KSP-CKAN/CKAN/wiki/Adding-a-mod-to-the-CKAN)
 - [SpaceDock](https://spacedock.info/), which hosts a mod's zip and which CKAN can index from

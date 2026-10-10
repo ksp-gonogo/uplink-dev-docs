@@ -36,7 +36,7 @@ Name Topics `<uplinkId>.<thing>`. The prefix keeps them clear of every other Upl
 
 ## Generating the client's types
 
-`mod-contract/ExampleRtConfig.cs` lists the wire types codegen exports, in the array its `Configure` method hands to Reinforced.Typings. Add every new payload type here; `new` writes only `typeof(ExampleHeartbeat)`, and the example's second entry is the command [Accepting a command](/guide/commands) adds:
+`mod-contract/ExampleRtConfig.cs` lists the wire types codegen exports, in the array its `Configure` method hands to Reinforced.Typings. Add every new payload type here; `new` writes only the `typeof(ExampleHeartbeat)` entry. The `ExampleResetArgs` entry below is the command [Accepting a command](/guide/commands) adds:
 
 <<< ../../example/mod-contract/ExampleRtConfig.cs#wiretypes{cs}
 
@@ -47,11 +47,11 @@ cd client
 npm run codegen
 ```
 
-It writes `client/src/__generated__/`: `contract.ts` with an interface per wire type, and `units.ts` and `units.json` with each field's unit, which `src/topics.ts` registers:
+It writes `client/src/__generated__/`: `contract.ts` with an interface per wire type, and `units.ts` and `units.json` with each field's unit, which `src/topics.ts` registers with the SDK (`registerTopicUnits` and `registerTypeUnits`, imported from `@ksp-gonogo/sitrep-sdk`):
 
 <<< ../../example/client/src/topics.ts#units
 
-The first loop tells the SDK the unit of each field of each Topic, so a field reading of `example.heartbeat` is a `Value` in its unit; the second does the same for each wire type by name, which is what a type nested inside a payload needs, such as the item type of a list: without it the item's numbers arrive as plain numbers. Codegen also writes `topic-map.ts`, the slice's Topics and their payload types, which the page generator reads, and `command-map.ts`, the slice's commands ([Sending a command](/guide/client-commands)). What types `useTelemetry("example.heartbeat")` is the declaration in `src/topics.ts`, which you extend by hand for each Topic ([A widget](/guide/client-widget#the-topics-typed)). `npm run codegen:check` fails when the committed files no longer match the slice, which is the command to run in CI.
+The first loop tells the SDK the unit of each field of each Topic, so a field reading of `example.heartbeat` is a `Value` in its unit; the second does the same for each wire type by name, which is what a type nested inside a payload needs, such as the item type of a list: without it the item's numbers arrive as plain numbers. Codegen also writes `topic-map.ts`, the slice's Topics and their payload types, which the page generator (`npm run page`, [Documenting your Uplink](/guide/documenting)) reads, and `command-map.ts`, the slice's commands ([Sending a command](/guide/client-commands)). What types `useTelemetry("example.heartbeat")` is the declaration in `src/topics.ts`, which you extend by hand for each Topic ([A widget](/guide/client-widget#the-topics-typed)). `npm run codegen:check` fails when the committed files no longer match the slice, which is the command to run in CI (the workflow `new --workflows` writes already runs it).
 
 ## Declaring the Topic
 

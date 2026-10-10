@@ -4,13 +4,13 @@ An Uplink is documented in two places, both written next to the code: its genera
 
 ## The generated page
 
-`npm run page`, from `client/`, writes three files: `README.md`, `gonogo-uplink.json` (what the app reads about the client before it loads it) and `docs/widgets.json` (each widget's registration, as a record). Each part of the page comes from one place:
+`npm run page`, from `client/`, writes three files, the same three `npm run docs` writes: `README.md`, `gonogo-uplink.json` (what the app reads about the client before it loads it) and `docs/widgets.json` (each widget's registration, as a record). Each part of the page comes from one place:
 
 | On the page | Written in |
 | --- | --- |
 | The opening paragraph | `description` in `defineUplinkClient`, in `src/uplink.ts` |
 | The id and version | `id` and `version` in `defineUplinkClient` |
-| Built against | The packages the client was built with: the contract version (the `Major.Minor` of `KspGonogo.Sitrep.Contract`) and the extension API version of the sdk and kit, the two versions Gonogo checks an Uplink against when it loads one |
+| Built against | The packages the client was built with: the contract version (the `Major.Minor` of `KspGonogo.Sitrep.Contract`) and the extension API version of the sdk and ui-kit (the version of the surface a client may call), the two versions the Gonogo mod and app check an Uplink against when they load one. Neither is the package version |
 | The Wire table | The plugin's manifest: each channel's Topic, payload type, delivery and delay |
 | The Commands tables | The contract slice's `SitrepCommandAttribute` classes, through the command map `codegen` writes: each command, its arguments type and its result, then each arguments type's fields |
 | Each widget's heading, paragraph and facts | Its `registerComponent` call: `name`, `description`, `channels`, `defaultSize`, and the number of its fixtures as Scenes |
@@ -56,6 +56,6 @@ The same rules apply as for the descriptions: what it is, not why it came to be 
 
 ## A picture of one Storybook story
 
-If you keep a Storybook, `npx uplink-tools story <story-id>` draws one of its stories to `renders/<id>.png`, or to a GIF when the story is tagged `playback`. It reads `./storybook-static`, and `--storybook <dir|url>` points at a built Storybook or a running one. `--list [text]` prints the story ids that contain the text instead of rendering.
+The scaffold has no Storybook. If you keep one, `npx uplink-tools story <story-id>` draws one of its stories to `renders/<id>.png`, or to a GIF when the story is tagged `playback`. It reads `./storybook-static`, and `--storybook <dir|url>` points at a built Storybook or a running one. `--list [text]` prints the story ids that contain the text instead of rendering.
 
 Next: [Releasing and installing](/guide/release).
