@@ -4,7 +4,7 @@ const uplink = defineUplinkClient({
   id: "gear-guide",
   version: "1.0.0",
   name: "Gear Guide",
-  description: "Reference example: Gear Guide.",
+  description: "Draws the height at which landing gear should be down on a plot.",
 });
 
 const gearHeight: PlotEntry = {

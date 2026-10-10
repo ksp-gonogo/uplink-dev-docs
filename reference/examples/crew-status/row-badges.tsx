@@ -10,7 +10,7 @@ const uplink = defineUplinkClient({
   id: "crew-levels",
   version: "1.0.0",
   name: "Crew Levels",
-  description: "Reference example: Crew Levels.",
+  description: "Adds each kerbal's level as a badge on their Crew Status row.",
 });
 
 function LevelBadge({ crewIndex }: SlotProps<"crew-status.row-badges">) {

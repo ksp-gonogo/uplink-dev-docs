@@ -7,7 +7,7 @@ const uplink = defineUplinkClient({
   id: "admin-tabs",
   version: "1.0.0",
   name: "Admin Tabs",
-  description: "Reference example: Admin Tabs.",
+  description: "Adds a tab per department to the Strategies widget.",
 });
 
 uplink.registerContribution({

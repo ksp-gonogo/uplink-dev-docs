@@ -8,7 +8,7 @@ const uplink = defineUplinkClient({
   id: "crew-rookies",
   version: "1.0.0",
   name: "Crew Rookies",
-  description: "Reference example: Crew Rookies.",
+  description: "Tints the rows of rookie kerbals in Crew Status.",
 });
 
 uplink.registerContribution({

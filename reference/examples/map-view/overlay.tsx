@@ -9,7 +9,7 @@ const uplink = defineUplinkClient({
   id: "launch-sites",
   version: "1.0.0",
   name: "Launch Sites",
-  description: "Reference example: Launch Sites.",
+  description: "Marks the launch sites on the Map View.",
 });
 
 function KerbalSpaceCenter({

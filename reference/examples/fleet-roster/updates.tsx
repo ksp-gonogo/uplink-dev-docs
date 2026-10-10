@@ -10,7 +10,7 @@ const uplink = defineUplinkClient({
   id: "fleet-silence-notes",
   version: "1.0.0",
   name: "Fleet Silence Notes",
-  description: "Reference example: Fleet Silence Notes.",
+  description: "Adds a note to the Fleet Roster updates when a vessel has gone silent.",
 });
 
 function SilenceNote({

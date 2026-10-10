@@ -9,7 +9,7 @@ const uplink = defineUplinkClient({
   id: "crew-check",
   version: "1.0.0",
   name: "Crew Check",
-  description: "Reference example: Crew Check.",
+  description: "Warns in the Launch Director preflight when no crew is picked.",
 });
 
 function CrewCheck({ selectedCrew }: SlotProps<"launch-director.preflight">) {

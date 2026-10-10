@@ -9,7 +9,7 @@ const uplink = defineUplinkClient({
   id: "system-scale",
   version: "1.0.0",
   name: "System Scale",
-  description: "Reference example: System Scale.",
+  description: "Draws a scale bar over the System View.",
 });
 
 const BAR_METRES = 1_000_000;

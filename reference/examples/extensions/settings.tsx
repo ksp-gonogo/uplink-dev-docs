@@ -9,7 +9,7 @@ const uplink = defineUplinkClient({
   id: "crew-names",
   version: "1.0.0",
   name: "Crew Names",
-  description: "Reference example: Crew Names.",
+  description: "Adds a crew names section to Crew Status with a setting for first names only.",
 });
 
 function Names() {

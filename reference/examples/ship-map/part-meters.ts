@@ -8,7 +8,7 @@ const uplink = defineUplinkClient({
   id: "ore-meters",
   version: "1.0.0",
   name: "Ore Meters",
-  description: "Reference example: Ore Meters.",
+  description: "Adds an ore level meter to each tank on the Ship Map.",
 });
 
 const LOW_ORE = 0.25;

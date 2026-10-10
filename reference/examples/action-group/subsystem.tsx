@@ -11,7 +11,7 @@ const uplink = defineUplinkClient({
   id: "chute-load",
   version: "1.0.0",
   name: "Chute Load",
-  description: "Reference example: Chute Load.",
+  description: "Adds a parachute load section to the Action Group widget.",
 });
 
 const SAFE_PRESSURE = value("kPa", 25);

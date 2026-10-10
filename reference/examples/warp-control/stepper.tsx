@@ -11,7 +11,7 @@ const uplink = defineUplinkClient({
   id: "warp-cruise",
   version: "1.0.0",
   name: "Warp Cruise",
-  description: "Reference example: Warp Cruise.",
+  description: "Adds a button to the Warp Control stepper that warps to cruise speed.",
 });
 
 const CRUISE_RATE = 100;

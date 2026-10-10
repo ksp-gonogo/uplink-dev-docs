@@ -9,7 +9,7 @@ const uplink = defineUplinkClient({
   id: "altitude-board",
   version: "1.0.0",
   name: "Altitude Board",
-  description: "Reference example: Altitude Board.",
+  description: "A widget that draws the craft's altitude above sea level.",
 });
 
 export function AltitudeWidget() {

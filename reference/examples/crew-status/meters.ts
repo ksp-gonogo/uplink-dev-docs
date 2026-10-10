@@ -8,7 +8,7 @@ const uplink = defineUplinkClient({
   id: "crew-experience",
   version: "1.0.0",
   name: "Crew Experience",
-  description: "Reference example: Crew Experience.",
+  description: "Adds an experience meter to each kerbal in Crew Status.",
 });
 
 const TOP_LEVEL = 5;

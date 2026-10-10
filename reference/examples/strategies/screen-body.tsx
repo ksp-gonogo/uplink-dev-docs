@@ -10,7 +10,7 @@ const uplink = defineUplinkClient({
   id: "admin-notes",
   version: "1.0.0",
   name: "Admin Notes",
-  description: "Reference example: Admin Notes.",
+  description: "Adds a Notes screen to the Strategies widget for the Operations department.",
 });
 
 uplink.registerContribution({

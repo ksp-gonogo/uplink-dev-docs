@@ -8,7 +8,7 @@ const uplink = defineUplinkClient({
   id: "relay-ring",
   version: "1.0.0",
   name: "Relay Ring",
-  description: "Reference example: Relay Ring.",
+  description: "Draws a ring of relay satellites around Kerbin on the System View.",
 });
 
 const SYNCHRONOUS_SMA = 3_463_330;

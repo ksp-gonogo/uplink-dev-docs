@@ -1,6 +1,5 @@
 import {
   defineUplinkClient,
-  stillTrue,
   type SystemViewVesselStatusEntry,
 } from "@ksp-gonogo/sitrep-sdk";
 
@@ -8,7 +7,7 @@ const uplink = defineUplinkClient({
   id: "check-in-watch",
   version: "1.0.0",
   name: "Check-in Watch",
-  description: "Reference example: Check-in Watch.",
+  description: "Flags a vessel on the System View when its check-in is overdue.",
 });
 
 uplink.registerContribution({
@@ -16,11 +15,11 @@ uplink.registerContribution({
   contributes: "system-view.vessel-status",
   deps: ["vessel.identity"],
   compute: (topics): SystemViewVesselStatusEntry[] => {
-    const vessel = stillTrue(topics["vessel.identity"], undefined);
-    if (!vessel) return [];
+    const identity = topics["vessel.identity"];
+    if (identity.state !== "held") return [];
     return [
       {
-        target: vessel.vesselId,
+        target: identity.value.vesselId,
         tone: "warn",
         emphasis: "reckoned",
         label: "Check-in overdue",

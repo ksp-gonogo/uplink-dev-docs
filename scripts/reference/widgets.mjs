@@ -133,10 +133,13 @@ export function widgetHeaderMd(record) {
     // A widget that lists flat keys declares them in `dataRequirements`, not `channels`.
     const member = fact.id === "reads" && /flat keys/.test(fact.label) ? "dataRequirements" : MEMBER_OF_FACT[fact.id];
     const label = member ? definitionLink(fact.label, member) : fact.label;
+    const linked = (anchor) => fact.items.map((item) => ("code" in item ? `[\`${item.code}\`](${anchor(item.code)})` : text(item.prose))).join(", ");
     const value =
       fact.id === "slots"
         ? fact.items.map(({ code }) => `[\`${code}\`](#${anchorOf(code)})`).join(", ")
-        : facts.widgetFactValueMd(fact.items);
+        : fact.id === "sends"
+          ? linked((code) => `/reference/client/commands#CommandArgsMap.${code}`)
+          : facts.widgetFactValueMd(fact.items);
     return [label, value];
   });
   const table = ["| | |", "| --- | --- |", ...rows.map(([label, value]) => `| ${label} | ${value} |`)].join("\n");

@@ -9,7 +9,7 @@ const uplink = defineUplinkClient({
   id: "engine-stages",
   version: "1.0.0",
   name: "Engine Stages",
-  description: "Reference example: Engine Stages.",
+  description: "Marks the engines of each stage on the Ship Map.",
 });
 
 /**

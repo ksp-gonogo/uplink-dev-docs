@@ -9,7 +9,7 @@ const uplink = defineUplinkClient({
   id: "crew-seats",
   version: "1.0.0",
   name: "Crew Seats",
-  description: "Reference example: Crew Seats.",
+  description: "Adds a seat count to the Crew Status summary.",
 });
 
 function Seats() {

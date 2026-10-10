@@ -7,7 +7,7 @@ const uplink = defineUplinkClient({
   id: "pad-expansion",
   version: "1.0.0",
   name: "Pad Expansion",
-  description: "Reference example: Pad Expansion.",
+  description: "Adds a four-tier launch pad to the Space Center Status facilities.",
 });
 
 uplink.registerContribution({

@@ -9,7 +9,7 @@ const uplink = defineUplinkClient({
   id: "crew-budget",
   version: "1.0.0",
   name: "Crew Budget",
-  description: "Reference example: Crew Budget.",
+  description: "Adds a Budget tab to the Astronaut Complex.",
 });
 
 function Budget() {

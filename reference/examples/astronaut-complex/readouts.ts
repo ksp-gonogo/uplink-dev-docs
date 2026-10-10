@@ -8,7 +8,7 @@ const uplink = defineUplinkClient({
   id: "crew-seats",
   version: "1.0.0",
   name: "Crew Seats",
-  description: "Reference example: Crew Seats.",
+  description: "Adds a free seats readout to the Astronaut Complex.",
 });
 
 uplink.registerContribution({

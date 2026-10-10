@@ -78,6 +78,6 @@ Nothing compares the dictionary with the payload type, so a key spelled differen
 
 - **`IUplinkHost.AddChannelSource`**, as here: a function from the tick's snapshot to the payload, run on the Courier thread. For values that need nothing from the game but the snapshot
 - **`IUplinkHost.AddSampledSource`**: a function on the main thread that reads the game, and one on the Courier thread that publishes ([The plugin class](/guide/plugin#calling-the-game))
-- **`IUplinkHost.Publisher`**: an `IChannelPublisher` you publish to yourself, from the main thread, when the value comes from an event of your own rather than a cadence. Pass the game time the value was true at, not the time you send it
+- **`IUplinkHost.Publisher`**: an `IChannelPublisher` you publish to yourself, from the main thread or from the second function of a sampled source, when the value comes from an event of your own rather than a cadence. Pass the game time the value was true at, not the time you send it
 
 Next: [Accepting a command](/guide/commands).

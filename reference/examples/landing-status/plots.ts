@@ -8,7 +8,7 @@ const uplink = defineUplinkClient({
   id: "descent-corridor",
   version: "1.0.0",
   name: "Descent Corridor",
-  description: "Reference example: Descent Corridor.",
+  description: "Draws the corridor of descent speeds a lander can still stop from.",
 });
 
 const CEILING = 400;

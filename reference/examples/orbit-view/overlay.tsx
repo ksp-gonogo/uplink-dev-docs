@@ -10,7 +10,7 @@ const uplink = defineUplinkClient({
   id: "synchronous-orbit",
   version: "1.0.0",
   name: "Synchronous Orbit",
-  description: "Reference example: Synchronous Orbit.",
+  description: "Draws the synchronous orbit as a ring on the Orbit View.",
 });
 
 function SynchronousRing({ center, scale }: SlotProps<"orbit-view.overlay">) {

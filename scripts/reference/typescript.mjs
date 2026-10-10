@@ -506,6 +506,7 @@ function interfaceText(reflection) {
     .filter((c) => c.kind === ReflectionKind.Constructor)
     .flatMap((c) => c.signatures ?? [])
     .map((sig) => `  constructor(${params(sig)});`);
+  const calls = (reflection.signatures ?? []).map((sig) => `  ${typeParamsText(sig.typeParameters)}(${params(sig)}): ${sig.type};`);
   const lines = own.flatMap((m) => {
     const optional = m.flags.isOptional ? "?" : "";
     const modifiers = `${m.flags.isStatic ? "static " : ""}${m.flags.isReadonly ? "readonly " : ""}`;
@@ -515,7 +516,7 @@ function interfaceText(reflection) {
     if (!m.type && m.getSignature) return [`  ${m.setSignature ? "" : "readonly "}${name(m)}: ${m.getSignature.type};`];
     return [`  ${modifiers}${name(m)}${optional}: ${m.type?.toString() ?? "unknown"};`];
   });
-  return `${keyword} ${reflection.name}${typeParamsText(reflection.typeParameters)}${heritage} {\n${[...constructors, ...lines].join("\n")}\n}`;
+  return `${keyword} ${reflection.name}${typeParamsText(reflection.typeParameters)}${heritage} {\n${[...constructors, ...calls, ...lines].join("\n")}\n}`;
 }
 
 /** Each type parameter and what it stands for, from its `@typeParam`. */
