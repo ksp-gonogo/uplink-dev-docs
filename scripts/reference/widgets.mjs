@@ -7,12 +7,13 @@
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 import { INSTALL } from "./paths.mjs";
 
 export const WIDGET_RECORDS = "@ksp-gonogo/uplink-tools/widgets.json";
 
 /** Every core widget's record by id, read from the installed uplink-tools through its export map. */
-export function loadWidgetRecords() {
+export async function loadWidgetRecords() {
   const require = createRequire(resolve(INSTALL, "package.json"));
   let path;
   try {
@@ -20,6 +21,7 @@ export function loadWidgetRecords() {
   } catch {
     throw new Error(`${WIDGET_RECORDS} is not installed: add @ksp-gonogo/uplink-tools to reference/artifacts.json and pack it`);
   }
+  facts = await import(pathToFileURL(path.replace(/widgets\.json$/, "widget-facts.js")).href);
   const { widgets } = require(path);
   return new Map(widgets.map((record) => [record.id, record]));
 }
@@ -77,8 +79,13 @@ export function assertModulesStateNoRecordFacts(pages) {
   if (faults.length > 0) throw new Error(faults.join("\n"));
 }
 
+/**
+ * The fact rows `@ksp-gonogo/uplink-tools` writes an Uplink README's widget
+ * section from, read off the installed package by `loadWidgetRecords`.
+ */
+let facts = null;
+
 const text = (s) => s.replace(/([<>])/g, "\\$1");
-const codeList = (items) => items.map((item) => `\`${item}\``).join(", ");
 
 let standardSegments;
 
@@ -107,37 +114,29 @@ export const slotsOf = (record) =>
 /** A slot's anchor on its widget's page. */
 export const anchorOf = (slot) => slot.replace(/\./g, "-");
 
+/** The `ComponentDefinition` member that fills each fact, where there is one. */
+const MEMBER_OF_FACT = { reads: "channels", drawsOnly: "fields", alsoReads: "optionalChannels", actions: "actions", needs: "requires" };
+
 /** A header row's label, linked to the `ComponentDefinition` member that fills it. */
 const definitionLink = (label, member) => `[${label}](/reference/client/registering#ComponentDefinition.${member})`;
 
-/** What each `ComponentRequirement` asks of the game, in the words its doc comment gives. */
-const REQUIREMENT_WORDS = { flight: "a vessel in flight", career: "a career or science save" };
-
 /**
  * The top of a widget page: its name, its description and a table of every
- * other fact the record carries, rows with nothing to say left out. It takes
- * the record alone, so `check-reference-pages.mjs` can write the same text
- * from the packed `widgets.json` and compare.
+ * fact the record carries. The rows are the package's own, the ones its README
+ * writes, so this page can add links to them and never say them differently.
+ * It takes the record alone, so `check-reference-pages.mjs` can write the same
+ * text from the packed `widgets.json` and compare.
  */
 export function widgetHeaderMd(record) {
-  const flatKeys = record.channels.length === 0 && record.dataRequirements.length > 0;
-  const slots = slotsOf(record);
-  const rows = [
-    ["Widget id", `\`${record.id}\``],
-    flatKeys
-      ? [definitionLink("Reads, as flat keys", "dataRequirements"), codeList(record.dataRequirements)]
-      : [definitionLink("Reads", "channels"), codeList(record.channels)],
-    [definitionLink("Draws only", "fields"), codeList(record.fields ?? [])],
-    [definitionLink("Also reads, if published", "optionalChannels"), codeList(record.optionalChannels)],
-    [
-      definitionLink("Actions to bind", "actions"),
-      record.actions.map((a) => `${text(a.label).replace(/\|/g, "\\|")} (\`${a.id}\`)`).join(", "),
-    ],
-    ["Slots", slots.map((slot) => `[\`${slot}\`](#${anchorOf(slot)})`).join(", ")],
-    [definitionLink("Needs", "requires"), record.requires.map((need) => REQUIREMENT_WORDS[need] ?? `\`${need}\``).join(", ")],
-    ["Replaces", record.replaces ? `\`${record.replaces}\`` : ""],
-    ["Default size", record.defaultSize ? `${record.defaultSize.w} × ${record.defaultSize.h}` : ""],
-  ].filter(([, value]) => value !== "");
+  if (facts === null) throw new Error("widgetHeaderMd needs the installed widget-facts module: await loadWidgetRecords() first");
+  const rows = facts.widgetFactsOf(record, { omitSlot: (slot) => standardSegmentsOf().has(slot.slice(record.id.length + 1)) }).map((fact) => {
+    const label = MEMBER_OF_FACT[fact.id] ? definitionLink(fact.label, MEMBER_OF_FACT[fact.id]) : fact.label;
+    const value =
+      fact.id === "slots"
+        ? fact.items.map(({ code }) => `[\`${code}\`](#${anchorOf(code)})`).join(", ")
+        : facts.widgetFactValueMd(fact.items);
+    return [label, value];
+  });
   const table = ["| | |", "| --- | --- |", ...rows.map(([label, value]) => `| ${label} | ${value} |`)].join("\n");
   return [`# ${text(record.name)}`, text(record.description), table].join("\n\n");
 }

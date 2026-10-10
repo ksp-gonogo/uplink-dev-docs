@@ -63,14 +63,23 @@ const PLANTED_RECORD = {
   name: "Planted",
   description: "A widget no page shows.",
   channels: ["vessel.crew"],
+  tags: [],
   optionalChannels: [],
+  commands: [],
+  channelFamilies: [],
+  optionalChannelFamilies: [],
+  readsFromConfig: false,
+  fields: [],
   dataRequirements: [],
   actions: [],
   augmentSlots: [],
   contributionSlots: [],
   requires: [],
   replaces: null,
+  pushable: false,
   defaultSize: { w: 4, h: 4 },
+  minSize: null,
+  tiny: false,
 };
 
 const PLANTED = {
@@ -98,14 +107,14 @@ function markdownUnder(dir) {
 }
 
 /** Each widget page by path, with the record the packed `widgets.json` holds for its widget. */
-function widgetPages() {
+async function widgetPages() {
+  const records = await loadWidgetRecords();
   const pages = PAGES.filter((page) => page.kind === "widget");
-  if (pages.length === 0) return new Map();
-  const records = loadWidgetRecords();
   return new Map(pages.map((page) => [`docs/${page.path}`, records.get(page.widget) ?? null]));
 }
 
-export function checkReferencePages() {
+export async function checkReferencePages() {
+  const widgets = await widgetPages();
   const found = new Set(pageFaults(PLANTED).map(([kind]) => kind));
   const blind = PLANTED_KINDS.filter((kind) => !found.has(kind));
   if (blind.length > 0) {
@@ -119,7 +128,7 @@ export function checkReferencePages() {
     written: existsSync(GENERATED_HASHES) ? JSON.parse(readFileSync(GENERATED_HASHES, "utf8")) : null,
     hash: (path) => (existsSync(resolve(ROOT, path)) ? hashOf(resolve(ROOT, path)) : null),
     isGeneratedText: (path) => /^---\ngenerated:/.test(readFileSync(resolve(ROOT, path), "utf8")),
-    widgets: widgetPages(),
+    widgets,
     read: (path) => (existsSync(resolve(ROOT, path)) ? readFileSync(resolve(ROOT, path), "utf8") : null),
   };
   const faults = pageFaults(tree);
@@ -135,5 +144,5 @@ export function checkReferencePages() {
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-  if (checkReferencePages().length > 0) process.exit(1);
+  if ((await checkReferencePages()).length > 0) process.exit(1);
 }

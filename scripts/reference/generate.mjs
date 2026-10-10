@@ -716,7 +716,7 @@ export async function generate({ install = true } = {}) {
   runXmldocmd();
   const widgetPages = PAGES.filter((page) => page.kind === "widget");
   assertModulesStateNoRecordFacts(widgetPages);
-  const records = widgetPages.length > 0 ? loadWidgetRecords() : new Map();
+  const records = widgetPages.length > 0 ? await loadWidgetRecords() : new Map();
 
   // Every symbol a page renders, registered before any page is written, so pages can link to each other.
   const index = new SymbolIndex();

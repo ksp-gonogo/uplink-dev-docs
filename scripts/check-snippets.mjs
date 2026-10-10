@@ -76,7 +76,7 @@ failures.push(...(await checkDocSymbols()));
 
 process.stdout.write("\n== reference pages ==\n");
 const { checkReferencePages } = await import("./check-reference-pages.mjs");
-failures.push(...checkReferencePages());
+failures.push(...(await checkReferencePages()));
 
 process.stdout.write("\n== ratchets and CI wiring ==\n");
 const { checkRatchets } = await import("./check-ratchets.mjs");
