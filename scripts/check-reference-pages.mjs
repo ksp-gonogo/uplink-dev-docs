@@ -18,11 +18,23 @@
 import { execFileSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { relative, resolve } from "node:path";
+import { isDeclaration } from "./reference/csharp.mjs";
 import { PAGES } from "../reference/pages.mjs";
 import { DOCS, GENERATED_HASHES, hashOf, ROOT } from "./reference/paths.mjs";
 import { loadWidgetRecords, opensWithHeader, WIDGET_RECORDS, widgetHeaderMd } from "./reference/widgets.mjs";
 
 const REFERENCE = resolve(DOCS, "reference");
+
+/**
+ * The `csharp` blocks of a page that hold a type's member list but do not open
+ * with its declaration: a doc comment's own diagram or example fused into the
+ * declaration block, which leaves the declaration line stranded below it.
+ */
+export function fusedDeclarations(markdown) {
+  return [...markdown.matchAll(/```csharp\n([\s\S]*?)\n```/g)]
+    .map(([, block]) => block)
+    .filter((block) => /\n\{\n {4}\S[\s\S]*\n\}$/.test(block) && !isDeclaration(block));
+}
 
 /**
  * The faults in one tree, each a `[kind, path, message]`. Pure, so the planted
@@ -47,6 +59,12 @@ export function pageFaults({ onDisk, generated, tracked, written, hash, isGenera
     if (generated.has(path)) continue;
     if (isGeneratedText(path)) faults.push(["orphan", path, "says it is generated, but no module under reference/pages/ writes it: delete it"]);
     else faults.push(["unlisted", path, "is a hand page. A reference page is a module under reference/pages/, generated from doc comments"]);
+  }
+  for (const path of generated) {
+    const markdown = read(path);
+    if (markdown !== null && fusedDeclarations(markdown).length > 0) {
+      faults.push(["fused", path, "has a C# block that holds a type's member list under something other than its declaration: a doc comment's code block was taken for the declaration"]);
+    }
   }
   for (const [path, record] of widgets) {
     const markdown = read(path);
@@ -93,9 +111,9 @@ const PLANTED = {
     ["docs/reference/generated.md", PLANTED_RECORD],
     ["docs/reference/edited.md", null],
   ]),
-  read: () => `---\ngenerated: npm run reference\n---\n\n${widgetHeaderMd({ ...PLANTED_RECORD, name: "Renamed by hand" })}\n\n## Example\n`,
+  read: () => `---\ngenerated: npm run reference\n---\n\n${widgetHeaderMd({ ...PLANTED_RECORD, name: "Renamed by hand" })}\n\n## Example\n\n\`\`\`csharp\n0  1  MAGIC\n{\n    public const byte Magic;\n}\n\`\`\`\n`,
 };
-const PLANTED_KINDS = ["committed", "unwritten", "edited", "unlisted", "orphan", "unrecorded", "header"];
+const PLANTED_KINDS = ["committed", "unwritten", "edited", "unlisted", "orphan", "unrecorded", "header", "fused"];
 
 function markdownUnder(dir) {
   if (!existsSync(dir)) return [];

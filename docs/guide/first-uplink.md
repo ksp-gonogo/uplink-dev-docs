@@ -15,7 +15,7 @@ On a terminal it asks what it was not told. Each question is also a flag, so thi
 
 ```bash
 npx @ksp-gonogo/uplink-tools@rc new example --name Example --author "Your Name" \
-  --repo you/example --topics own --no-workflows --no-ksp
+  --repo acme/example --topics own --no-workflows --no-ksp
 ```
 
 [`new` in the command-line reference](/reference/tools/command-line#new) lists every flag with the default it takes, written from the command's own `--help`, so this page does not repeat them. `--yes` takes the default for every question not answered by a flag. With no terminal and no `--yes`, `new` writes nothing and names each flag it is missing.
@@ -25,7 +25,7 @@ What the answers do:
 - **The id** names the Uplink everywhere: lower-case letters and digits, 2 to 30 of them, starting with a letter. It prefixes the Topics (`example.heartbeat`), the widget ids (`example-heartbeat`) and the C# names: the namespace and assembly are `Gonogo` + the id capitalised + `Uplink` (`GonogoExampleUplink`), and the plugin class is the id capitalised + `Uplink` (`ExampleUplink`). Choose one no other Uplink a player might install is likely to use
 - **`--name`** is the display name, shown in the app and on the generated page
 - **The author** is shown to the operator when the app asks whether to load your client
-- **`--repo`** sets where the released client bundle is fetched from ([Releasing and installing](/guide/release#hosting-the-client)). `you/example` becomes `https://github.com/you/example` in `uplink.json`
+- **`--repo`** sets where the released client bundle is fetched from ([Releasing and installing](/guide/release#hosting-the-client)). `acme/example` becomes `https://github.com/acme/example` in `uplink.json`. Use your own GitHub owner: an owner named `you` is the placeholder, and `release` refuses it
 - **`--topics core`** makes an Uplink that publishes nothing of its own: its widget reads one of Gonogo's own Topics, and it has no contract slice. This Guide builds one with Topics of its own
 - **`--workflows`** writes a GitHub Actions workflow that checks both halves on every push
 - **`--ksp`** writes your KSP folder into `ksp.local.props`, for a plugin that calls the game ([The plugin class](/guide/plugin#calling-the-game)). It is kept out of git

@@ -263,7 +263,7 @@ function cellMd(parts, index) {
     .map((para) =>
       para
         .split("\n")
-        .map((line) => line.replace(/^\s*[-*]\s+/, "• "))
+        .map((line) => line.replace(/^\s*[-*]\s+/, "• ").trimEnd())
         .join(para.includes("\n- ") || /^\s*- /.test(para) ? "<br>" : " "),
     )
     .join("<br><br>")
@@ -392,14 +392,15 @@ export function remarksMd(reflection, index) {
   return tag ? partsMd(tag.content, index).trim() : "";
 }
 
-function examplesMd(comment, index, level) {
+function examplesMd(comment, index, level, owner) {
   const examples = (comment?.blockTags ?? []).filter((t) => t.tag === "@example");
   if (examples.length === 0) return "";
-  const out = [`${"#".repeat(level)} Examples`];
+  const out = [`${"#".repeat(level)} Examples {#${owner}-examples}`];
   for (const example of examples) {
     // TypeDoc keeps an example's first line as its name.
     if (example.name) out.push(`**${partsMd([{ kind: "text", text: example.name }], index)}**`);
-    out.push(partsMd(example.content, index).trim());
+    // An example's prose after its code can carry the comment's own headings, which sit under the heading above.
+    out.push(demoteHeadings(partsMd(example.content, index).trim(), level + 1));
   }
   return out.join("\n\n");
 }
@@ -709,14 +710,14 @@ export function symbolMd(reflection, project, index, { level = 3, title = true, 
     } else {
       out.push(parametersMd(signatures[0], index, inner));
     }
-    out.push(...comments.map((c) => examplesMd(c, index, inner)));
+    out.push(...comments.map((c, i) => examplesMd(c, index, inner, i === 0 ? reflection.name : `${reflection.name}-${i + 1}`)));
   } else if (reflection.kind === ReflectionKind.Interface || reflection.kind === ReflectionKind.Class) {
     out.push(`\`\`\`ts\n${interfaceText(reflection)}\n\`\`\``);
     out.push(summaryMd(reflection.comment, index, inner, { omitRemarks }));
     out.push(crossLinksMd([reflection.comment], reflection.name));
     out.push(typeParamsMd(reflection.typeParameters, index));
     out.push(propertiesMd(reflection, index));
-    out.push(examplesMd(reflection.comment, index, inner));
+    out.push(examplesMd(reflection.comment, index, inner, reflection.name));
   } else if (reflection.kind === ReflectionKind.Enum) {
     const members = reflection.children ?? [];
     const value = (m) => (m.type?.type === "literal" ? JSON.stringify(m.type.value) : String(m.defaultValue ?? ""));
@@ -725,7 +726,7 @@ export function symbolMd(reflection, project, index, { level = 3, title = true, 
     out.push(crossLinksMd([reflection.comment], reflection.name));
     const rows = members.map((m) => `| ${memberName(m.name, memberAnchor(m))} | ${code(value(m))} | ${cellMd(m.comment?.summary, index)} |`);
     if (rows.length > 0) out.push(`| Member | Value | Description |\n| --- | --- | --- |\n${rows.join("\n")}`);
-    out.push(examplesMd(reflection.comment, index, inner));
+    out.push(examplesMd(reflection.comment, index, inner, reflection.name));
   } else if (reflection.kind === ReflectionKind.TypeAlias) {
     const params = typeParamsText(reflection.typeParameters);
     out.push(`\`\`\`ts\ntype ${reflection.name}${params} =${declarationText(reflection.type)};\n\`\`\``);
@@ -733,7 +734,7 @@ export function symbolMd(reflection, project, index, { level = 3, title = true, 
     out.push(crossLinksMd([reflection.comment], reflection.name));
     out.push(typeParamsMd(reflection.typeParameters, index));
     if (reflection.type?.type === "intersection") out.push(aliasPropsMd(reflection, index));
-    out.push(examplesMd(reflection.comment, index, inner));
+    out.push(examplesMd(reflection.comment, index, inner, reflection.name));
   } else if (reflection.type?.type === "reflection" && reflection.type.declaration.children?.length) {
     // A constant object such as `CommandErrorCode`: its members are the values an author uses, so they are a table.
     const twin = typeTwinOf(reflection);
@@ -745,7 +746,7 @@ export function symbolMd(reflection, project, index, { level = 3, title = true, 
     const twinSummary = twin?.comment && summaryMd(twin.comment, index, inner, { omitRemarks });
     if (twinSummary && twinSummary !== summary) out.push(twinSummary);
     out.push(propertiesMd(reflection.type.declaration, index));
-    out.push(examplesMd(reflection.comment, index, inner));
+    out.push(examplesMd(reflection.comment, index, inner, reflection.name));
   } else {
     const declared = reflection.type?.toString() ?? "";
     const assigned = assignedRootOf(reflection);
@@ -772,7 +773,7 @@ export function symbolMd(reflection, project, index, { level = 3, title = true, 
       const props = propsListOf(reflection, project)[0];
       if (props) out.push(`${h(inner)} Props {#${props.name}}`, propertiesMd(props, index));
     }
-    out.push(examplesMd(reflection.comment, index, inner));
+    out.push(examplesMd(reflection.comment, index, inner, reflection.name));
   }
   return out.filter(Boolean).join("\n\n");
 }

@@ -100,6 +100,17 @@ function memberFiles(typeMd, type) {
   return files;
 }
 
+/** A fenced `csharp` block with its body captured. */
+const CSHARP_BLOCK = /```csharp\n([\s\S]*?)\n```/g;
+
+/**
+ * Whether a `csharp` block is a type's declaration. xmldocmd fences a doc
+ * comment's own `<code>` (a wire diagram, an example) with the same language,
+ * so the declaration is told apart by its shape: modifiers, then the kind.
+ */
+export const isDeclaration = (block) =>
+  /^(?:\[[^\n]*\]\s*)*(?:(?:public|internal|protected|private|static|sealed|abstract|readonly|partial|unsafe)\s+)*(?:class|struct|interface|enum|delegate|record)\b/.test(block.trim());
+
 /**
  * One type's section: its summary and declaration, then each member's. The
  * page's own type has no heading of its own and its members sit at `##`;
@@ -124,7 +135,7 @@ function typeMd(type, onPage, lead, example, index) {
       if (sections.every((section) => section.startsWith("The default constructor."))) continue;
       for (const section of sections) {
         const signature = /```csharp\n([\s\S]*?)\n```/.exec(section)?.[1];
-        if (signature) declarations.push(`    ${signature.replace(/^public /, kind === "interface" ? "" : "public ").trim()}${/[;}]$/.test(signature) ? "" : ";"}`);
+        if (signature) declarations.push(`    ${signature.replace(/^public /, kind === "interface" ? "" : "public ").trim().replace(/\n\s*/g, "\n        ")}${/[;}]$/.test(signature) ? "" : ";"}`);
       }
       const heading = member === type ? `${type} constructor` : member;
       members.push(`${memberLevel} ${heading} {#${type}.${member}}`, sections.join("\n\n"));
@@ -134,10 +145,12 @@ function typeMd(type, onPage, lead, example, index) {
     for (const m of head.matchAll(/^\| (\w+) \| `([^`]+)` \|/gm)) declarations.push(`    ${m[1]} = ${m[2]},`);
   }
   // The type's own block shows the whole declaration, every member's signature included.
-  const whole = head.replace(/```csharp\n([\s\S]*?)\n```/, (_, declaration) =>
-    declarations.length === 0
-      ? `\`\`\`csharp\n${declaration}\n\`\`\``
-      : `\`\`\`csharp\n${declaration}\n{\n${declarations.join("\n")}\n}\n\`\`\``,
+  const whole = head.replace(CSHARP_BLOCK, (block, declaration) =>
+    !isDeclaration(declaration)
+      ? block
+      : declarations.length === 0
+        ? `\`\`\`csharp\n${declaration}\n\`\`\``
+        : `\`\`\`csharp\n${declaration}\n{\n${declarations.join("\n")}\n}\n\`\`\``,
   );
   const out = [];
   // A generic type's file is named by its arity; the page shows it as the author writes it.

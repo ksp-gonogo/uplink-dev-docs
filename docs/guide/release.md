@@ -12,11 +12,11 @@ npm run release
 
 `release` runs five steps, in an order that matters:
 
-1. **Bundle** (`uplink-tools bundle`) the client into `client/dist/example/example.client.js`, with `gonogo-uplink.json` beside it
+1. **Bundle** (`uplink-tools bundle`) the client into `client/dist/example/example.client.js` (the `dist/` inside `client/`), with `gonogo-uplink.json` beside it
 2. **Bake** (`uplink-tools bake`) into the plugin's generated files where the bundle will be hosted and the bundle's hash, a SHA-256 written `sha256-<hex>`
 3. **Compile** the plugin in Release
 4. **Check** that the compiled plugin carries the URL and hash that were baked
-5. **Package** (`uplink-tools package`) the plugin as `dist/GonogoExampleUplink.zip`, holding `GameData/GonogoExampleUplink/Plugins/` with the plugin and its contract slice, and nothing else, with the netkan beside it
+5. **Package** (`uplink-tools package`) the plugin as `dist/GonogoExampleUplink.zip` in the Uplink's own folder, beside `client/` and not inside it, holding `GameData/GonogoExampleUplink/Plugins/` with the plugin and its contract slice, and nothing else, with the netkan beside it
 
 The app loads a client only when the plugin vouches for the exact bundle it fetched, so the bundle must be built and hashed before the plugin is compiled. A plugin compiled first builds and passes its tests, and the app shows none of its widgets. `release` refuses to run while `client.url` in `uplink.json` is still the placeholder `new` writes without a repository, and while the version's three places disagree ([A new version](#a-new-version)).
 
@@ -30,13 +30,13 @@ So a player needs only your plugin installed: the client follows from it.
 
 ## Hosting the client
 
-`client.url` in `uplink.json` is where the app fetches the bundle. With `--repo you/example`, `new` points it at jsDelivr, which serves files from a GitHub repository:
+`client.url` in `uplink.json` is where the app fetches the bundle. With `--repo acme/example`, `new` points it at jsDelivr, which serves files from a GitHub repository:
 
 ```
-https://cdn.jsdelivr.net/gh/you/example@releases/releases/example/0.0.1/example.client.js
+https://cdn.jsdelivr.net/gh/acme/example@releases/releases/example/0.0.1/example.client.js
 ```
 
-That is the file `releases/example/0.0.1/example.client.js` on your repository's `releases` branch. To publish the first version, from the Uplink's folder, with git 2.42 or later:
+That is the file `releases/example/0.0.1/example.client.js` on your repository's `releases` branch. To publish the first version, from the Uplink's folder, with git 2.42 or later (the folder must be a git repository with at least one commit and an `origin` remote; run `git init`, commit and add the remote first if it is not):
 
 ```bash
 git worktree add --orphan -b releases ../example-releases
@@ -48,7 +48,7 @@ git add releases && git commit -m "Release example 0.0.1" && git push -u origin 
 
 In PowerShell, `mkdir -p` and `cp` are `New-Item -ItemType Directory -Force` and `Copy-Item` ([Known limits](/guide/limits#the-tools)). For a later version, `git worktree add ../example-releases releases` checks the branch out again, and the files go in that version's folder. Keep `gonogo-uplink.json` beside the bundle under exactly that name: the app finds it from the bundle's own URL.
 
-`new` writes this URL only when it knows the repository, from `--repo` or this directory's GitHub remote. With `--no-repo` it writes a placeholder, and `release` refuses to run until you set `repo` and `client.url` in `uplink.json` to where the bundle will really be published ([uplink.json](/guide/uplink-json#what-release-refuses)).
+`new` writes this URL only when it knows the repository, from `--repo` or this directory's GitHub remote. With `--no-repo`, or an owner named `you`, it writes a placeholder, and `release` refuses to run until you set `repo` and `client.url` in `uplink.json` to where the bundle will really be published ([uplink.json](/guide/uplink-json#what-release-refuses)).
 
 Never change a published file. The plugin vouches for one exact bundle, and jsDelivr keeps serving what it first fetched from a path; a new release is a new version folder. Any other host that serves files over HTTPS works too: put its URL in `client.url` before running `release`.
 

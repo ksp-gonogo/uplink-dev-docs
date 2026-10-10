@@ -18,7 +18,12 @@ export const SECTIONS = [
   { dir: "reference/concepts", name: "Concepts" },
   { dir: "reference/mod", name: "Mod API", nuget: "KspGonogo.Sitrep.Contract", specifier: "Sitrep.Contract" },
   { dir: "reference/client", name: "Client SDK", package: "@ksp-gonogo/sitrep-sdk" },
-  { dir: "reference/widgets", name: "Widgets" },
+  {
+    dir: "reference/widgets",
+    name: "Widgets",
+    about:
+      "The widgets the Gonogo app ships. Each page shows the widget running, then what it reads, the commands it sends, its settings and sizes, and the slots an Uplink can extend it through.",
+  },
   { dir: "reference/tools", name: "uplink-tools", package: "@ksp-gonogo/uplink-tools" },
   { dir: "reference/ui-kit", name: "ui-kit", package: "@ksp-gonogo/ui-kit" },
 ];
@@ -57,6 +62,7 @@ function nuspecDescription() {
  * README. The contract's is its NuGet description.
  */
 export function describeSection(section, projects, index) {
+  if (section.about) return section.about;
   if (section.nuget) return nuspecDescription();
   if (!section.package) return "";
   const comment = projects[section.package]?.comment;

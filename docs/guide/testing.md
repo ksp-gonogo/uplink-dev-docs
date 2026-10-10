@@ -76,7 +76,7 @@ npx uplink-tools bake        # the plugin's generated files
 dotnet test ../mod-tests
 ```
 
-`new --workflows` writes these as a GitHub Actions workflow.
+`new --workflows` writes these as a GitHub Actions workflow. In CI `bake` prints `Hash (none)`: no client bundle has been built there, so there is no hash to vouch for, and that is expected. `release` is what bakes the real one.
 
 ## Checking the pictures
 

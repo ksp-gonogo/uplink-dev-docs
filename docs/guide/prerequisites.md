@@ -6,7 +6,7 @@ What to install before running `uplink-tools new`, and what an Uplink may depend
 
 - **Node 20 or later**, with npm. The client's test runner needs it
 - **The .NET SDK 10 or later.** The plugin targets `net48`, which KSP loads, and the scaffold brings in the .NET Framework reference assemblies as a package, so it builds on macOS and Linux with no Mono install. The plugin's tests run on `net10.0`
-- **Chromium for Playwright**, only to draw your widget's pictures (`npm run render` and `npm run docs`): `npx playwright install chromium`, a download of about 100 MB, once per machine. No other command in the Guide needs a browser
+- **Chromium for Playwright**, only to draw your widget's pictures (`npm run render`, `npm run docs` and `npm run docs:check`): `npx playwright install chromium`, a download of about 100 MB, once per machine. No other command in the Guide needs a browser
 - **KSP, the Gonogo mod and the Gonogo app**, only to try the Uplink in the game ([Start here](/guide/#what-else-you-need) says where to get them). Nothing before [Releasing and installing](/guide/release) needs them
 
 No clone of any repository is needed, and no KSP assembly unless your plugin calls the game directly ([The plugin class](/guide/plugin#calling-the-game)).

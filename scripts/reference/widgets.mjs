@@ -130,7 +130,9 @@ const definitionLink = (label, member) => `[${label}](/reference/client/register
 export function widgetHeaderMd(record) {
   if (facts === null) throw new Error("widgetHeaderMd needs the installed widget-facts module: await loadWidgetRecords() first");
   const rows = facts.widgetFactsOf(record, { omitSlot: (slot) => standardSegmentsOf().has(slot.slice(record.id.length + 1)) }).map((fact) => {
-    const label = MEMBER_OF_FACT[fact.id] ? definitionLink(fact.label, MEMBER_OF_FACT[fact.id]) : fact.label;
+    // A widget that lists flat keys declares them in `dataRequirements`, not `channels`.
+    const member = fact.id === "reads" && /flat keys/.test(fact.label) ? "dataRequirements" : MEMBER_OF_FACT[fact.id];
+    const label = member ? definitionLink(fact.label, member) : fact.label;
     const value =
       fact.id === "slots"
         ? fact.items.map(({ code }) => `[\`${code}\`](#${anchorOf(code)})`).join(", ")

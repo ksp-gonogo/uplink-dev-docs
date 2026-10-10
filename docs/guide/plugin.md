@@ -42,7 +42,7 @@ There is no matching teardown: the Uplink lives as long as the game does, so any
 
 <!--@include: @/.vitepress/includes/uplink-health-states.md-->
 
-Gonogo polls it repeatedly, once per `system.uplinks` sample and off the main thread, so it must be cheap, must not block, and must not touch the game. The heartbeat has nothing to report; an Uplink wrapping another mod reports that mod's state:
+Gonogo polls it repeatedly, once per sample of the `system.uplinks` Topic, the one Topic that reports every Uplink's health and off the main thread, so it must be cheap, must not block, and must not touch the game. The heartbeat has nothing to report; an Uplink wrapping another mod reports that mod's state:
 
 <<< ../../reference/examples/mod/GuideExamples.cs#health{cs}
 
