@@ -78,6 +78,12 @@ dotnet test ../mod-tests
 
 `new --workflows` writes these as a GitHub Actions workflow. In CI `bake` prints `Hash (none)`: no client bundle has been built there, so there is no hash to vouch for, and that is expected. `release` is what bakes the real one.
 
+## Checking the client
+
+`npx uplink-tools check` reads the client with the TypeScript compiler and reports what is wrong with it, with the one command that heals each finding. It exits 0 when nothing is found, 1 when findings remain, and 2 when it could not run. `--fix` writes the files `check` owns and then verifies again, and is refused when `CI` is set. `--only` and `--skip` take a comma-separated list of groups, and `--json` prints the findings and nothing else.
+
+A read `check` cannot name, such as a Topic chosen at runtime, takes a `// gonogo:reads <topic or family>` comment above the call. The groups are `declarations`, `page`, `manifest`, `bake`, `codegen`, `imports`, `plugin`, `actions` and `docs-prose`.
+
 ## Checking the pictures
 
 `npm run docs:check` regenerates the page and its pictures in memory and fails when the committed ones differ, so it needs Chromium. As it draws each fixture it also checks the picture can be read, and prints a warning for a widget whose text is cut off or whose title is clipped at a size it draws. A warning does not fail the command; it says the widget needs a bigger tile or less text, so raise its `minSize` or give its `Panel` a `compactTitle`. The scaffold's widget draws none.

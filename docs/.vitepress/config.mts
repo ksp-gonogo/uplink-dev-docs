@@ -85,6 +85,7 @@ export default defineConfig({
             { text: "Sending a command", link: "/guide/client-commands" },
             { text: "Writing a reckoner", link: "/guide/reckoners" },
             { text: "Extensions", link: "/guide/extensions" },
+            { text: "See your Uplink in the app", link: "/guide/dev-loop" },
           ],
         },
         {

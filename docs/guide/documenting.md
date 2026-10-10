@@ -53,4 +53,9 @@ These comments are the ones that travel: `codegen` copies them into `client/src/
 
 The same rules apply as for the descriptions: what it is, not why it came to be that way.
 
+
+## A picture of one Storybook story
+
+If you keep a Storybook, `npx uplink-tools story <story-id>` draws one of its stories to `renders/<id>.png`, or to a GIF when the story is tagged `playback`. It reads `./storybook-static`, and `--storybook <dir|url>` points at a built Storybook or a running one. `--list [text]` prints the story ids that contain the text instead of rendering.
+
 Next: [Releasing and installing](/guide/release).

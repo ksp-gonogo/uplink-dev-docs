@@ -82,6 +82,10 @@ process.stdout.write("\n== ratchets and CI wiring ==\n");
 const { checkRatchets } = await import("./check-ratchets.mjs");
 failures.push(...checkRatchets());
 
+process.stdout.write("\n== documented commands ==\n");
+const { checkDocCommands } = await import("./check-doc-commands.mjs");
+failures.push(...(await checkDocCommands()));
+
 if (failures.length > 0) {
   process.stdout.write(`\nFAILED: ${failures.join(", ")}\n`);
   process.exit(1);
