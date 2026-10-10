@@ -24,7 +24,7 @@ The client is a package the Gonogo app loads into its own page, so a widget is a
 
 <<< ../../example/client/src/topics.ts#maps
 
-The SDK types every core Topic in `TopicPayloadMap`. Your Uplink's Topics join it through this `declare module` block, with the payload types `codegen` generated from your contract slice, so `useTelemetry("example.heartbeat")` is typed exactly like a core Topic and a misspelt name does not compile. Add a line here for each Topic you add to the plugin. The other imports serve the unit and command registrations further down the file, which [Publishing a Topic](/guide/topics#generating-the-client-s-types) and [Sending a command](/guide/client-commands#the-command-known-at-runtime) cover. The commands' half of the block is [Sending a command](/guide/client-commands).
+The SDK types every core Topic in `TopicPayloadMap`. Your Uplink's Topics join it through this `declare module` block, with the payload types `codegen` generated from your contract slice, so `useTelemetry("example.heartbeat")` is typed exactly like a core Topic and a misspelt name does not compile. Add a line here for each Topic you add to the plugin. The imports below it serve the unit registrations further down the file, which [Publishing a Topic](/guide/topics#generating-the-client-s-types) covers. The commands are typed and registered in `client/src/commands.ts`, which [Sending a command](/guide/client-commands) covers.
 
 ## Registering the widget
 

@@ -15,7 +15,7 @@
   <!-- IncludeAssets="compile": compiled against and never copied to the output,
        because GonogoCore provides Sitrep.Contract.dll at runtime. -->
   <ItemGroup>
-    <PackageReference Include="KspGonogo.Sitrep.Contract" Version="[1.0.0-rc.21]" IncludeAssets="compile" PrivateAssets="all" />
+    <PackageReference Include="KspGonogo.Sitrep.Contract" Version="[2.0.0-rc.23]" IncludeAssets="compile" PrivateAssets="all" />
     <!-- The .NET Framework reference assemblies, so net48 compiles on macOS and Linux. -->
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
   </ItemGroup>
