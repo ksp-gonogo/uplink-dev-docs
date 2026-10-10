@@ -16,17 +16,21 @@ Every Topic's payload is a class in the contract slice, carrying three attribute
 
 A property carrying `SitrepUnitAttribute` reaches the client as a quantity in that unit, such as `Value<"ut">` for `Units.UniversalTime`. [`Units`](/reference/mod/serialization#Units), on the Serialization page, lists every unit; the ones an Uplink reaches for most:
 
-| Member | For |
-| --- | --- |
-| `Units.UniversalTime` | a moment: the game time something happens or happened |
-| `Units.Seconds` | a duration: how long something takes, or how long is left |
-| `Units.Metres`, `Units.MetresPerSecond` | a distance or altitude, a speed |
-| `Units.Degrees` | an angle, latitude or longitude |
-| `Units.Tonnes`, `Units.Kilonewtons`, `Units.Kelvin` | a mass, a thrust, a temperature |
-| `Units.Ratio` | a fraction from 0 to 1, drawn as a percentage |
-| `Units.Count` | a whole number of things, such as crew or samples |
-| `Units.Funds`, `Units.Science`, `Units.Reputation` | a career resource |
-| `Units.Id`, `Units.Text`, `Units.Flag`, `Units.Enumeration` | a field that is not a quantity: an identifier, a string, a boolean, a member of an enum |
+| Member | Client unit id | For |
+| --- | --- | --- |
+| `Units.UniversalTime` | `"ut"` | a moment: the game time something happens or happened |
+| `Units.Seconds` | `"s"` | a duration: how long something takes, or how long is left |
+| `Units.Metres`, `Units.MetresPerSecond` | `"m"`, `"m/s"` | a distance or altitude, a speed |
+| `Units.Degrees` | `"°"` | an angle, latitude or longitude |
+| `Units.Tonnes`, `Units.Kilonewtons`, `Units.Kelvin` | `"t"`, `"kN"`, `"K"` | a mass, a thrust, a temperature |
+| `Units.Ratio` | `"ratio"` | a fraction from 0 to 1, drawn as a percentage |
+| `Units.Count` | `"count"` | a whole number of things, such as crew or samples |
+| `Units.Funds`, `Units.Science`, `Units.Reputation` | `"funds"`, `"science"`, `"rep"` | a career resource |
+| `Units.Id`, `Units.Text`, `Units.Flag`, `Units.Enumeration` | `"id"`, `"text"`, `"flag"`, `"enum"` | a field that is not a quantity: an identifier, a string, a boolean, a member of an enum |
+
+Each member is the client's unit id: `Units.MetresPerSecond` is the string `"m/s"`, so a property tagged with it reads as `Value<"m/s">` and `value("m/s", 3)` makes one. The wire carries the unit named, never a converted one, and `Unit` picks the symbol to draw: a mass tagged `Units.Tonnes` is handed to `Unit` as it arrived. [`UNIT_DEFINITIONS`](/reference/client/units-and-values#UNIT_DEFINITIONS) lists every id the SDK knows.
+
+When the catalog lacks a unit your Uplink needs, tag the property with a plain string of your own, namespaced with your Uplink's id (`"snacks:crate"`). On the client declare it for the compiler by merging into [`UnitDeclarations`](/reference/client/units-and-values#UnitDeclarations) with a `declare module "@ksp-gonogo/sitrep-sdk"` block, and register the same unit at runtime with [`registerUnit`](/reference/client/units-and-values#registerUnit), which checks it against the declaration; from then on `Unit`, `Meter` and `Band` take it like a built-in.
 
 A string meant to be read by a person, such as a name or a status message, takes `Units.Text`; a string that identifies something and is never read as prose takes `Units.Id`. A property that holds a list of a nested payload type, such as `List<Alarm>`, is supported: codegen writes `Alarm[]`, the nested type needs its own entry in the wire types below, and the units on its fields do the describing, so the list property itself carries no `SitrepUnitAttribute`.
 

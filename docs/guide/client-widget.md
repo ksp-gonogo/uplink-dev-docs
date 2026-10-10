@@ -8,7 +8,7 @@ The client is a package the Gonogo app loads into its own page, so a widget is a
 
 <<< ../../example/client/src/uplink.ts#client
 
-`defineUplinkClient` declares the client and returns its handle, an `UplinkClientHandle`. Its `id` must equal the plugin's, and its `version` the version in `package.json`. Every registration names the handle as its `owner`, so the app knows which Uplink a widget belongs to, and the handle registers what only an Uplink has, such as a [reckoner](/guide/reckoners). The `description` opens the Uplink's generated page ([Documenting your Uplink](/guide/documenting)).
+`defineUplinkClient` declares the client and returns its handle, an `UplinkClientHandle`. Its `id` must equal the plugin's, and its `version` the version in `package.json`; after you change either, run `npm run page`, which writes `gonogo-uplink.json` from them. Every registration names the handle as its `owner`, so the app knows which Uplink a widget belongs to, and the handle registers what only an Uplink has, such as a [reckoner](/guide/reckoners). The `description` opens the Uplink's generated page ([Documenting your Uplink](/guide/documenting)).
 
 ## The entry
 
@@ -34,12 +34,20 @@ At the foot of `client/src/Heartbeat/index.tsx`:
 
 `registerComponent` adds the widget to the app's widget list. The `ComponentDefinition` it takes says:
 
-- what the operator sees in that list: `name`, `description` and `tags`, free-form words the list filters by, such as `"telemetry"` or `"control"`, styling the ones it knows
-- how big a new tile is, in grid units: `defaultSize` and `minSize`. A column is about 32 pixels wide ([`COL_WIDTH`](/reference/ui-kit/Layout#COL_WIDTH))
+- what an operator, the person using the dashboard, sees in the widget picker, the list they add widgets to a screen from: `name`, `description` and `tags`, free-form words the picker filters by, such as `"telemetry"` or `"control"`
+- how big a new tile is, in grid units: `defaultSize` and `minSize`. A column is about 32 pixels wide ([`COL_WIDTH`](/reference/ui-kit/Layout#COL_WIDTH)) and a row 25 ([`ROW_HEIGHT`](/reference/ui-kit/Layout#ROW_HEIGHT)), with a gap of [`GRID_MARGIN`](/reference/ui-kit/Layout#GRID_MARGIN) between tiles, so `6` by `4` is about 190 by 100 pixels of widget. [`minSize`](/reference/client/registering#ComponentDefinition.minSize) is checked in a real browser by [`uplink-tools docs`](/reference/tools/command-line#docs)
 - the `component` to render, and the `owner`
 - `channels`: every Topic the widget reads. Listing a Topic does not subscribe to it, since `useTelemetry` does that, but when the Uplink serving it reports itself degraded or unavailable the dashboard draws that Uplink's reason in place of the widget, and the generated page lists it
 
-`defaultConfig` and `actions` are optional, and empty here. A widget with settings the operator can change gives a [`configComponent`](/reference/client/registering#ComponentDefinition.configComponent) and its starting `defaultConfig`; a widget a key or a controller can drive declares its [`actions`](/reference/client/registering#ComponentDefinition.actions). Each widget id is unique across every Uplink, so start it with your Uplink's id.
+`defaultConfig` and `actions` are optional. The scaffold writes them empty so the place to add them is in front of you. A widget with settings the operator can change gives a [`configComponent`](/reference/client/registering#ComponentDefinition.configComponent) and its starting `defaultConfig`, as [Settings an operator can change](#settings-an-operator-can-change) shows; a widget a key or a controller can drive declares its [`actions`](/reference/client/registering#ComponentDefinition.actions). Each widget id is unique across every Uplink, so start it with your Uplink's id.
+
+## Settings an operator can change
+
+A widget with settings gives `registerComponent` two things: a `configComponent`, the form the app draws in the widget's settings dialog, and a `defaultConfig`, the settings a new tile starts with. The app renders the form with [`ConfigComponentProps`](/reference/client/registering#ConfigComponentProps): the instance's current `config` and an `onSave` that stores new settings and closes the dialog. The widget itself receives the saved `config` as a prop on every render. `useModalSaveBar` puts the Save button in the dialog's footer and asks before discarding unsaved edits:
+
+<<< ../../reference/examples/guide/ConfigWidget.tsx
+
+A setting that belongs to the whole app rather than to one tile is declared once with [`registerSetting`](/reference/client/settings#registerSetting), and appears in the app's Settings with no form to write.
 
 ## Reading a Topic
 
@@ -49,9 +57,11 @@ The widget itself, `client/src/Heartbeat/index.tsx`:
 
 This is the finished widget. The one `new` writes is the same less three things the later pages add: the `useCommand` line, the `resetButton` and `panelAside` ([Sending a command](/guide/client-commands)); the `reckoning` lines and `ModelledAlongside` ([Writing a reckoner](/guide/reckoners)); and the two sentences of its doc comment and description that mention them.
 
-`useTelemetry` returns the Topic's `TopicReading`: its latest value together with how current that value is. `state` is one of:
+`useTelemetry` returns the Topic's `TopicReading`: its latest value together with how current that value is. Every core Topic you can read this way is listed in [`TopicPayloadMap`](/reference/client/reading-telemetry#TopicPayloadMap), such as `vessel.identity` and `vessel.crew` below. `state` is one of:
 
 <!--@include: @/.vitepress/includes/reading-states.md-->
+
+A `held` reading also carries a `grade` saying why it is held, one of the [`HeldGrade`](/reference/client/reading-telemetry#HeldGrade) values. A reading with a `reckoning` carries a model's answer beside the received value, drawn by `ModelledAlongside` ([Writing a reckoner](/guide/reckoners)).
 
 The widget `new` writes draws the values while the reading is observed or [held](/reference/concepts/held), and says which of the other three it is otherwise, never a zero: a value you have not received is not a value of zero, and the two mean opposite things to an operator. The example adds the modelled count and the reset button to it.
 
@@ -75,9 +85,10 @@ In the heartbeat, `ModelledAlongside` and the `reckoning` lines draw this Uplink
 
 The widget is drawn entirely from `@ksp-gonogo/ui-kit`, the components the app's own widgets use, so it looks like them and reflows the way they do when the operator resizes its tile:
 
+- [**`Stack`**](/reference/ui-kit/Layout#Stack) lays children out in a column, with `gap` naming how far apart, such as `"related-compact"` for items that belong together
 - **`Panel`** is the widget's frame: `panelTitle` its heading, `sections` its body, `panelAside` a control in its header
 - [**`Section`**](/reference/ui-kit/Layout#Section) groups a body's content, and the panel lays sections out in columns when the tile is wide enough
-- **`Unit`** draws a quantity with its symbol, choosing the unit from the value's size (`format` pins one, `as` converts to another of the same kind), so hand it values as they arrived
+- **`Unit`** draws a quantity with its symbol, choosing the unit that suits its size (1,500 metres draws as 1.5 kilometres; `format` pins one, `as` converts to another of the same kind), so hand it values as they arrived. It is not the C# `Units` class, which names the unit a contract property is in
 - **`Text`** draws a string you have already formatted
 - **`EmptyState`** says why there is nothing to show
 

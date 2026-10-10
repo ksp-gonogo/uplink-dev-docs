@@ -16,11 +16,11 @@ The first half of `client/src/reckoner.ts`:
 
 <<< ../../example/client/src/reckoner.ts#reckon
 
-`reckonTicks` is the model. It is a plain function of the latest sample (`point`), the window of recent samples, oldest first and ending with that same sample (`history`) and the game time the model is asked to reach (`reckonUt`), so it can be tested without the app. It returns either a `TopicModel` or `{ declined }` with a `ReckoningDecline`:
+`reckonTicks` is the model. It is a plain function of the latest sample (`point`), the window of recent samples, oldest first and ending with that same sample (`history`) and the game time the model is asked to reach (`reckonUt`), so it can be tested without the app. It returns either a [`TopicModel`](/reference/client/reckoners#TopicModel) or `{ declined }` with a [`ReckoningDecline`](/reference/client/reckoners#ReckoningDecline). The helpers in it come from the SDK: `value(unit, number)` makes a quantity from a unit id such as `"ut"` (a game time) or `"count"`, the ids the contract slice names with `Units.UniversalTime` and `Units.Count` ([Units and values](/reference/client/units-and-values)), and `.magnitude` reads the number back out of one:
 
-- **`modelled`** lists the parts of the payload the model moves, each a path and a `ReckoningBasis` naming the kind of model (`"rate-integration"` here: a rate, carried forward). An Uplink's model moves the whole payload, path `""`: a model of some fields only is offered just for a core Topic whose contract declares those fields
+- **`modelled`** lists the parts of the payload the model moves, each a path into the payload and a [`ReckoningBasis`](/reference/client/reckoners#ReckoningBasis) naming the kind of model (`"rate-integration"` here: a rate, carried forward; the others are `"combination"`, `"kepler-propagation"`, `"linear-dead-reckoning"` and `"powered-integration"`). A path of `""` means the whole payload, which is what an Uplink's own model moves
 - **`reckon(viewUt)`** returns the payload as the model says it is at `viewUt`. It must be pure, the same inputs always giving the same result, because the app runs it for every frame that reads the Topic
-- **A decline** names its reason, one of those `ReckoningDecline` lists: `"insufficient-history"` for too few samples to take a rate from, `"model-inapplicable"` when the model does not fit this sample, as after a reset, and `"beyond-horizon"` when the sample is too old to carry this far
+- **A decline** names its reason, one of those `ReckoningDecline` lists: `"insufficient-history"` for too few samples to take a rate from, `"model-inapplicable"` when the model does not fit this sample, as after a reset, and `"beyond-horizon"` when the sample is too old to carry this far. The others are set by the app: `"input-absent"`, `"under-physics"` and `"contested"`
 
 Keep `reckonTicks` cheap. The work belongs in the `reckon` it returns, which runs only when a widget reads the value.
 
@@ -30,9 +30,9 @@ The second half of the file:
 
 <<< ../../example/client/src/reckoner.ts#register
 
-`UplinkClientHandle.registerReckoner` takes the Topic and a `ReckonerDefinition`, whose own `reckon` the app calls with the sample, the resolved `deps` and a `ReckonerFrame`; here it passes the frame's `history` and `reckonUt` on to `reckonTicks`.
+`UplinkClientHandle.registerReckoner` takes the Topic and a [`ReckonerDefinition`](/reference/client/reckoners#ReckonerDefinition), whose own `reckon` the app calls with the sample, the resolved `deps` and a `ReckonerFrame`, and which answers with a `ReckonerAnswer`; here it passes the frame's `history` and `reckonUt` on to `reckonTicks`.
 
-- **`deps`** lists other Topics the model reads, resolved before `reckon` runs. A model that needs one that has not arrived declines without being asked. The heartbeat's model reads only its own Topic, so it lists none
+- **`deps`** lists other Topics the model reads, resolved before `reckon` runs. When one has not arrived, the app does not call `reckon` and the reading declines with `"input-absent"`. The heartbeat's model reads only its own Topic, so it lists none
 - **`window`** is a `ReckonerWindow`: how far back to keep samples of the Topic itself, in game seconds (`spanUt`), how many at most, and the fewest the model can work with. With fewer than `minSamples`, the reading declines with `"insufficient-history"` and `reckon` is not called. Without a window the model gets the latest sample alone
 
 Then add `import "./reckoner.js";` to `src/index.ts`, so the registration runs when the client loads ([A widget](/guide/client-widget#the-entry)).
@@ -57,6 +57,6 @@ And test the widget with the model running, through a stream fixture: two sample
 
 <<< ../../example/client/src/Heartbeat/index.test.tsx#reckoned
 
-`setupStreamFixture` runs the app's own telemetry pipeline over a transport the test feeds by hand, so the reckoner is asked exactly as it is in the app. [Testing](/guide/testing) covers fixtures.
+`setupStreamFixture` (from `@ksp-gonogo/sitrep-sdk/testing`, the SDK's test helpers, which are part of the package you already installed) runs the app's own telemetry pipeline over a transport the test feeds by hand, so the reckoner is asked exactly as it is in the app. [Testing](/guide/testing) covers fixtures.
 
 Next: [Extensions](/guide/extensions).

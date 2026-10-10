@@ -1,7 +1,7 @@
 // #region client
 import { defineUplinkClient } from "@ksp-gonogo/sitrep-sdk";
 
-/** Must equal package.json's version: gonogo-uplink.json is generated from this. */
+/** Must equal package.json's version. `npm run page` writes gonogo-uplink.json from this. */
 const UPLINK_VERSION = "0.0.1";
 
 /**

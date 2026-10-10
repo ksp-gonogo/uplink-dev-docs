@@ -65,7 +65,7 @@ A plugin that reaches the game or a mod only by reflection names no KSP type, so
 
 ## In CI
 
-From `client/`, every command an Uplink's CI needs, none of them needing the game or a browser. `dotnet test` does bind a port on the local machine to talk to its test host, so a sandbox that blocks local network binding stops it:
+From `client/`, every command an Uplink's CI needs, none of them needing the game or a browser. `dotnet test` does bind a port on the local machine to talk to its test host, so a sandbox that blocks local network binding stops it at once, with a `SocketException` for permission denied, until local binding is allowed for the process. In the same kind of sandbox a plain `dotnet build` can appear to hang for minutes; `dotnet build -m:1 --disable-build-servers` avoids the build server's sockets:
 
 ```bash
 npm ci

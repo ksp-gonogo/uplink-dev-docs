@@ -68,7 +68,7 @@ Its payload is a bare boolean, so it needs no wire type in the contract slice: t
 
 <<< ../../reference/examples/guide/clockTopics.ts
 
-`registerBarePrimitiveTopic` makes the id known at runtime, the way the generated Topics are, and its reference entry has the detail.
+[`registerBarePrimitiveTopic`](/reference/client/reading-telemetry#registerBarePrimitiveTopic) makes the id known at runtime, the way the generated Topics are, and its reference entry has the detail.
 
 `<id>.available` also makes the Uplink's id a [Domain](/reference/concepts/domain-and-seat): an [augment](/reference/concepts/augment-contribution-and-slot) a client registers with the Uplink's id in its `requires` list mounts once the Topic has published anything, `true` or `false`, which says the Uplink is installed. Read its value for whether the mod is.
 
