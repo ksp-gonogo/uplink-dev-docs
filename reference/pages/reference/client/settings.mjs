@@ -4,4 +4,11 @@ export default {
   package: "@ksp-gonogo/sitrep-sdk",
   category: "Settings",
   lead: "registerSetting",
+  examples: [
+    {
+      id: "settings--crew-days",
+      file: "reference/examples/settings/CrewDays.tsx",
+      export: "CrewDaysSetting",
+    },
+  ],
 };

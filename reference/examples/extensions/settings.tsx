@@ -1,6 +1,7 @@
 import {
   defineUplinkClient,
   registerAugment,
+  SettingKind,
   useTelemetry,
 } from "@ksp-gonogo/sitrep-sdk";
 import { Section, Text, useAugmentSettings } from "@ksp-gonogo/ui-kit";
@@ -33,6 +34,6 @@ registerAugment({
   augments: "crew-status.sections",
   component: Names,
   channels: ["vessel.crew"],
-  settings: [{ key: "short", type: "boolean", label: "First names only", default: true }],
+  settings: [{ key: "short", type: SettingKind.Bool, label: "First names only", default: true }],
   owner: uplink,
 });

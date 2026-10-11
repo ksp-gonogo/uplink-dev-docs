@@ -1,0 +1,35 @@
+{
+  "subscribed": ["settings.example"],
+  "emits": [
+    {
+      "topic": "settings.example",
+      "payload": {
+        "uplink": "example",
+        "settings": [
+          {
+            "id": "countStep",
+            "label": "Count step",
+            "description": "How much the heartbeat adds each second.",
+            "kind": 2,
+            "unit": null,
+            "group": "Heartbeat",
+            "setIn": "settings.cfg",
+            "writable": true,
+            "value": "1"
+          },
+          {
+            "id": "countWhilePaused",
+            "label": "Count while paused",
+            "description": "Whether the heartbeat keeps counting when the game is paused.",
+            "kind": 1,
+            "group": "Heartbeat",
+            "setIn": "settings.cfg",
+            "writable": true,
+            "value": "False"
+          }
+        ],
+        "meta": { "source": "game" }
+      }
+    }
+  ]
+}
