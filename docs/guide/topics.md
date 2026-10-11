@@ -14,7 +14,7 @@ Every Topic's payload is a class in the contract slice, carrying three attribute
 - **`SitrepTopicAttribute`** names the Topic it is the payload of
 - **`TsInterface`**, from the [Reinforced.Typings](https://www.nuget.org/packages/Reinforced.Typings) package codegen runs, tells codegen to write a TypeScript interface for it. It sits inside `#if SITREP_CODEGEN` because it exists only in the build `codegen` runs, never in the assembly you ship, and so does the file's `using Reinforced.Typings.Attributes;` at its top
 
-A property carrying `SitrepUnitAttribute` reaches the client as a quantity in that unit, such as `Value<"ut">` for `Units.UniversalTime`. [`Units`](/reference/mod/serialization#Units), on the Serialization page, lists every unit; the ones an Uplink reaches for most:
+A property carrying `SitrepUnitAttribute` reaches the client as a quantity in that unit, such as `Value<"ut">` for `Units.UniversalTime`. [`Units`](/reference/mod/serialization#Units), on the Serialization page, lists every unit, and [How each unit is drawn](#how-each-unit-is-drawn), below, gives each one's id and how it reads; the ones an Uplink reaches for most:
 
 | Member | Client unit id | For |
 | --- | --- | --- |
@@ -120,6 +120,22 @@ The manifest's `Channels` list declares each Topic with a `ChannelDeclaration`:
 - **`Emission`**: an `EmissionPolicy`. `keyframeIntervalUt` is the longest a Topic goes without a sample, in game seconds; `quantum`, an `EmissionQuantum`, is how much a number must change before a new sample goes out early. `EmissionQuantum.Absolute(0)` sends one on any change
 
 Emission is counted in game seconds, and under time warp a game second passes in a fraction of a real one. A value that changes on every tick, with a quantum of zero, is published on every tick at any warp, so give a value that changes continuously a quantum of a size an operator would notice. The heartbeat's `Absolute(0)` is on purpose: its count changes on every tick, and each new count is what it exists to show.
+
+### Limiting how often a Topic changes
+
+The quantum applies to numbers only. A payload that is not a number, such as a list, a record or a string, is sent whenever it differs by value from the last one sent, so a list holding a countdown differs on every sample and is sent on every one. Two more arguments of `EmissionPolicy`, in game seconds like the rest, limit that, and they apply to every payload whatever its type:
+
+- **`minSampleIntervalUt`** is the least game time between two samples that are even compared with the last one sent. `0`, the default, compares every sample. A keyframe that is due is sent regardless
+- **`maxRateIntervalUt`** is the least game time between two changes sent, however often the value differs. `0`, the default, sets no limit. Keyframes are not held back by it
+
+```cs
+Emission = new EmissionPolicy(
+    keyframeIntervalUt: 30,
+    quantum: EmissionQuantum.Absolute(0),
+    maxRateIntervalUt: 1),
+```
+
+That sends a changed list at most once per game second. A value skipped by the limit is not lost: the first sample after the interval is compared with the last one sent, so it goes out with the value it has then. Because the interval is game time, one game second passes in less real time under warp, so the sample rate in real time rises with the warp factor. Where a field counts down, publishing the moment it ends (a `Units.UniversalTime` property) instead of the time left keeps the payload unchanged between real changes, and the client works out the time left from the clock.
 
 The other members of `ChannelDeclaration` cover less common cases, such as [`AbsenceIsData`](/reference/mod/channels-and-emission#ChannelDeclaration.AbsenceIsData) for a Topic whose empty value is itself information. [Channels and emission](/reference/mod/channels-and-emission) documents them all.
 

@@ -24,7 +24,7 @@ A class holding everything the plugin reads from the mod, found once, when the g
 
 <<< ../../reference/examples/mod/WrappingExample.cs#binder{cs}
 
-- **Find the assembly by name** among `AppDomain.CurrentDomain.GetAssemblies()`, once, when the plugin is constructed, as TestFlight's and Kerbalism's Uplinks do
+- **Find the assembly by name** among `AppDomain.CurrentDomain.GetAssemblies()`, when the plugin is constructed, as TestFlight's and Kerbalism's Uplinks do. Gonogo constructs every plugin inside one scan of the assemblies loaded at that moment, from an add-on that starts as the game does, and fixes no order between plugins or between a plugin and the mod it wraps. A mod whose assembly is not yet loaded when the constructor runs is therefore not found, and is not a missing mod. Where that can happen, try the lookup again at the start of `Register`, which runs after every plugin has been constructed, and report the mod missing only if that also finds nothing
 - **Resolve each type and member once**, with the binding flags and parameter types the mod actually declares. A member that does not resolve is a mod version you were not built against: record which, so the operator can be told
 - **Read only on the main thread.** The binder's reads run in the main-thread half of `AddSampledSource`, never on the Courier thread
 
@@ -42,10 +42,14 @@ Add the mod's DLL to `mod/<GameData name>.csproj` with `Private="false"`, so it 
 
 `KspGameData` is your KSP install's `GameData` folder, found from the same `KspRoot` that gives `KspManaged` ([The plugin class](/guide/plugin#calling-the-game)): `new --ksp`, `KSP_ROOT`, or `ksp.local.props`. The backslashes are MSBuild's, which accepts them on every platform. Then:
 
-- **Make the mod a dependency** in `mod/<GameData name>.netkan`'s `depends`, so CKAN never installs your Uplink without it
+- **Make the mod a dependency** in `mod/<GameData name>.netkan`'s `depends`, so CKAN never installs your Uplink without it. A mod reached by reflection is different: the plugin loads without it, so `depends` would stop players installing an Uplink that works. List it under `recommends`, which CKAN offers to install and lets the player decline, as gonogo-uplinks' RealAntennas and Action Groups Extended Uplinks do, or leave it out when CKAN does not index the mod, as Principia's does (a `recommends` CKAN cannot resolve is a dangling reference)
 - **Check the version you were given** before you use it. SCANsat's and MechJeb's Uplinks probe the mod's assembly in `Register` for every type and member they call and for a known-good version range, and go unavailable with the reason when the probe fails: [SCANsat's VersionGuard.cs](https://github.com/ksp-gonogo/gonogo-uplinks/blob/addc1fa21877b9de1e60909f4ec572d3b51a86ef/uplinks/scansat/mod/VersionGuard.cs)
 
 A build server has no KSP install, so a plugin that references the game or a mod cannot build on a public CI runner; `new --workflows` says so in the workflow it writes.
+
+### Finding a mod's CKAN identifier
+
+The `name` in a netkan relationship is the mod's CKAN identifier, which is not always its name as a player knows it (Action Groups Extended is `AGExt`). Find it in the CKAN client by searching for the mod and opening its details, which list the identifier, with `ckan search <name>` on the command line, or as the name of the mod's folder in the [CKAN-meta](https://github.com/KSP-CKAN/CKAN-meta) repository, which holds one folder per indexed mod. A mod with no folder there is not indexed.
 
 ## Saying the mod is missing
 
