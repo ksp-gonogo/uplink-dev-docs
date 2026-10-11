@@ -1,3 +1,4 @@
+// npm install @ksp-gonogo/sitrep-sdk @ksp-gonogo/ui-kit
 import {
   defineUplinkClient,
   registerComponent,
@@ -5,6 +6,8 @@ import {
 } from "@ksp-gonogo/sitrep-sdk";
 import { Stat, Unit } from "@ksp-gonogo/ui-kit";
 
+// The id must match the id the Uplink's mod declares with [SitrepUplink]. The client also needs that mod
+// half and a built bundle to load; `uplink-tools new` writes all three together.
 const uplink = defineUplinkClient({
   id: "altitudeboard",
   version: "1.0.0",
