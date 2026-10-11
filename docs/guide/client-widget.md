@@ -104,6 +104,6 @@ The kit's components carry their own roles and states, and honour a reader's red
 
 ## Seeing it
 
-`npm test` renders the widget in its tests. To see it drawn, `npm run render` draws each of the widget's fixtures, the scenes under `__fixtures__/`, to `client/renders/` in a real browser, which needs Chromium installed once with `npx playwright install chromium`. [Testing](/guide/testing) covers fixtures, and [Releasing and installing](/guide/release) how to see the widget in the app.
+`npm test` renders the widget in its tests. To see it drawn, `npm run render` draws each of the widget's fixtures, the scenes under `__fixtures__/`, to `client/renders/` in a real browser, which needs Chromium installed once with `npx playwright install chromium`. [Testing](/guide/testing) covers fixtures. To see the widget in the running app with a rebuild on every save, follow [See your Uplink in the app](/guide/dev-loop); [Releasing and installing](/guide/release) covers installing a released one.
 
 Next: [Sending a command](/guide/client-commands).

@@ -2,6 +2,8 @@
 
 You can watch a client you are building inside the app, with a rebuild on every save, without releasing anything. There are two ways, depending on whether you have a checkout of the Gonogo app.
 
+The loop in short, with a checkout: start the watch build, leave it running, start the app with your Uplink named, and read the **Local builds** tab in Settings to see what became of it. Edit, save, and the page reloads with the new build.
+
 ## With a checkout of the app
 
 ::: warning What this needs
@@ -23,11 +25,13 @@ In the app checkout, start the app and name your Uplink:
 pnpm dev --uplink ~/projects/example
 ```
 
-The path is your Uplink's directory, the one holding `uplink.json`. Repeat `--uplink` for more than one Uplink, and `pnpm dev --help` prints the options. An Uplink without an `uplink.json` is refused, and so is a path that is not a directory.
+The path is your Uplink's directory, the one holding `uplink.json`, and a relative path is read from where you typed the command. Repeat `--uplink` for more than one Uplink, and `pnpm dev --help` prints the options. Everything else `pnpm dev` starts, the relay included, starts as it does without the flag. An Uplink without an `uplink.json` is refused, and so is a path that is not a directory.
 
 The app loads each one's build output from `client/dist/<id>/`, with no report from the mod, no hash comparison and no consent prompt. It still checks the bundle's contract (the SDK and ui-kit versions it was built against) and the bytes it fetched, and it reloads the page on every rebuild.
 
-An Uplink that ships inside the app's own repository needs no `--uplink`: `pnpm dev` builds those from source when it starts. Naming one without an `uplink.json` of its own is refused with that explanation. Naming one that has its own `uplink.json` replaces the bundled copy of the same id with yours.
+An Uplink that ships inside the app's own repository needs no `--uplink`: `pnpm dev` builds those from source when it starts. Naming one without an `uplink.json` of its own is refused with that explanation. Naming one that has its own `uplink.json` replaces the bundled copy of the same id with yours, in the app's index and in Settings, so the build you are working on is the one that loads.
+
+Working inside the `gonogo-uplinks` repository, `pnpm uplink:watch <name>` runs that client's own `uplink-tools bundle --watch` for you, from the repository root. The bundle it writes is the one `npx uplink-tools bundle --watch` writes, so the `--uplink` step is the same.
 
 ## The options of the two commands
 
@@ -41,9 +45,9 @@ Open Settings, then Uplinks. A **Local builds** tab leads the row of tabs, with 
 |---|---|
 | `Client: loaded` | The bundle passed its checks and registered its widgets |
 | `Client: quarantined: <reason>` | The app refused it. The reason names the check, usually a contract or API version the bundle was built against that this app does not speak, or, for an Uplink installed from a release rather than built from your checkout, a hash that does not match the bytes served |
-| `Client: waiting for the first build` | The watch build has not produced a bundle yet, or is not running |
+| `Client: waiting for the first build, run the Uplink's watch build` | The watch build has not produced a bundle yet, or is not running |
 | `Client: not loaded yet` | A bundle exists and the app has not finished loading it |
-| `Client: build failed: <message>` | The last save did not compile. This is the first line of the error, and the last good build is still the one loaded |
+| `Client: build failed: <message>` | The last save did not compile. This is the first line of the error. When a build had loaded before, the line ends `, the last good build is loaded` and that is the one running |
 | `mod: reporting, v<version>` | KSP is connected and lists your Uplink |
 | `mod: not reporting <id>` | KSP does not list it, so a widget will have no data. It still loads, so you can work on layout without the game |
 
