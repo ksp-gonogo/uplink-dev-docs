@@ -21,16 +21,16 @@
     "release": "uplink-tools release",
     "render": "uplink-tools render",
     "page": "uplink-tools page",
-    "docs": "uplink-tools docs",
+    "docs": "npm run bundle && uplink-tools docs --bundle dist/example/example.client.js",
     "docs:check": "uplink-tools docs --check"
   },
   "dependencies": {
-    "@ksp-gonogo/ui-kit": "1.0.0-rc.25",
+    "@ksp-gonogo/ui-kit": "1.0.0-rc.27",
     "styled-components": "^6.0.0"
   },
   "devDependencies": {
-    "@ksp-gonogo/sitrep-sdk": "1.0.0-rc.25",
-    "@ksp-gonogo/uplink-tools": "1.0.0-rc.25",
+    "@ksp-gonogo/sitrep-sdk": "1.0.0-rc.27",
+    "@ksp-gonogo/uplink-tools": "1.0.0-rc.27",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@types/react": "^18.3.28",

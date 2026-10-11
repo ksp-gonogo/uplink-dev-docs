@@ -48,6 +48,8 @@ cd ../example-releases
 git add releases && git commit -m "Release example 0.0.1" && git push -u origin releases
 ```
 
+`npx uplink-tools publish` does those steps for a jsDelivr URL, from the Uplink's folder and after `release`. It copies the built bundle and its `gonogo-uplink.json` into a worktree of the ref the URL names (by default `.releases/` in the Uplink, which it creates from the remote's branch, or as a new orphan branch when the remote has none) and prints the links. A published version is never overwritten: a bundle that differs from the one already there is a new version with its own URL. `--push` commits what changed, pushes it to the ref and checks the remote holds the commit, `--purge` asks jsDelivr to drop its cached copy of both URLs, and `--tag <tag>` refuses unless the tag is `example-v0.0.1`, as `release` does. For any other host, `--to <dir>` names the folder that is served at the URL's root.
+
 In PowerShell, `mkdir -p` and `cp` are `New-Item -ItemType Directory -Force` and `Copy-Item` ([Known limits](/guide/limits#the-tools)). For a later version, `git worktree add ../example-releases releases` checks the branch out again, and the files go in that version's folder. Keep `gonogo-uplink.json` beside the bundle under exactly that name: the app finds it from the bundle's own URL.
 
 `new` writes this URL only when it knows the repository, from `--repo` or this directory's GitHub remote. With `--no-repo`, or an owner named `you`, it writes a placeholder, and `release` refuses to run until you set `repo` and `client.url` in `uplink.json` to where the bundle will really be published ([uplink.json](/guide/uplink-json#what-release-refuses)).

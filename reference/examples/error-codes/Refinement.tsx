@@ -1,4 +1,4 @@
-import { describeErrorCode, type ErrorCodeDeclaration, registerErrorCodes } from "@ksp-gonogo/sitrep-sdk";
+import { describeErrorCode, registerErrorCodes, type UplinkErrorCodeDeclaration } from "@ksp-gonogo/sitrep-sdk";
 import { Stack, Text } from "@ksp-gonogo/ui-kit";
 
 /**
@@ -6,7 +6,7 @@ import { Stack, Text } from "@ksp-gonogo/ui-kit";
  * `error-codes.ts` from the plugin's refusals. Registering the table once,
  * where the client loads, lets `describeErrorCode` read them like a core code.
  */
-const EXAMPLE_ERROR_CODES: readonly ErrorCodeDeclaration[] = [
+const EXAMPLE_ERROR_CODES: readonly UplinkErrorCodeDeclaration[] = [
   {
     id: "example.countFrozen",
     kind: "refusal",

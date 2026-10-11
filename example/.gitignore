@@ -5,3 +5,4 @@ bin/
 obj/
 *.g.cs
 ksp.local.props
+.releases/

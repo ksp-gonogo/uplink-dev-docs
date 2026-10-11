@@ -8,8 +8,8 @@
   "minAppVersion": "0.0.0",
   "apiVersion": "6.0.0",
   "contractMajor": 37,
-  "contractMinor": 0,
+  "contractMinor": 3,
   "bundleUrl": "example/example.client.js",
   "integrity": "",
-  "sdkVersion": "1.0.0-rc.25"
+  "sdkVersion": "1.0.0-rc.27"
 }
