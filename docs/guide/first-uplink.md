@@ -67,6 +67,7 @@ example/
     └── src/
         ├── index.ts                the bundle's entry: imports every registration
         ├── uplink.ts               the client's identity
+        ├── commands.ts             the Uplink's commands, typed and registered
         ├── topics.ts               the Uplink's Topics, typed
         ├── __generated__/          written by codegen from the contract slice
         ├── test/setup.ts           runs before every test

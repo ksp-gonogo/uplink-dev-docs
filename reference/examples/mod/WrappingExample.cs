@@ -100,6 +100,7 @@ namespace ExampleUplink
                 new ChannelDeclaration
                 {
                     Topic = AvailableTopic,
+                    Kind = SampleKind.Discrete,
                     Delivery = Delivery.LossyLatest,
                     Delay = DelayRole.TrueNow,
                     Emission = new EmissionPolicy(keyframeIntervalUt: 30, quantum: EmissionQuantum.Absolute(0)),
@@ -107,6 +108,7 @@ namespace ExampleUplink
                 new ChannelDeclaration
                 {
                     Topic = UtTopic,
+                    Kind = SampleKind.Continuous,
                     Delivery = Delivery.LossyLatest,
                     Delay = DelayRole.TrueNow,
                     Emission = new EmissionPolicy(keyframeIntervalUt: 30, quantum: EmissionQuantum.Absolute(1)),

@@ -53,6 +53,7 @@ namespace ExampleUplink
                 new ChannelDeclaration
                 {
                     Topic = "example.unit.",
+                    Kind = SampleKind.Discrete,
                     Delivery = Delivery.LossyLatest,
                     Emission = new EmissionPolicy(30, EmissionQuantum.Absolute(0)),
                 });
@@ -131,6 +132,7 @@ namespace ExampleUplink
                 new ChannelDeclaration
                 {
                     Topic = "example.status",
+                    Kind = SampleKind.Discrete,
                     Delivery = Delivery.ReliableOrdered,
                     Delay = DelayRole.TrueNow,
                     AbsenceIsData = true,
@@ -208,6 +210,7 @@ namespace ExampleUplink
         public static ChannelDeclaration OpaqueChannel() => new ChannelDeclaration
         {
             Topic = "example.audio",
+            Kind = SampleKind.Event,
             Delivery = Delivery.ReliableOrdered,
             Delay = DelayRole.Delayed,
             OpaquePayload = true,

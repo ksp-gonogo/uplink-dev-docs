@@ -4,17 +4,17 @@ The plugin now accepts `example.reset` ([Accepting a command](/guide/commands)).
 
 ## Typing the command
 
-In `client/src/topics.ts`, the commands' half of the `declare module` block the Topics use, which `new` already wrote, so there is nothing to add:
+In `client/src/commands.ts`, which `new` already wrote, so there is nothing to add:
 
-<<< ../../example/client/src/topics.ts#commandmaps
+<<< ../../example/client/src/commands.ts#commandmaps
 
 The SDK types every core command's arguments in `CommandArgsMap` and its reply in `CommandReplyMap`. Your commands join them through the two maps `codegen` writes into `client/src/__generated__/command-map.ts`, one row per `SitrepCommandAttribute` in the contract slice: the arguments type it generated, and the reply, `CommandResult` for a handler that returns `CommandResult` or `CommandResultOf` the payload type for one that returns data. A command you add to the slice is typed after `npm run codegen`, with no line of yours to add.
 
 ## Registering the command {#the-command-known-at-runtime}
 
-Further down `client/src/topics.ts`:
+Further down the same file:
 
-<<< ../../example/client/src/topics.ts#command
+<<< ../../example/client/src/commands.ts#command
 
 The declaration types the command; `registerUplinkCommand` makes the app know it exists at runtime. Its second argument, a `CommandRail`, says how the command travels, its rail: whether it waits for the signal delay (`delayed`) and whether a reply comes back (`replies`). `GENERATED_COMMAND_RAIL` holds the rail each command's `SitrepCommandAttribute` declares in the contract slice, and the loop registers every generated command with it, so the app and the plugin agree. The app uses it to show the operator whether a sent command is still crossing the signal delay.
 

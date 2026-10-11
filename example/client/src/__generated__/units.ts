@@ -182,3 +182,17 @@ export const GENERATED_TYPE_DETERMINISTIC_WHILE: Readonly<Record<string, Readonl
 /** Each enum an `enum` field names, as its wire value to member name. */
 export const GENERATED_ENUM_MEMBERS: Readonly<Record<string, Readonly<Record<number, string>>>> = {
 };
+
+/**
+ * The value tags this contract declares, registered by its client under its
+ * own id: `topics` holds each value's declared sample kind and entry key by
+ * Topic and path (`*` crosses a list or dictionary), and `reckonable` every
+ * value a declared model carries forward, with the inputs it needs.
+ */
+export const GENERATED_CONTRACT_TAGS = {
+  topics: {
+  },
+  reckonable: [
+    { topic: "example.heartbeat", field: "ticks", basis: "rate-integration", inputs: [ { topic: "", path: "ut" } ] },
+  ],
+} as const;

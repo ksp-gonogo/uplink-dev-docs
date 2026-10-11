@@ -53,6 +53,9 @@ namespace GonogoExampleUplink
                 new ChannelDeclaration
                 {
                     Topic = HeartbeatTopic,
+                    // Continuous: the count moves between samples, so a model can carry it
+                    // forward. A value that stands until the next replaces it is Discrete.
+                    Kind = SampleKind.Continuous,
                     Delivery = Delivery.LossyLatest,
                     // TrueNow: a heartbeat describes the connection, not a vessel.
                     // A fact about a vessel's state is DelayRole.Delayed.

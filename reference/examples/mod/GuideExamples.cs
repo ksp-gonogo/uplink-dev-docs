@@ -67,6 +67,7 @@ namespace ExampleUplink
         public static readonly ChannelDeclaration Status = new ChannelDeclaration
         {
             Topic = "example.status",
+            Kind = SampleKind.Discrete,
             Delivery = Delivery.LossyLatest,
             Delay = DelayRole.Delayed,
             Emission = new EmissionPolicy(keyframeIntervalUt: 30, quantum: EmissionQuantum.Absolute(0)),

@@ -30,6 +30,7 @@ public sealed class ExampleHeartbeat
 
     /// <summary>How many samples this Uplink has published since the game started, this one included. It starts again from 1 when the game restarts or <c>example.reset</c> runs.</summary>
     [SitrepUnit(Units.Count)]
+    [SitrepReckonable(ReckoningBases.RateIntegration, "ut")]
     public double? Ticks { get; set; }
 }
 #endregion heartbeat

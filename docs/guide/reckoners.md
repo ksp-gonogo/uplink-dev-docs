@@ -10,6 +10,18 @@ A reckoner fills that gap for a value that moves predictably, such as a clock, a
 
 Do not write one for a value that changes on its own terms, such as a switch the player flips or a reading from another mod's simulation: a model that guesses is worse than an honest "as last received". When a model cannot be sure, it declines and says why, and the widget shows only what was received.
 
+## Marking the value in the contract
+
+A model is registered for a value its owner's contract marks reckonable, so that when the model declines, the reading says why rather than reading as unmodelled. The app refuses a registration for a value nothing marks. Mark it in `ExamplePayloads.cs`, on the property the model carries, naming the model and the published input it needs beyond the value itself. The count advances by its rate against the sample's own `ut`:
+
+```cs
+[SitrepUnit(Units.Count)]
+[SitrepReckonable(ReckoningBases.RateIntegration, "ut")]
+public double? Ticks { get; set; }
+```
+
+The channel declaration in `ExampleUplink.cs` says `Kind = SampleKind.Continuous`, because the count moves between samples. A value that stands until the next sample replaces it is `Discrete`, and has nothing to carry forward. Run `npm run codegen`, and pass `GENERATED_CONTRACT_TAGS` to `defineUplinkClient` as `src/uplink.ts` does, so the client knows which values are marked.
+
 ## The model
 
 The first half of `client/src/reckoner.ts`:

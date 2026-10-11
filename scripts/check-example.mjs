@@ -40,7 +40,8 @@ const NEW_ARGS = [
 export const EDITED = {
   "client/src/uplink.ts": "Documenting your Uplink: what the Uplink is for",
   "client/src/index.ts": "Writing a reckoner: loads the reckoner",
-  "client/src/topics.ts": "Sending a command: the generated command maps and rails",
+  "client/src/topics.ts": "Publishing a Topic: the regions the page quotes, and the reset command's argument type exported",
+  "client/src/commands.ts": "Sending a command: the regions the page quotes",
   "client/src/Heartbeat/index.tsx": "A widget, Sending a command and Writing a reckoner: every reading state, the reset button and the modelled count",
   "client/src/Heartbeat/index.test.tsx": "Testing: the widget fed by a stream fixture, received, modelled and held",
   "mod/ExampleUplink.cs": "Accepting a command: the reset command",

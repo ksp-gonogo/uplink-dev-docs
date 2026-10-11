@@ -1,11 +1,5 @@
 // #region maps
-import { registerTopicUnits, registerTypeUnits, registerUplinkCommand } from "@ksp-gonogo/sitrep-sdk";
-import {
-  GENERATED_COMMAND_IDS,
-  GENERATED_COMMAND_RAIL,
-  type GeneratedCommandArgsMap,
-  type GeneratedCommandReplyMap,
-} from "./__generated__/command-map.js";
+import { registerTopicUnits, registerTypeUnits } from "@ksp-gonogo/sitrep-sdk";
 import type { ExampleHeartbeat, ExampleResetArgs } from "./__generated__/contract.js";
 import {
   GENERATED_TOPIC_SHAPES,
@@ -19,11 +13,6 @@ declare module "@ksp-gonogo/sitrep-sdk" {
   interface TopicPayloadMap {
     "example.heartbeat": ExampleHeartbeat;
   }
-  // #region commandmaps
-  // Every command the contract slice declares, from the command map codegen writes, so useCommand("example.reset") is typed.
-  interface CommandArgsMap extends GeneratedCommandArgsMap {}
-  interface CommandReplyMap extends GeneratedCommandReplyMap {}
-  // #endregion commandmaps
 }
 // #endregion maps
 
@@ -37,13 +26,6 @@ for (const [typeName, units] of Object.entries(GENERATED_TYPE_UNITS)) {
 }
 // #endregion units
 
-// #region command
-// How each command travels, as its [SitrepCommand] in the slice declares it, so the app draws a sent command right.
-for (const id of GENERATED_COMMAND_IDS) {
-  registerUplinkCommand(id, GENERATED_COMMAND_RAIL[id]);
-}
-// #endregion command
-
 /**
  * What `example.heartbeat` carries. The fields and their descriptions are generated
  * from the C# type of the same name in `mod-contract/`, which is the one place
@@ -54,7 +36,7 @@ for (const id of GENERATED_COMMAND_IDS) {
  * function Ticks() {
  *   const heartbeat = useTelemetry("example.heartbeat");
  *   if (heartbeat.state !== "observed") return null;
- *   return <Unit value={heartbeat.value.ticks} />;
+ *   return <Unit value={heartbeat.ticks} />;
  * }
  * ```
  */

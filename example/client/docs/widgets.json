@@ -11,6 +11,10 @@
         "example.heartbeat"
       ],
       "optionalChannels": [],
+      "commands": [],
+      "channelFamilies": [],
+      "optionalChannelFamilies": [],
+      "readsFromConfig": false,
       "dataRequirements": [],
       "fields": [],
       "actions": [],

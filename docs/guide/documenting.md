@@ -10,7 +10,7 @@ An Uplink is documented in two places, both written next to the code: its genera
 | --- | --- |
 | The opening paragraph | `description` in `defineUplinkClient`, in `src/uplink.ts` |
 | The id and version | `id` and `version` in `defineUplinkClient` |
-| Built against | The packages the client was built with: the contract version (the wire contract's own `Major.Minor`, stamped on `Sitrep.Contract.dll`, such as 29.22, not the package's release number) and the extension API version of the sdk and ui-kit (the version of the surface a client may call), the two versions the Gonogo mod and app check an Uplink against when they load one. Neither is the package version |
+| Built against | The packages the client was built with: the contract version (the wire contract's own `Major.Minor`, stamped on `Sitrep.Contract.dll`, such as 36.2, not the package's release number) and the extension API version of the sdk and ui-kit (the version of the surface a client may call), the two versions the Gonogo mod and app check an Uplink against when they load one. Neither is the package version |
 | The Wire table | The plugin's manifest: each channel's Topic, payload type, delivery and delay |
 | The Commands tables | The contract slice's `SitrepCommandAttribute` classes, through the command map `codegen` writes: each command, its arguments type and its result, then each arguments type's fields |
 | Each widget's heading, paragraph and facts | Its `registerComponent` call: `name`, `description`, `channels`, `defaultSize`, and the number of its fixtures as Scenes |
