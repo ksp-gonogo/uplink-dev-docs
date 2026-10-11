@@ -8,22 +8,21 @@ import {
 import { Meter, Section } from "@ksp-gonogo/ui-kit";
 
 const uplink = defineUplinkClient({
-  id: "gearload",
+  id: "chuteload",
   version: "1.0.0",
-  name: "Gear Load",
-  description: "Adds a dynamic pressure section to the gear group of the Action Group widget.",
+  name: "Chute Load",
+  description: "Adds a parachute load section to the Action Group widget.",
 });
 
-// The pressure above which deployed gear is at risk.
 const SAFE_PRESSURE = value("kPa", 25);
 
-function GearLoad({ groupId }: SlotProps<"action-group.subsystem">) {
+function ChuteLoad({ groupId }: SlotProps<"action-group.subsystem">) {
   const flight = useTelemetry("vessel.flight");
-  if (groupId !== "Gear" || flight.state !== "observed") return null;
+  if (groupId !== "AG1" || flight.state !== "observed") return null;
   const pressure = flight.value.dynamicPressureKPa;
   const nearLimit = pressure.greaterThan(SAFE_PRESSURE.scaled(0.75));
   return (
-    <Section title="Gear load">
+    <Section title="Chute load">
       <Meter
         label="Dynamic pressure"
         value={pressure}
@@ -35,9 +34,9 @@ function GearLoad({ groupId }: SlotProps<"action-group.subsystem">) {
 }
 
 registerAugment({
-  id: "gearload-section",
+  id: "chuteload-section",
   augments: "action-group.subsystem",
-  component: GearLoad,
+  component: ChuteLoad,
   channels: ["vessel.flight"],
   owner: uplink,
 });

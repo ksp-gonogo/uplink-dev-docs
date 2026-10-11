@@ -31,15 +31,11 @@ export const GUIDE_LINK_LIST = resolve(ROOT, ".reference/guide-links.json");
 
 /**
  * The documented symbol a code span names, or null. A span names one when it
- * is the name alone, the name called (`useTelemetry()`), the name given
- * type arguments (`SlotProps<"crew-status.avatar">`), or a component written
- * as an element (`<CommandDelay>`).
+ * is the name alone, the name called (`useTelemetry()`), or the name given
+ * type arguments (`SlotProps<"crew-status.avatar">`).
  */
 export function namedSymbol(text, index) {
-  const trimmed = text.trim();
-  // A component written as an element, `<CommandDelay>` or `<CommandDelay />`, names the component.
-  const element = /^<([A-Z][\w$]*)\s*\/?>$/.exec(trimmed);
-  const match = element ?? /^([A-Za-z_$][\w$]*)(?:\(\)|<.*>)?$/s.exec(trimmed);
+  const match = /^([A-Za-z_$][\w$]*)(?:\(\)|<.*>)?$/s.exec(text.trim());
   if (!match || !Object.hasOwn(index, match[1])) return null;
   return match[1];
 }

@@ -11,17 +11,13 @@ const uplink = defineUplinkClient({
   description: "Adds a free seats readout to the Astronaut Complex.",
 });
 
-/** The cap at the top facility tier, which the contract sends unclamped. */
-const UNLIMITED = 2_147_483_647;
-
 uplink.registerContribution({
   id: "free-seats",
   contributes: "astronaut-complex.readouts",
   deps: ["spaceCenter.astronautComplex"],
-  compute: (topics): StatEntry[] | null => {
+  compute: (topics): StatEntry[] => {
     const complex = observedValue(topics["spaceCenter.astronautComplex"]);
-    if (!complex?.activeCrew || !complex.crewCapacity) return null;
-    if (complex.crewCapacity.magnitude >= UNLIMITED) return null;
+    if (!complex?.activeCrew || !complex.crewCapacity) return [];
     const free = complex.crewCapacity.magnitude - complex.activeCrew.magnitude;
     return [
       {

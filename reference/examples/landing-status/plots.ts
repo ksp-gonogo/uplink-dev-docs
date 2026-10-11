@@ -18,11 +18,11 @@ uplink.registerContribution({
   id: "descentcorridor-plot",
   contributes: "plots",
   deps: ["vessel.flight"],
-  compute: (topics): PlotEntry[] | null => {
+  compute: (topics): PlotEntry[] => {
     const flight = observedValue(topics["vessel.flight"]);
     const height = flight?.altitudeTerrain?.magnitude;
     const climb = flight?.verticalSpeed?.magnitude;
-    if (height === undefined || climb === undefined || height > CEILING) return null;
+    if (height === undefined || climb === undefined || height > CEILING) return [];
     const limit = (h: number) => Math.sqrt(2 * BRAKING * h);
     const heights = Array.from({ length: 21 }, (_, i) => (CEILING * i) / 20);
     return [

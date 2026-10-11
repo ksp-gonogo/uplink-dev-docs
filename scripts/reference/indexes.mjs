@@ -22,7 +22,7 @@ export const SECTIONS = [
     dir: "reference/widgets",
     name: "Widgets",
     about:
-      "The widgets the Gonogo app ships. Each page shows the widget as it draws, then the Topics it reads, the commands it sends, the actions an input can be bound to, its default and smallest sizes, and the slots an Uplink can extend it through.",
+      "The widgets the Gonogo app ships. Each page shows the widget running, then what it reads, the commands it sends, its settings and sizes, and the slots an Uplink can extend it through.",
   },
   { dir: "reference/tools", name: "uplink-tools", package: "@ksp-gonogo/uplink-tools" },
   { dir: "reference/ui-kit", name: "ui-kit", package: "@ksp-gonogo/ui-kit" },

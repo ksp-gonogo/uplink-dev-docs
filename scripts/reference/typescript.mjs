@@ -123,70 +123,6 @@ function linked(name, index, shown = name) {
   return url ? `[${code(shown)}](${url})` : code(shown);
 }
 
-/**
- * The names in a piece of TypeScript that are type references: identifiers
- * that are not a property or parameter name (followed by `:`), not inside a
- * string, and not in `exclude`. Each is returned with where it sits in `text`.
- */
-function typeNamesIn(text, exclude) {
-  const found = [];
-  const pattern = /"(?:[^"\\]|\\.)*"|`[^`]*`|\b[A-Za-z_$][\w$]*\b/g;
-  for (let match = pattern.exec(text); match; match = pattern.exec(text)) {
-    const name = match[0];
-    if (!/^[A-Za-z_$]/.test(name) || exclude.has(name)) continue;
-    if (/^\s*\??:/.test(text.slice(match.index + name.length)) && text[match.index - 1] !== ".") continue;
-    if (text[match.index - 1] === ".") continue;
-    found.push({ name, start: match.index, end: match.index + name.length });
-  }
-  return found;
-}
-
-/** Type parameter names a piece of TypeScript declares itself, which no export of the same name stands for. */
-function declaredTypeParams(text, own) {
-  const names = new Set(own);
-  for (const m of text.matchAll(/[<,]\s*([A-Z][\w$]*)\s*(?:extends\b|=|,|>)/g)) names.add(m[1]);
-  return names;
-}
-
-/** `exclude`: names that are not references to an export here, such as the symbol's own type parameters. */
-function excludedFor(reflection, text) {
-  const params = [];
-  const walk = (r) => {
-    for (const p of r.typeParameters ?? []) params.push(p.name);
-    for (const sig of r.signatures ?? []) walk(sig);
-    for (const c of r.children ?? []) walk(c);
-    for (const sig of [r.getSignature, r.setSignature]) if (sig) walk(sig);
-  };
-  if (reflection) walk(reflection);
-  return declaredTypeParams(text, [...params, ...(reflection ? [reflection.name] : [])]);
-}
-
-/** Inline code whose type names link to their entries, as HTML: Markdown cannot put a link inside a code span. */
-function linkedCode(text, index, exclude = new Set()) {
-  const escape = (s) => htmlEscape(s).replace(/\{/g, "&#123;").replace(/\|/g, "&#124;");
-  let out = "";
-  let at = 0;
-  for (const { name, start, end } of typeNamesIn(text, exclude)) {
-    const url = index.url(name);
-    if (!url) continue;
-    out += `${escape(text.slice(at, start))}<a href="${url}">${escape(name)}</a>`;
-    at = end;
-  }
-  return `<code>${out}${escape(text.slice(at))}</code>`;
-}
-
-/**
- * A fenced declaration, then the published types it names as links: a code
- * block cannot hold a link, so a signature's types are listed beneath it.
- */
-function fencedMd(text, index, reflection) {
-  const exclude = excludedFor(reflection, text);
-  const names = [...new Set(typeNamesIn(text, exclude).map((n) => n.name))].filter((n) => index.url(n));
-  const block = `\`\`\`ts\n${text}\n\`\`\``;
-  if (names.length === 0) return block;
-  return `${block}\n\nTypes in this declaration: ${names.map((n) => linked(n, index)).join(", ")}`;
-}
-
 /** A type as inline Markdown, each named part linked where it can be. */
 export function typeMd(type, index) {
   if (!type) return "";
@@ -219,7 +155,7 @@ export function typeMd(type, index) {
       // An object type written inline: whole where it is short, by its member names where it is not.
       const children = type.declaration.children ?? [];
       const whole = type.toString();
-      if (children.length === 0 || whole.length <= 80) return linkedCode(whole, index, declaredTypeParams(whole, []));
+      if (children.length === 0 || whole.length <= 80) return code(whole);
       const names = children.map((c) => `${c.name}${c.flags.isOptional ? "?" : ""}`);
       return code(`{ ${names.slice(0, 6).join("; ")}${names.length > 6 ? "; ..." : ""} }`);
     }
@@ -227,7 +163,7 @@ export function typeMd(type, index) {
     case "literal":
       return code(type.toString());
     default:
-      return linkedCode(type.toString(), index, declaredTypeParams(type.toString(), []));
+      return code(type.toString());
   }
 }
 
@@ -528,7 +464,7 @@ function memberTable(own, index) {
     const type = typeOfMember(member)
       ? cellSafe(typeMd(typeOfMember(member), index))
       : member.signatures
-        ? linkedCode(methodText(member.signatures[0]), index, excludedFor(member, methodText(member.signatures[0])))
+        ? cellSafe(code(methodText(member.signatures[0])))
         : "";
     const cells = [memberName(`${member.flags.isStatic ? "static " : ""}${member.name}${optional}`, memberAnchor(member)), type];
     if (withDefaults) cells.push(defaultCell(member));
@@ -780,17 +716,9 @@ export function symbolMd(reflection, project, index, { level = 3, title = true, 
     const comments = distinctComments(signatures);
     if (comments.length === 0 && reflection.comment) comments.push(reflection.comment);
     const text = signatures.map((s) => signatureText(reflection.name, s)).join("\n");
-    out.push(fencedMd(text, index, reflection));
-    // An overload with a comment of its own is told apart by its parameters, so its prose does not run on from the first form's.
-    const overloadLabel = (c, i) => {
-      const owner = signatures.find((sig) => sig.comment === c);
-      if (comments.length < 2 || !owner) return "";
-      const params = (owner.parameters ?? []).map((p) => `${paramName(p)}${p.flags.isOptional ? "?" : ""}: ${p.type}`).join(", ");
-      return `**Form ${i + 1}**, \`${reflection.name}(${params})\`:`;
-    };
-    comments.forEach((c, i) => {
-      out.push(overloadLabel(c, i), summaryMd(c, index, inner, { omitRemarks }), returnsMd(c, index));
-    });
+    out.push(`\`\`\`ts\n${text}\n\`\`\``);
+    out.push(...comments.map((c) => summaryMd(c, index, inner, { omitRemarks })));
+    out.push(...comments.map((c) => returnsMd(c, index)));
     out.push(crossLinksMd(comments, reflection.name));
     out.push(typeParamsMd(signatures[0]?.typeParameters, index));
     if (props.length > 0) {
@@ -803,7 +731,7 @@ export function symbolMd(reflection, project, index, { level = 3, title = true, 
     }
     out.push(...comments.map((c, i) => examplesMd(c, index, inner, i === 0 ? reflection.name : `${reflection.name}-${i + 1}`)));
   } else if (reflection.kind === ReflectionKind.Interface || reflection.kind === ReflectionKind.Class) {
-    out.push(fencedMd(interfaceText(reflection), index, reflection));
+    out.push(`\`\`\`ts\n${interfaceText(reflection)}\n\`\`\``);
     out.push(summaryMd(reflection.comment, index, inner, { omitRemarks }));
     out.push(crossLinksMd([reflection.comment], reflection.name));
     out.push(typeParamsMd(reflection.typeParameters, index));
@@ -820,7 +748,7 @@ export function symbolMd(reflection, project, index, { level = 3, title = true, 
     out.push(examplesMd(reflection.comment, index, inner, reflection.name));
   } else if (reflection.kind === ReflectionKind.TypeAlias) {
     const params = typeParamsText(reflection.typeParameters);
-    out.push(fencedMd(`type ${reflection.name}${params} =${declarationText(reflection.type)};`, index, reflection));
+    out.push(`\`\`\`ts\ntype ${reflection.name}${params} =${declarationText(reflection.type)};\n\`\`\``);
     out.push(summaryMd(reflection.comment, index, inner, { omitRemarks }));
     out.push(crossLinksMd([reflection.comment], reflection.name));
     out.push(typeParamsMd(reflection.typeParameters, index));
@@ -830,7 +758,7 @@ export function symbolMd(reflection, project, index, { level = 3, title = true, 
     // A constant object such as `CommandErrorCode`: its members are the values an author uses, so they are a table.
     const twin = typeTwinOf(reflection);
     const alias = twin ? `\ntype ${twin.name}${typeParamsText(twin.typeParameters)} =${declarationText(twin.type)};` : "";
-    out.push(fencedMd(`const ${reflection.name}: ${objectText(reflection.type.declaration)};${alias}`, index, reflection));
+    out.push(`\`\`\`ts\nconst ${reflection.name}: ${objectText(reflection.type.declaration)};${alias}\n\`\`\``);
     const summary = summaryMd(reflection.comment, index, inner, { omitRemarks });
     out.push(summary);
     out.push(crossLinksMd([reflection.comment, twin?.comment], reflection.name));
@@ -851,7 +779,7 @@ export function symbolMd(reflection, project, index, { level = 3, title = true, 
       const extra = own.length > 0 ? `, and the props below` : "";
       out.push(`Renders a ${code(`<${element.tag}>`)} and takes every prop the element does, as React's ${code(element.attributes)}${extra}.`);
     } else if (declared && declared.length <= 120) {
-      out.push(fencedMd(`const ${reflection.name}: ${declared};`, index, reflection));
+      out.push(`\`\`\`ts\nconst ${reflection.name}: ${declared};\n\`\`\``);
     } else if (reflection.type?.type === "typeOperator" && reflection.type.target?.type === "tuple") {
       // A long tuple reads as its entries, one per line.
       const entries = reflection.type.target.elements.map((e) => `  ${e},`).join("\n");

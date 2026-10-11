@@ -317,14 +317,12 @@ function writeDemoLoaders() {
  * Page kinds.
  * ------------------------------------------------------------------ */
 
-/** Symbols after the lead, grouped under a heading each: components, functions, constants, types. */
+/** Symbols after the lead, grouped under a heading each: components, functions, types. */
 function groupedMd(members, project, index) {
-  const constant = (m) => m.kind === ReflectionKind.Variable && !isFunction(m) && !isComponent(m);
   const groups = [
     ["Components", members.filter(isComponent)],
     ["Functions", members.filter(isFunction)],
-    ["Constants", members.filter(constant)],
-    ["Types", members.filter((m) => !isFunction(m) && !isComponent(m) && !constant(m))],
+    ["Types", members.filter((m) => !isFunction(m) && !isComponent(m))],
   ];
   return groups
     .filter(([, list]) => list.length > 0)
@@ -832,14 +830,6 @@ export async function generate({ install = true } = {}) {
   writeSidebar(PAGES, records);
   writeFileSync(GUIDE_LINK_LIST, `${JSON.stringify([...GUIDE_LINKS].sort(), null, 2)}\n`);
   recordWritten(written);
-  const unpaged = Object.entries(projects).flatMap(([specifier, project]) =>
-    (project.children ?? [])
-      .filter((c) => (c.sources ?? []).some((src) => src.fullFileName.includes("/@ksp-gonogo/")) && !index.url(c.name))
-      .map((c) => `${specifier} ${c.name}`),
-  );
-  if (unpaged.length > 0) {
-    console.log(`${unpaged.length} exported symbols are on no reference page, so a signature that names one cannot link it: ${unpaged.join(", ")}`);
-  }
   const { unresolved, stale } = linkDebtFaults(index.missed, UNRESOLVED_LINK_DEBT);
   if (unresolved.length > 0) {
     throw new Error(`a doc comment links to ${unresolved.join(", ")}, which has no reference entry. Give it a @category, or name it without {@link}.`);
