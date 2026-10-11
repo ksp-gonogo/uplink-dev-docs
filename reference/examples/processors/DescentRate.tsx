@@ -10,8 +10,10 @@ const uplink = defineUplinkClient({
 
 const DESCENT_RATE = uplink.registerProcessor({
   id: "rate",
+  // A Topic id in deps resolves to that Topic's payload, or `undefined` before the first sample arrives.
   deps: ["vessel.flight"],
-  // verticalSpeed is a Value, so it is tested and turned positive by its own methods rather than as a bare number.
+  // `flight` is that payload. verticalSpeed is a Value, so it is tested and turned positive by its own methods
+  // rather than as a bare number, and `value("m/s", 0)` makes a zero in the same unit.
   compute: ([flight]) =>
     flight
       ? flight.verticalSpeed.isNegative()

@@ -5,6 +5,7 @@ export default {
     fixture: "reference/fixtures/action-group.json",
     w: 6,
     h: 9,
+    config: { actionGroupId: "Gear" },
     feeds: { "vessel.flight": { file: "reference/examples/action-group/flight.ts", export: "vesselFlight" } },
   },
   examples: [{ id: "action-group", file: "reference/examples/action-group/flight.ts" }],

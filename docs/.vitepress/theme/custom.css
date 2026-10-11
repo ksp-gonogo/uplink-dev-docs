@@ -85,3 +85,11 @@
 .vp-doc table:has(thead th:empty:first-child + th:empty:last-child) thead {
   display: none;
 }
+
+/* A type named in a signature links to its entry from inside the code. */
+.vp-doc td code a,
+.vp-doc code > a {
+  color: var(--vp-code-link-color);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
