@@ -23,6 +23,7 @@ export async function loadWidgetRecords() {
   }
   facts = await import(pathToFileURL(path.replace(/widgets\.json$/, "widget-facts.js")).href);
   const { widgets } = require(path);
+  allRecords = widgets;
   return new Map(widgets.map((record) => [record.id, record]));
 }
 
@@ -85,6 +86,22 @@ export function assertModulesStateNoRecordFacts(pages) {
  */
 let facts = null;
 
+/** Every core widget's record, so a description that names another widget can link to its page. */
+let allRecords = [];
+
+/**
+ * A widget description with each mention of another widget, written "the
+ * <name> widget", linked to that widget's page.
+ */
+function describedMd(record) {
+  return allRecords
+    .filter((other) => other.id !== record.id)
+    .reduce(
+      (description, other) => description.replace(`the ${other.name} widget`, `the [${text(other.name)}](/reference/widgets/${other.id}) widget`),
+      text(record.description),
+    );
+}
+
 const text = (s) => s.replace(/([<>])/g, "\\$1");
 
 let standardSegments;
@@ -143,7 +160,7 @@ export function widgetHeaderMd(record) {
     return [label, value];
   });
   const table = ["| | |", "| --- | --- |", ...rows.map(([label, value]) => `| ${label} | ${value} |`)].join("\n");
-  return [`# ${text(record.name)}`, text(record.description), table].join("\n\n");
+  return [`# ${text(record.name)}`, describedMd(record), table].join("\n\n");
 }
 
 /** Whether a generated widget page opens, after its frontmatter, with exactly the header its record writes. */

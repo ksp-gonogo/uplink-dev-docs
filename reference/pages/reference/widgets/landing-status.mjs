@@ -5,6 +5,7 @@ export default {
   examples: [{ id: "landing-status" }],
   extensions: { plots: "reference/examples/landing-status/plots.ts" },
   stories: {
+    states: "widgets/landing-status-scenarios.stories.tsx",
     extensions: {
       "plots": "extensions/slots.stories.tsx#PlantedSlotPlots",
       "landing-status.sections": "extensions/slots.stories.tsx#PlantedSlotLandingStatusSections",

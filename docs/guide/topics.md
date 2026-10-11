@@ -44,6 +44,8 @@ Name Topics `<uplinkId>.<thing>`. The prefix keeps them clear of every other Upl
 
 For a latitude or a longitude use `Units.Degrees`: it is what the contract's own `latitude` and `longitude` fields carry, drawn as `28.61°`. The wire carries the angle in degrees, not radians, and a longitude is passed through in the range the game reports. `Units.Radians` is for an angle a field carries in radians.
 
+A vector field is a `Vec3`, which carries x, y and z and nothing about what they measure. Mark it with `[SitrepUnit(...)]` for the unit of all three components and `[SitrepFrame(Frames.…)]` for the frame they are expressed in. `Frames.BodyCentredInertial` and `Frames.BodyCentredRotating` have their origin at the reference body's centre, with axes that stay fixed or turn with the body's spin. `Frames.SubjectRelative` is a displacement from the active vessel or its docking port, along the game's scene axes. `Frames.VesselLocal` and `Frames.PartLocal` use the construction axes of the vessel or of one part. A position read from another mod that does not say which frame it is in is no exception: find out, convert it, or say in the field's doc comment that the frame is unverified.
+
 | Member | Client unit id | Value sent | Drawn as |
 | --- | --- | --- | --- |
 | `Units.Metres` | `"m"` | `1234.5` | 1.2 km |
