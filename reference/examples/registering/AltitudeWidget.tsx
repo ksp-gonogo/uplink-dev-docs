@@ -4,6 +4,7 @@ import {
   registerComponent,
   useTelemetry,
 } from "@ksp-gonogo/sitrep-sdk";
+// Stat and Unit are documented on the ui-kit Readout and Unit pages
 import { Stat, Unit } from "@ksp-gonogo/ui-kit";
 
 // The id must match the id the Uplink's mod declares with [SitrepUplink]. The client also needs that mod
