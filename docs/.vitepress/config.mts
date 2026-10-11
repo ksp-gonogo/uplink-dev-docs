@@ -58,6 +58,7 @@ export default defineConfig({
     nav: [
       { text: "Guide", link: "/guide/" },
       { text: "Reference", link: "/reference/" },
+      { text: "Maintaining", link: "/maintaining/" },
     ],
     sidebar: {
       "/guide/": [
@@ -103,6 +104,12 @@ export default defineConfig({
             { text: "Concepts", link: "/guide/concepts" },
             { text: "Known limits", link: "/guide/limits" },
           ],
+        },
+      ],
+      "/maintaining/": [
+        {
+          text: "Maintaining Gonogo",
+          items: [{ text: "Deployment and releases", link: "/maintaining/" }],
         },
       ],
       "/reference/": [
