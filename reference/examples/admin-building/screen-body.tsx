@@ -2,7 +2,7 @@ import {
   defineUplinkClient,
   registerAugment,
   type SlotProps,
-  type StrategiesScreenEntry,
+  type AdminBuildingScreenEntry,
 } from "@ksp-gonogo/sitrep-sdk";
 import { Section, Text } from "@ksp-gonogo/ui-kit";
 
@@ -10,19 +10,19 @@ const uplink = defineUplinkClient({
   id: "adminnotes",
   version: "1.0.0",
   name: "Admin Notes",
-  description: "Adds a Notes screen to the Strategies widget for the Operations department.",
+  description: "Adds a Notes screen to the Admin Building widget for the Operations department.",
 });
 
 uplink.registerContribution({
   id: "notes-screen",
-  contributes: "strategies.screens",
+  contributes: "admin-building.screens",
   deps: [],
-  compute: (): StrategiesScreenEntry[] => [
+  compute: (): AdminBuildingScreenEntry[] => [
     { id: "notes", label: "Notes", departments: ["Operations"] },
   ],
 });
 
-function Notes({ screenId }: SlotProps<"strategies.screen-body">) {
+function Notes({ screenId }: SlotProps<"admin-building.screen-body">) {
   if (screenId !== "notes") return null;
   return (
     <Section title="Operations notes">
@@ -33,7 +33,7 @@ function Notes({ screenId }: SlotProps<"strategies.screen-body">) {
 
 registerAugment({
   id: "adminnotes-body",
-  augments: "strategies.screen-body",
+  augments: "admin-building.screen-body",
   component: Notes,
   owner: uplink,
 });
