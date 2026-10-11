@@ -42,6 +42,8 @@ There is no matching teardown: the Uplink lives as long as the game does, so any
 
 <!--@include: @/.vitepress/includes/uplink-health-states.md-->
 
+`UplinkHealth` is a read-only struct, so an object initialiser (`new UplinkHealth { State = ... }`) does not compile. Build one with the static member of `UplinkHealth` for its state, called as in the snippet below: the field `Healthy`, which has nothing to add, and the functions `Degraded(detail)` and `Unavailable(detail)`, which take the sentence the operator reads. The two functions also take an optional list of labelled facts, rows such as the version of the mod you depend on. The constructor, `new UplinkHealth(state, detail)`, builds the same value.
+
 The Gonogo mod polls it repeatedly: once per sample of the `system.uplinks` Topic, which reports every Uplink's health, and off the main thread. So it must be cheap, must not block, and must not touch the game. The heartbeat has nothing to report; an Uplink wrapping another mod reports that mod's state:
 
 <<< ../../reference/examples/mod/GuideExamples.cs#health{cs}

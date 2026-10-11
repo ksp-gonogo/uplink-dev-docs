@@ -4,10 +4,11 @@
   "type": "module",
   "scripts": {
     "dev": "npm run reference && vitepress dev docs",
-    "build": "npm run reference && npm run check && vitepress build docs && npm run check:rendered && npm run check:links && npm run check:demos",
+    "build": "npm run reference && npm run check && npm run check:units && vitepress build docs && npm run check:rendered && npm run check:links && npm run check:demos",
     "preview": "vitepress preview docs",
     "check": "node scripts/check-snippets.mjs",
     "prepare": "git config core.hooksPath .githooks || true",
+    "check:units": "node scripts/check-units-table.mjs",
     "check:symbols": "node scripts/check-doc-symbols.mjs",
     "check:rendered": "node scripts/check-rendered.mjs",
     "check:links": "node scripts/check-symbol-links.mjs",

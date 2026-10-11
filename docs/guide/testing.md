@@ -29,6 +29,21 @@ A widget rendered alone has no data, which is the waiting state, and worth a tes
 
 <<< ../../example/client/src/Heartbeat/index.test.tsx#held
 
+## What `Unit` draws
+
+A test that reads a figure back reads what `Unit` drew, not the number the plugin sent. `Unit` picks the symbol, the precision and the step on the unit's ladder from the unit and the size of the value, so `12400` metres is `12.4` beside `km`, and a duration is steps of time: a `Units.Seconds` value of `95` is drawn as `1min 35s`, `45` as `45s`, `3600` as `1h`. A count is drawn bare (`7`), a moment (`Units.UniversalTime`) as a date and clock time, and every other unit with its own precision. [How each unit is drawn](/guide/topics#how-each-unit-is-drawn) lists them all, so assert the string in that table, not the raw number.
+
+The figure sits in an element of its own, with the unit's symbol in a child element beside it (carrying a `data-unit` attribute, and a visually hidden word such as "kilometres"). So the number matches on its own and the symbol is checked by its attribute:
+
+```tsx
+expect(screen.getByText("12.4")).toBeVisible();
+expect(screen.getByText("12.4").querySelector("[data-unit]")).toHaveAttribute("data-unit", "km");
+// a duration has no symbol after it
+expect(screen.getByText("1min 35s")).toBeVisible();
+```
+
+A figure that has stopped updating is drawn with its mark and a spoken caption, which the held test above covers; that caption is separate text and does not change what `getByText` finds for the number.
+
 ## Fixtures
 
 `client/src/Heartbeat/__fixtures__/beating.json`:

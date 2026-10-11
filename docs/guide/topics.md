@@ -38,6 +38,57 @@ A nullable property reaches the client as a field that can be `null`. The doc co
 
 Name Topics `<uplinkId>.<thing>`. The prefix keeps them clear of every other Uplink's.
 
+### How each unit is drawn
+
+`Unit` and `writeQuantity` choose the symbol, the precision and the step on the ladder (metres to kilometres, kilowatts to megawatts) from the unit id and the size of the value, so a field is handed over as it arrived. The table gives each unit's id and what a sample value comes out as, written with `writeQuantity`; `Unit` draws the same text, with a thin space before the symbol. A duration is the one that surprises: `Units.Seconds` is drawn as steps of time (`95` is `1min 35s`, `3600` is `1h`) with no symbol after it, and a moment, `Units.UniversalTime`, is drawn as a date and a clock time, never as a number of seconds. A test that asserts what a widget shows asserts these strings ([Testing](/guide/testing#what-unit-draws)).
+
+For a latitude or a longitude use `Units.Degrees`: it is what the contract's own `latitude` and `longitude` fields carry, drawn as `28.61°`. The wire carries the angle in degrees, not radians, and a longitude is passed through in the range the game reports. `Units.Radians` is for an angle a field carries in radians.
+
+| Member | Client unit id | Value sent | Drawn as |
+| --- | --- | --- | --- |
+| `Units.Metres` | `"m"` | `1234.5` | 1.2 km |
+| `Units.Kilometres` | `"km"` | `1.2345` | 1.2 km |
+| `Units.SquareMetres` | `"m²"` | `1234.5` | 1234.5 m² |
+| `Units.CubicMetres` | `"m³"` | `1234.5` | 1234.5 m³ |
+| `Units.MetresPerSecond` | `"m/s"` | `1234.5` | 1234.5 m/s |
+| `Units.Degrees` | `"°"` | `28.608` | 28.61° |
+| `Units.Radians` | `"rad"` | `1.5708` | 1.57 rad |
+| `Units.Seconds` | `"s"` | `95` | 1min 35s |
+| `Units.UniversalTime` | `"ut"` | `1000000` | Y1 D47 01:46:40 |
+| `Units.SpecificImpulse` | `"isp"` | `320` | 320 s |
+| `Units.Rpm` | `"rpm"` | `120` | 120 rpm |
+| `Units.Kelvin` | `"K"` | `293.15` | 293 K |
+| `Units.Tonnes` | `"t"` | `12.4` | 12.40 t |
+| `Units.Kilograms` | `"kg"` | `1234.5` | 1.23 t |
+| `Units.KilogramsPerSecond` | `"kg/s"` | `1.5` | 1.50 kg/s |
+| `Units.Kilonewtons` | `"kN"` | `250` | 250.0 kN |
+| `Units.Kilopascals` | `"kPa"` | `101.3` | 101.30 kPa |
+| `Units.Kilowatts` | `"kW"` | `1500` | 1.5 MW |
+| `Units.Bits` | `"bit"` | `8000` | 1.0 KB |
+| `Units.BitsPerSecond` | `"bit/s"` | `2000` | 2.0 kbit/s |
+| `Units.RadPerSecond` | `"rad/s"` | `0.001` | 3.6000 rad/h |
+| `Units.WattsPerSquareMetre` | `"W/m²"` | `1360` | 1360.0 W/m² |
+| `Units.Mits` | `"Mit"` | `12` | 12.0 mits |
+| `Units.Decibels` | `"dB"` | `-120.5` | -120.5 dB |
+| `Units.KilogramsPerCubicMetre` | `"kg/m³"` | `1.225` | 1.2250 kg/m³ |
+| `Units.GForce` | `"g"` | `1.5` | 1.50 g |
+| `Units.CubicMetresPerSecondSquared` | `"m³/s²"` | `1e12` | 1.000×10¹² m³/s² |
+| `Units.Ratio` | `"ratio"` | `0.42` | 42 % |
+| `Units.Dimensionless` | `"1"` | `0.5` | 0.50 |
+| `Units.Percent` | `"%"` | `42` | 42.0 % |
+| `Units.Funds` | `"funds"` | `250000` | 250,000f |
+| `Units.FundsPerDay` | `"f/day"` | `5000` | 5000.0 f/day |
+| `Units.Science` | `"science"` | `12.5` | 12.5, then the science mark |
+| `Units.SciencePerDay` | `"science/day"` | `1.2` | 1.2 science/day |
+| `Units.Reputation` | `"rep"` | `50` | 50.0, then the reputation mark |
+| `Units.ReputationPerDay` | `"rep/day"` | `1.5` | 1.50 rep/day |
+| `Units.Count` | `"count"` | `7` | 7 |
+| `Units.Id` | `"id"` | `7` | 7 |
+| `Units.ResourceUnits` | `"units"` | `1234.5` | 1234.5 units |
+| `Units.ResourceUnitsPerSecond` | `"units/s"` | `1.5` | 1.50 units/s |
+
+`Units.Text`, `Units.Flag`, `Units.Enumeration` and `Units.NotApplicable` name a field that is not a quantity (`"text"`, `"flag"`, `"enum"`, `"n/a"`), so `Unit` does not draw them: a string, a boolean or an enum is read from the reading and drawn by the widget.
+
 ## Generating the client's types
 
 `mod-contract/ExampleRtConfig.cs` lists the wire types codegen exports, in the array its `Configure` method hands to Reinforced.Typings. Add every new payload type here; `new` writes only the `typeof(ExampleHeartbeat)` entry. The `ExampleResetArgs` entry below is the command [Accepting a command](/guide/commands) adds:
@@ -71,6 +122,10 @@ The manifest's `Channels` list declares each Topic with a `ChannelDeclaration`:
 Emission is counted in game seconds, and under time warp a game second passes in a fraction of a real one. A value that changes on every tick, with a quantum of zero, is published on every tick at any warp, so give a value that changes continuously a quantum of a size an operator would notice. The heartbeat's `Absolute(0)` is on purpose: its count changes on every tick, and each new count is what it exists to show.
 
 The other members of `ChannelDeclaration` cover less common cases, such as [`AbsenceIsData`](/reference/mod/channels-and-emission#ChannelDeclaration.AbsenceIsData) for a Topic whose empty value is itself information. [Channels and emission](/reference/mod/channels-and-emission) documents them all.
+
+### A Topic with no payload class
+
+A Topic whose payload is one bare value, such as the `<id>.available` boolean [Wrapping a mod](/guide/wrapping-a-mod#declaring-id-available) recommends, has no class in the contract slice, no `typeof` entry in `ExampleRtConfig.cs`, and so no interface in `contract.ts` or entry in `topic-map.ts`: codegen only reads classes. The plugin declares the `ChannelDeclaration` in `Channels` as for any Topic and publishes `true` or `false` from its source. The client declares the Topic itself, in `client/src/topics.ts`: it adds the id to `TopicPayloadMap` with a `declare module "@ksp-gonogo/sitrep-sdk"` block and calls `registerBarePrimitiveTopic` at load, after which `useTelemetry("<id>.available")` is typed and the Topic is known at runtime like a generated one. The worked snippet is on [Wrapping a mod](/guide/wrapping-a-mod#declaring-id-available).
 
 ## Publishing
 

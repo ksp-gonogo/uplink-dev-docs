@@ -19,10 +19,10 @@ namespace ExampleUplink
         {
             if (!_modLoaded)
             {
-                return new UplinkHealth(UplinkHealthState.Unavailable, "Example Mod is not installed");
+                return UplinkHealth.Unavailable("Example Mod is not installed");
             }
             return _staleSamples > 0
-                ? new UplinkHealth(UplinkHealthState.Degraded, "Example Mod stopped updating its readout")
+                ? UplinkHealth.Degraded("Example Mod stopped updating its readout")
                 : UplinkHealth.Healthy;
         }
         #endregion health

@@ -49,37 +49,39 @@ NuGet has no tags, so a C# project names the exact version in its `PackageRefere
 
 ## The pages
 
+Each page's address is written beside its title, because a title does not always say it: [Publishing a Topic](/guide/topics) is `/guide/topics`, and [The plugin class](/guide/plugin) is `/guide/plugin`. Every page of the Guide is listed here.
+
 Getting started:
 
-- [Prerequisites](/guide/prerequisites): what to install
-- [Your first Uplink](/guide/first-uplink): scaffold, and what each file is for
+- [Prerequisites](/guide/prerequisites) (`/guide/prerequisites`): what to install
+- [Your first Uplink](/guide/first-uplink) (`/guide/first-uplink`): scaffold, and what each file is for
 
 The plugin:
 
-- [The plugin class](/guide/plugin): how Gonogo finds it, its manifest, `Register` and `Health`
-- [Publishing a Topic](/guide/topics): the payload type, codegen, and the source that publishes it
-- [Accepting a command](/guide/commands): its arguments, its handler and its reply
-- [Wrapping a mod](/guide/wrapping-a-mod): reaching another mod, reading it safely, and saying when it is missing
+- [The plugin class](/guide/plugin) (`/guide/plugin`): how Gonogo finds it, its manifest, `Register` and `Health`
+- [Publishing a Topic](/guide/topics) (`/guide/topics`): the payload type, codegen, and the source that publishes it
+- [Accepting a command](/guide/commands) (`/guide/commands`): its arguments, its handler and its reply
+- [Wrapping a mod](/guide/wrapping-a-mod) (`/guide/wrapping-a-mod`): reaching another mod, reading it safely, and saying when it is missing
 
 The client:
 
-- [A widget](/guide/client-widget): registering it and reading a Topic
-- [Sending a command](/guide/client-commands): typing the command, and a button that sends it
-- [Writing a reckoner](/guide/reckoners): a forward model that carries a value between samples
-- [Extensions](/guide/extensions): adding to the app's own widgets
-- [See your Uplink in the app](/guide/dev-loop): a rebuild on every save, without releasing
+- [A widget](/guide/client-widget) (`/guide/client-widget`): registering it and reading a Topic
+- [Sending a command](/guide/client-commands) (`/guide/client-commands`): typing the command, and a button that sends it
+- [Writing a reckoner](/guide/reckoners) (`/guide/reckoners`): a forward model that carries a value between samples
+- [Extensions](/guide/extensions) (`/guide/extensions`): adding to the app's own widgets
+- [See your Uplink in the app](/guide/dev-loop) (`/guide/dev-loop`): a rebuild on every save, without releasing
 
 Shipping:
 
-- [Testing](/guide/testing): both halves, without the game
-- [Documenting your Uplink](/guide/documenting): the generated page and the doc comments
-- [Releasing and installing](/guide/release): building, hosting the client, installing, and CKAN
+- [Testing](/guide/testing) (`/guide/testing`): both halves, without the game
+- [Documenting your Uplink](/guide/documenting) (`/guide/documenting`): the generated page and the doc comments
+- [Releasing and installing](/guide/release) (`/guide/release`): building, hosting the client, installing, and CKAN
 
 Background:
 
-- [uplink.json](/guide/uplink-json): every field, and what reads it
-- [Concepts](/guide/concepts): readings, signal delay, reckoning, Domains and the rest
-- [Known limits](/guide/limits): what the published packages do not do yet
+- [uplink.json](/guide/uplink-json) (`/guide/uplink-json`): every field, and what reads it
+- [Concepts](/guide/concepts) (`/guide/concepts`): readings, signal delay, reckoning, Domains and the rest
+- [Known limits](/guide/limits) (`/guide/limits`): what the published packages do not do yet
 
 ## The example in this Guide
 
