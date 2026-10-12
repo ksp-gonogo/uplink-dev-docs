@@ -1,4 +1,4 @@
-import { registerBarePrimitiveTopic } from "@ksp-gonogo/sitrep-sdk";
+import { registerUplinkTopic } from "@ksp-gonogo/sitrep-sdk";
 
 // Whether the wrapped mod is installed: a bare boolean, so it has no generated type to name.
 declare module "@ksp-gonogo/sitrep-sdk" {
@@ -7,4 +7,4 @@ declare module "@ksp-gonogo/sitrep-sdk" {
   }
 }
 
-registerBarePrimitiveTopic("clock.available");
+registerUplinkTopic("clock.available");
