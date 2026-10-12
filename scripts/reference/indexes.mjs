@@ -221,8 +221,8 @@ export function topicsPageMd(page, { sdk, index, version, leadOf }) {
   const link = (name) => `[${code(name)}](${index.url(name)})`;
   return [
     `# ${page.title}`,
-    `${code(page.package)} · ${version(page.package)}`,
     leadOf(page),
+    `${code(page.package)} · ${version(page.package)}`,
     `Each Topic in ${link("TOPIC_IDS")}, by prefix, with its payload type in ${link("TopicPayloadMap")}.`,
     topicListMd(sdk, index),
   ];

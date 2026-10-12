@@ -519,11 +519,41 @@ export function propertiesMd(reflection, index) {
   return `${memberTable(own, index)}${rest}`;
 }
 
+/** The object type an inline member is written as, through an array or a `| null`, or undefined. */
+function inlineObjectOf(type) {
+  if (type?.type === "reflection") return type.declaration.children?.length ? type.declaration : undefined;
+  if (type?.type === "array") return inlineObjectOf(type.elementType);
+  if (type?.type === "union") return type.types.map(inlineObjectOf).find(Boolean);
+  return undefined;
+}
+
+/** Whether a member, or anything written inline under it, has a doc comment. */
+const hasDocs = (member) => (member.comment?.summary?.length ?? 0) > 0 || (inlineObjectOf(member.type)?.children ?? []).some(hasDocs);
+
+/**
+ * The members of an object type written inline, one row each under the member
+ * that holds it, named by their path (`uplinks[].id`), where any of them has a
+ * doc comment: a description written on a nested field is not lost to the
+ * summary type in its parent's row.
+ */
+function nestedRows(member, index, path, withDefaults, depth = 3) {
+  const object = inlineObjectOf(member.type);
+  if (!object || depth === 0 || !hasDocs(member)) return [];
+  const through = member.type?.type === "array" || (member.type?.type === "union" && member.type.types.some((t) => t.type === "array")) ? "[]" : "";
+  return object.children.filter(hasDocs).flatMap((child) => {
+    const name = `${path}${through}.${child.name}${child.flags.isOptional ? "?" : ""}`;
+    const cells = [memberName(name), cellSafe(typeMd(child.type, index))];
+    if (withDefaults) cells.push("");
+    cells.push(cellMd(child.comment?.summary, index));
+    return [`| ${cells.join(" | ")} |`, ...nestedRows(child, index, `${path}${through}.${child.name}`, withDefaults, depth - 1)];
+  });
+}
+
 /** One row per member: its name, its type, its default where any member has one, and its description. */
 function memberTable(own, index) {
   if (own.length === 0) return "";
   const withDefaults = own.some((member) => defaultOf(member));
-  const rows = own.map((member) => {
+  const rows = own.flatMap((member) => {
     const optional = member.flags.isOptional ? "?" : "";
     const type = typeOfMember(member)
       ? cellSafe(typeMd(typeOfMember(member), index))
@@ -533,7 +563,7 @@ function memberTable(own, index) {
     const cells = [memberName(`${member.flags.isStatic ? "static " : ""}${member.name}${optional}`, memberAnchor(member)), type];
     if (withDefaults) cells.push(defaultCell(member));
     cells.push(cellMd((commentOf(member) ?? member.getSignature?.comment)?.summary, index));
-    return `| ${cells.join(" | ")} |`;
+    return [`| ${cells.join(" | ")} |`, ...nestedRows(member, index, member.name, withDefaults)];
   });
   const head = withDefaults
     ? "| Name | Type | Default | Description |\n| --- | --- | --- | --- |"
@@ -669,12 +699,12 @@ function aliasParts(alias) {
 function unreadSentence(arm) {
   const [subject, keys] = arm.typeArguments ?? [];
   const named = subject?.type === "reference" ? code(subject.name) : undefined;
-  if (named && ["Readonly", "Partial", "Required"].includes(arm.name)) return `It also takes every prop of ${named}, which the package does not export.`;
+  if (named && ["Readonly", "Partial", "Required"].includes(arm.name)) return `It also takes every prop of ${named}, a type with no entry in this reference.`;
   if (named && arm.name === "Omit") {
     const left = keys?.type === "literal" ? ` except ${code(String(keys.value))}` : keys?.type === "union" ? ` except ${keys.types.map((t) => code(String(t.value ?? t))).join(" and ")}` : "";
-    return `It also takes every prop of ${named}${left}, which the package does not export.`;
+    return `It also takes every prop of ${named}${left}. ${named} is a type with no entry in this reference.`;
   }
-  return `It also takes every prop of ${code(arm.name)}, which the package does not export.`;
+  return `It also takes every prop of ${code(arm.name)}, a type with no entry in this reference.`;
 }
 
 /** The props table of a type alias built of object types, with what it cannot list said in words. */
