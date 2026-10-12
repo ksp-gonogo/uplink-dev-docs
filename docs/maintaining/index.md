@@ -1,6 +1,6 @@
 # Maintaining Gonogo
 
-This section is for whoever maintains the deployed Gonogo: the hosted site, the container images, and how a release candidate and a release are cut. It is not for Uplink authors, who want the [Guide](/guide/). Players setting Gonogo up want the [README](https://github.com/ksp-gonogo/gonogo#readme) and its [networking page](https://github.com/ksp-gonogo/gonogo/blob/main/docs/NETWORKING.md).
+This section is for whoever maintains the deployed Gonogo: the hosted site, the container images, how a release candidate and a release are cut, what to do when a ratchet or the visual gate goes red, and how a station receives telemetry. It is not for Uplink authors, who want the [Guide](/guide/). Players setting Gonogo up want the [README](https://github.com/ksp-gonogo/gonogo#readme) and its [networking page](https://github.com/ksp-gonogo/gonogo/blob/main/docs/NETWORKING.md).
 
 ## Frontend (GitHub Pages)
 
@@ -165,3 +165,87 @@ Two things do not come back. An npm or NuGet publish cannot be undone, so a bad 
 RC builds compare by their base `X.Y.Z` (the `-rc.<shortsha>` suffix is ignored), so an RC station against the release it forked from is silent. Because stations always load the newest deploy of their channel while main screens run a container pulled at install time, skew is normal, the banner is the nudge to `docker pull`. When changing the peer protocol, keep new message fields optional (the codebase already follows this) so a minor-skewed pair degrades instead of crashing.
 
 **One caveat for RC testing:** `/app/` and `/rc/` share an origin, so an RC station and a release station on the same device share localStorage, layout, station identity, share-code. Convenient (your station keeps its identity across channels) but an RC-channel layout experiment edits the same saved layout the release station uses.
+
+## When a ratchet goes red
+
+A ratchet is a test that checks a category of mistake is not getting more common, rather than that the code works. It lets a rule be adopted while the tree still breaks it in many places: the existing violations are written down, the gate fails when the count goes up, and entries are deleted as they are fixed. It only turns one way. Each exists because something reported success while being unable to report failure, so a green is not a result until the check that produced it is named and the failure it could see is known.
+
+**Where they are.**
+
+- The gates are `packages/core/src/*.test.ts`. They live in `@ksp-gonogo/core` whatever they police. `packages/core/scan-tests.mjs` derives which of them scan outside their own package, and `packages/core/scan-domains.mjs` declares the files each one reads
+- Each debt list sits beside its gate as `packages/core/src/<subject>.allowlist.ts` or `<subject>.debt.ts`. `RATCHET_ALLOWLIST_PATHS` in `packages/core/src/ratchetBaseRef.ts` enumerates every list that is graded against a base revision
+- A numeric budget is usually a constant inside its gate file, for example `MAGNITUDE_BUDGET` in `styleguide-magnitude-budget.test.ts`
+- A gate that cannot be a test is a script with its data beside it: `scripts/act-warning-gate.mjs` with `scripts/act-warning-debt.mjs`, and `scripts/uplink-shape-gate.mjs` with `scripts/uplink-shape-debt.mjs`
+
+**Running them.**
+
+```bash
+pnpm scans                 # the scans the files this branch touched reach
+pnpm scans:full            # every cross-package ratchet over the whole tree
+pnpm act-warning-gate      # the standalone act-warning gate
+
+# one gate, after a `pnpm build` (the suite needs the workspace's dists)
+pnpm --filter @ksp-gonogo/core exec vitest run \
+  --config vitest.scans.config.ts src/styleguide-panel-body.test.ts
+```
+
+`pnpm scans` measures from the merge-base with `origin/staging` (`GONOGO_SCANS_BASE=<ref>` measures from another ref), prints `CHANGED-ONLY RUN, not the CI gate` above and below its verdict, and fails rather than passing when the changed set cannot be computed or is empty. CI never runs it: `ci.yml`, the pre-push hook and `pnpm push` run every scan over the whole tree, so a green `pnpm scans` says the changes pass and only `pnpm scans:full` or CI says the tree does. Several scans enumerate with `git ls-files` or `git grep`, so commit first and then re-run: an untracked file is invisible to them.
+
+**What the failure says decides the remedy.**
+
+| The failure says | Kind | Do this |
+| --- | --- | --- |
+| violations named one by one with file and line, absent from a list | shrink-only list | Fix the code. A list may only lose entries |
+| a count over a number: `exceeds baseline (N) by M`, `used, budget N`, `not on the list` | numeric, over | Fix the code. Raising a budget is a last resort and has to name the API that would have avoided it |
+| `is down to N and the baseline still reads M`, `sit above what their file uses` | numeric, shrink | An improvement. Retype the figure the message prints, in the file it names, in the same commit |
+| a diff against a committed artefact | snapshot | Decide whether the change was intended, then regenerate by the route the failure names, never by hand |
+| `declared but unknown`, `known but no longer declared` | two-sided sync | There is no debt list to move. One side is stale: make the two equal |
+| `BLIND: ...`, `found no ... at all`, a planted violation that was not seen | self-verification | The instrument is at fault, not the change. Leave every debt list alone and fix the scan |
+| anything prefixed `[ratchet]` | the measuring apparatus | See the base revision below |
+
+**Ceiling or equality.** Run the gate twice on an unchanged tree. A count produced by scanning text is the same both times and is an equality: if a fix lowers it the gate stays red until the number is retyped. A count observed from a run, such as warnings emitted, moves with machine load and is a ceiling. On a ceiling over a race a growth red is real even when it does not reproduce: contention gives the race more chances to fire and does not invent it, so re-running until green is how a gate loses its grip.
+
+**Regenerating a list.**
+
+| List | Command |
+| --- | --- |
+| `scripts/act-warning-debt.mjs` | `pnpm act-warning-gate --update --only <substring>` (an unscoped `--update` is refused, `--all` is the deliberate full reseed) |
+| `packages/core/src/panel-body.allowlist.ts` | `node scripts/panel-body-debt.mjs --update` |
+| `packages/core/src/comment-stacks.allowlist.ts` | `node scripts/comment-stack-debt.mjs --update` |
+| `packages/core/src/unknown-cast.debt.ts` | `node scripts/unknown-cast-debt.mjs --update` |
+| `PROSE_DEBT` in `scripts/asyncapi/prose-hygiene.mjs` | `node scripts/asyncapi-doc.mjs --update-prose-debt` |
+| the equality gates (`styleguide-styled-components`, `styleguide-magnitude-budget`, `styleguide-fire-and-forget-commands`) | by hand, from the figure the failure prints |
+
+The tools that rewrite a shrink-only list rewrite the whole of it, which is safe because the gate refuses a list that grew. The act gate is different: its numbers are a race rather than a census, so rewriting all of it from one run writes down that run's number for files the change never touched.
+
+**The base revision.** A failure beginning `[ratchet]` comes from `packages/core/src/ratchetBaseRef.ts` and is the apparatus, so no debt list should move because of it. `[ratchet] base revision unreachable` means there is nothing to grade against: locally run `git fetch origin staging` or set `RATCHET_BASE_REF=<commit>`, and in CI the checkout needs `fetch-depth: 0` and the "Resolve the ratchets' base revision" step. `[ratchet] the base revision <ref> IS the commit under test` means the base resolved to HEAD, so every list would be diffed against itself; `scripts/resolve-ratchet-base-ref.sh` works out the right one per trigger. `packages/core/turbo.json` has to declare `RATCHET_BASE_REF` under `env`, or turbo passes nothing through and the gates fall back.
+
+**Every gate plants its own violation.** A gate that reads zero violations proves nothing unless it could have read one, so each plants a violation of every kind it hunts on every run and fails as `BLIND` when it does not see it. A new gate does the same. A new shrink-only ratchet starts by writing the current violations down as the list, adds the failing arm for a list that grew, and adds the planted violation before anything else.
+
+## When the visual gate goes red
+
+The `visual` CI job diffs each widget render against a committed per-engine baseline under `packages/components/visual-baselines/<engine>/` and fails on drift. A local run on macOS is font noise: every widget drifts against the Linux baselines. To see a drift the way CI renders it, run the gate inside the image CI uses:
+
+```bash
+pnpm visual-preview --engine chromium                           # every widget; prints paths to baseline, actual and diff PNGs, exits 0
+pnpm visual-preview --engine chromium --widget landing-status   # one widget
+pnpm visual-preview --engine chromium --update [--widget <id>]  # write committable baselines from the same image
+```
+
+Repeat per engine (`chromium`, `firefox`, `webkit`), since the gate is per engine and never compares across them. `gh workflow run update-baselines.yml --ref <branch> [-f widget=<id>]` is the same update run on the CI runner and commits the baselines back to the branch.
+
+- The script needs podman (`$PODMAN` overrides the default `/opt/podman/bin/podman`) and `~/.npmrc`, mounted read-only so the install inside the container resolves packages as the host does
+- It builds a derived image once, `scripts/visual-preview.Containerfile`: the playwright image plus the font set of `ubuntu-latest`, because the stock image is font-minimal and glyphs such as `°`, `↓`, `→`, `·` and `Δ` fall back to system fonts. Rebuild it when a widget uses a new glyph range
+- The container does its own Linux `pnpm install` into named volumes, so the first run is slow and the host's `node_modules` are never touched
+- Diff PNGs land in `local_docs/renders/_visual-gate-diffs/<engine>/<widget>/` and the gate clears that folder at the start of each run, so copy a run's diffs before starting the next
+- `PLAYWRIGHT_VERSION` in the script has to equal the lockfile's resolved `playwright`. If an unchanged widget shows drift in a preview, the image tag no longer matches CI's rasterisation: fix the tag. Bumping `playwright` changes rasterisation and needs a baseline regeneration
+
+## How a station receives telemetry
+
+A station mounts the same `SitrepTelemetryProvider` the main screen does, over a `PeerTransport` (`packages/app/src/telemetry/PeerTransport.ts`, mounted by `StationScreen.tsx`) instead of a `WebSocketTransport`. It therefore gets the same `TelemetryClient`, `TimelineStore` and `ViewClock`, and a widget's `useTelemetry` call is the same on both screens.
+
+Delivery is demand-driven. `PeerTransport.subscribe` and `unsubscribe` travel over the PeerJS wire. On the host, `SitrepPeerRelay` holds one `client.subscribe` keep-alive per Topic that any connected station says it reads, and relays every `stream-data` and `event` frame verbatim. Nothing lists the Topics a station may have, so a new Topic reaches a station the moment one of its widgets reads it, with no serialisation, allowlist or fan-out code to add.
+
+- A station cannot discover which Uplink bundles to load, so the relay holds `system.uplinks` on its behalf
+- The `unowned` arm of `Reading` is never concluded on a station: its subscribe reaches the mod only when the host's own count goes from 0 to 1, so silence on a Topic the host already holds proves nothing
+- GO/NO-GO votes, station config, flight-history calls and `DataSource.execute` still travel as snapshot and message traffic beside this path, and that is not how a Topic travels
