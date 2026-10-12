@@ -95,7 +95,7 @@ dotnet test ../mod-tests
 
 ## What to commit
 
-Everything except what `.gitignore` names: `node_modules`, the build outputs, `ksp.local.props`, and the three `*.g.cs` files `bake` writes into `mod/`, of which `ClientSource.g.cs` can hold a path on the machine that baked it (`DevPath`, the local address a development build loads the client from: [See your Uplink in the app](/guide/dev-loop)). Commit `client/src/__generated__/`, the generated page files and `package-lock.json`: a reader of your repository, and CI, use them without running the generators.
+Everything except what `.gitignore` names: `node_modules`, the build outputs, `ksp.local.props`, and the three `*.g.cs` files `bake` writes into `mod/`, of which `ClientSource.g.cs` can hold a path on the machine that baked it (`DevPath`, the local address a development build loads the client from: [See your Uplink in the app](/guide/dev-loop)). `dist/` is ignored too, so `release` leaves the zip and the netkan out of every commit. They are build outputs you attach to a release by hand ([CKAN and SpaceDock](/guide/release#ckan-and-spacedock)). Commit `client/src/__generated__/`, the generated page files and `package-lock.json`: a reader of your repository, and CI, use them without running the generators.
 
 ## The heartbeat
 

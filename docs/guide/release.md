@@ -18,6 +18,14 @@ npm run release
 4. **Check** that the compiled plugin carries the URL and hash that were baked
 5. **Package** (`uplink-tools package`) the plugin as `dist/GonogoExampleUplink.zip` in the Uplink's own folder, beside `client/` and not inside it, holding `GameData/GonogoExampleUplink/Plugins/` with the plugin and its contract slice, and nothing else. The netkan (CKAN's metadata, see below) is written beside the zip, not inside it
 
+In a sandbox that blocks the local sockets MSBuild's worker processes talk over, `release` can run for minutes and then fail with "dotnet exited with a failure and reported no error". Name the switches that avoid them in `UPLINK_TOOLS_MSBUILD_ARGS`, separated by spaces, for the one command:
+
+```bash
+UPLINK_TOOLS_MSBUILD_ARGS="-m:1 -p:UseSharedCompilation=false" npm run release
+```
+
+`-m:1` builds with one node and `-p:UseSharedCompilation=false` keeps the C# compiler from starting its shared server; `release` already passes `-nodeReuse:false`. Outside such a sandbox, leave it unset.
+
 The app loads a client only when the plugin vouches for the exact bundle it fetched, so the bundle must be built and hashed before the plugin is compiled. A plugin compiled first builds and passes its tests, and the app shows none of its widgets. `release` refuses to run while `client.url` in `uplink.json` is still the placeholder `new` writes without a repository, and while the version's three places disagree ([A new version](#a-new-version)).
 
 The `gonogo-uplink.json` to publish is the one `release` writes beside the bundle in `client/dist/example/`, which carries the bundle's hash as its `integrity`. The one committed beside the client, which `npm run page` and `npm run docs` write, has an empty `integrity` until a hash is stamped into it, and `page` and `docs` leave a stamped one alone. An empty one is right for a working copy and refused by the app if published, so publish from `dist/`.
@@ -48,7 +56,7 @@ cd ../example-releases
 git add releases && git commit -m "Release example 0.0.1" && git push -u origin releases
 ```
 
-`npx uplink-tools publish` does those steps for a jsDelivr URL, run from the Uplink's `client/` folder (where `npm install` put the tool: from the Uplink's root `npx` looks the name up on the npm registry and finds nothing) and after `release`. It copies the built bundle and its `gonogo-uplink.json` into a worktree of the ref the URL names (by default `.releases/` in the Uplink, which it creates from the remote's branch, or as a new orphan branch when the remote has none) and prints the links. A published version is never overwritten: a bundle that differs from the one already there is a new version with its own URL. `--push` commits what changed, pushes it to the ref and checks the remote holds the commit, `--purge` asks jsDelivr to drop its cached copy of both URLs, and `--tag <tag>` refuses unless the tag is `example-v0.0.1`, as `release` does. For any other host, `--to <dir>` names the folder that is served at the URL's root.
+Run `publish` from `client/`, not from the Uplink's root. `npx uplink-tools publish` does those steps for a jsDelivr URL, run from the Uplink's `client/` folder (where `npm install` put the tool: from the Uplink's root `npx` looks the name up on the npm registry and finds nothing) and after `release`. It copies the built bundle and its `gonogo-uplink.json` into a worktree of the ref the URL names (by default `.releases/` in the Uplink, which it creates from the remote's branch, or as a new orphan branch when the remote has none) and prints the links. A published version is never overwritten: a bundle that differs from the one already there is a new version with its own URL. `--push` commits what changed, pushes it to the ref and checks the remote holds the commit, `--purge` asks jsDelivr to drop its cached copy of both URLs, and `--tag <tag>` refuses unless the tag is `example-v0.0.1`, as `release` does. For any other host, `--to <dir>` names the folder that is served at the URL's root.
 
 `publish` without `--push` is its dry run: it copies the files into the worktree and prints the links, and commits and sends nothing. If a `--push` fails (a remote that cannot be reached, a wrong address), the release stays committed in the worktree, and running `publish --push` again sends that commit, and says "already on" the ref only once the remote holds it.
 
@@ -113,9 +121,11 @@ A plugin with a development URL and no hash vouches for nothing, so the app load
 
 `release` writes `dist/GonogoExampleUplink.netkan` beside the zip, a copy of `mod/GonogoExampleUplink.netkan`: the metadata CKAN indexes a mod from, naming `GonogoCore`, the Gonogo mod's CKAN identifier, as a dependency, and installing the zip's `GameData/GonogoExampleUplink` folder. If your Uplink integrates another mod, add that mod to `mod/GonogoExampleUplink.netkan`'s `depends` (or `recommends`, when the Uplink is useful without it).
 
-The netkan `new` writes, and so the copy `release` makes of it, has no `$kref`, the line telling CKAN where each release's zip is downloaded from, and CKAN needs one. Add it to `mod/GonogoExampleUplink.netkan`. Attach the zip to a release on your repository and add `"$kref": "#/ckan/github/<owner>/<repo>"`, or upload it to SpaceDock and add `"$kref": "#/ckan/spacedock/<mod id>"`. Submitting follows CKAN's own process:
+The netkan `new` writes, and so the copy `release` makes of it, has no `$kref`, the line telling CKAN where each release's zip is downloaded from, and CKAN needs one. Add it to `mod/GonogoExampleUplink.netkan`. Attach the zip to a release on your repository and add `"$kref": "#/ckan/github/<owner>/<repo>"`, or upload it to SpaceDock and add `"$kref": "#/ckan/spacedock/<mod id>"`. `dist/` is never committed, so the netkan and the zip are not in your repository: attach the zip to the release by hand (a GitHub release, or SpaceDock), and the netkan you submit to CKAN is the copy in `mod/`, which is committed. Submitting follows CKAN's own process:
 
 - [CKAN's guide to adding a mod](https://github.com/KSP-CKAN/CKAN/wiki/Adding-a-mod-to-the-CKAN)
 - [SpaceDock](https://spacedock.info/), which hosts a mod's zip and which CKAN can index from
+
+`uplink-tools` has no netkan check and this Guide names no local validator. The first check of the metadata is CKAN's own, when it is submitted.
 
 Next: [uplink.json](/guide/uplink-json).
