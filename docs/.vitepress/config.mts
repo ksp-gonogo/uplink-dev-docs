@@ -58,6 +58,7 @@ export default defineConfig({
     nav: [
       { text: "Guide", link: "/guide/" },
       { text: "Reference", link: "/reference/" },
+      { text: "Uplinks", link: "/uplinks" },
       { text: "Maintaining", link: "/maintaining/" },
     ],
     sidebar: {
