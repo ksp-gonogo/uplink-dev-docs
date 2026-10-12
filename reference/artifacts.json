@@ -1,7 +1,7 @@
 {
-  "gonogo": "2976a54afaed3f248b886440313112dc6a90cc73",
+  "gonogo": "723844d2151c43936bd01c9fc1368ccb5a8980d7",
   "published": {
-    "version": "1.0.0-rc.30",
+    "version": "1.0.0-rc.27",
     "npmTag": "rc",
     "name": "release candidate"
   },

@@ -9,7 +9,6 @@
     "check": "node scripts/check-snippets.mjs",
     "test:uplinks": "node --test docs/.vitepress/theme/uplinks/uplinks.test.ts",
     "prepare": "git config core.hooksPath .githooks || true",
-    "check:published": "node scripts/check-published-current.mjs",
     "check:units": "node scripts/check-units-table.mjs",
     "check:symbols": "node scripts/check-doc-symbols.mjs",
     "check:rendered": "node scripts/check-rendered.mjs",

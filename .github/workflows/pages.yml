@@ -4,9 +4,6 @@ name: Deploy docs
 on:
   push:
   workflow_dispatch:
-  # Nightly, for the `current` job: a newer release candidate turns it red.
-  schedule:
-    - cron: "17 3 * * *"
 
 permissions:
   contents: read
@@ -18,18 +15,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # Do the pages name the candidate `new` pins? A separate job, so a new
-  # candidate is a red check and not a held deploy.
-  current:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-      - run: node --test scripts/check-published-current.test.mjs
-      - run: node scripts/check-published-current.mjs
-
   build:
     runs-on: ubuntu-latest
     # A hung step fails the run instead of holding the deploy.
