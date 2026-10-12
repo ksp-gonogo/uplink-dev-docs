@@ -99,6 +99,8 @@ dotnet test ../mod-tests
 
 A read `check` cannot name, such as a Topic chosen at runtime, takes a `// gonogo:reads <topic or family>` comment above the call, where a family is a pattern for a set of Topic ids with whole-segment `<name>` placeholders, such as one Topic per body. The groups are `declarations`, `page`, `manifest`, `bake`, `codegen`, `imports`, `plugin`, `actions` and `docs-prose`, one per part of the Uplink the rules read, and `docs-prose` has no rules yet so it is reported skipped.
 
+On a new Uplink `check` reports `bake/stale` until the first `npm run release`: the plugin carries no hash yet, because the bundle's hash is only known once the client has been built, and `release` bundles, bakes and compiles in that order. That finding is expected, and its fix is `release`. What `bake` writes (the three `*.g.cs` files in `mod/`) is never committed: the scaffold's `.gitignore` lists them, so a `check` run in CI follows a `release` step in the same job.
+
 ## Checking the pictures
 
 `npm run docs:check` regenerates the page and its pictures in memory and fails when the committed ones differ, so it needs Chromium. As it draws each fixture it also checks the picture can be read, and prints a warning for a widget whose text is cut off or whose title is clipped at a size it draws. A warning does not fail the command; it says the widget needs a bigger tile or less text, so raise its `minSize` or give its `Panel` a `compactTitle`. The scaffold's widget draws none.

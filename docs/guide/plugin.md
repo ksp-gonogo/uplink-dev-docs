@@ -86,6 +86,10 @@ The comment in that snippet assumes a `ChannelDeclaration` for `example.status` 
 
 A second overload takes, after the two functions, the Topic prefixes the source publishes (an exact Topic is its own prefix), and skips the main-thread read on every tick no client is watching them; [Wrapping a mod](/guide/wrapping-a-mod#reading-on-the-main-thread) uses it. Never pass a live game object, such as a `Vessel` or a `Part`, from the first function to the second: reading one off the main thread can crash the game.
 
+### Without the game's assemblies
+
+An author with no copy of KSP cannot compile against `Assembly-CSharp`, and nothing in this Guide verifies a KSP type or member name for them. What they can do is reach KSP's own types by reflection, the way the next section does for other mods: look the type up by name (`Type.GetType("FlightGlobals, Assembly-CSharp")`), read its members, and report a missing one in `Health` instead of failing to load. The names then come from the author's own knowledge or a decompiler ([ILSpy](https://github.com/icsharpcode/ILSpy) on `Assembly-CSharp.dll`), because no page here lists them, and a wrong name is found only when the plugin runs inside the game. The build, the tests and `release` do not need the game at all; reading its state and trying the plugin in KSP do.
+
 ## Reaching another mod
 
 Prefer reaching the mod you integrate by reflection over referencing its assembly. A plugin that references a missing assembly fails to load at all, where one that uses reflection can report the mod missing in `Health`. A reference also brings that mod's licence terms to your combined work. [Wrapping a mod](/guide/wrapping-a-mod) covers both, and when a reference suits.
