@@ -59,7 +59,7 @@ example/
 └── client/                       the client package
     ├── package.json
     ├── tsconfig.json, tsconfig.nodenext.json  the client's types, checked twice: under the
-    │                               bundler's resolution and under Node's (npm run typecheck)
+    │                               bundler's resolution and under Node's (npm run typecheck, then npm run check)
     ├── vitest.config.ts            the test runner's settings
     ├── README.md                   the generated page
     ├── gonogo-uplink.json          the client's id, version and integrity hash, which the app reads before it loads the bundle

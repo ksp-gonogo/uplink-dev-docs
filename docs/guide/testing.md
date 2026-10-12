@@ -80,12 +80,13 @@ A plugin that reaches the game or a mod only by reflection names no KSP type, so
 
 ## In CI
 
-From `client/`, every command an Uplink's CI needs, none of them needing the game or a browser. `dotnet test` does bind a port on the local machine to talk to its test host, so a sandbox that blocks local network binding stops it at once, with a `SocketException` for permission denied, until local binding is allowed for the process. In the same kind of sandbox a plain `dotnet build` can appear to hang for minutes; `dotnet build -m:1 --disable-build-servers` avoids the build server's sockets:
+From `client/`, every command an Uplink's CI needs, none of them needing the game or a browser. `dotnet test` does bind a port on the local machine to talk to its test host, so a sandbox that blocks local network binding stops it at once, with a `SocketException` for permission denied, until local binding is allowed for the process. In the same kind of sandbox a plain `dotnet build` can appear to hang for minutes; `dotnet build -m:1 --disable-build-servers` avoids the build server's sockets. `uplink-tools release` builds with MSBuild too, and passes `-nodeReuse:false` already; to add switches, such as one build node, set `UPLINK_TOOLS_MSBUILD_ARGS=-m:1` in its environment:
 
 ```bash
 npm ci
 npm run codegen:check        # the generated types match the contract slice
 npm run typecheck
+npm run check               # the client's own rules, and its types under Node's resolution
 npm test                     # the widgets, and the generated page
 npx uplink-tools bake        # the plugin's generated files
 dotnet test ../mod-tests
@@ -97,7 +98,7 @@ dotnet test ../mod-tests
 
 `npx uplink-tools check` reads the client with the TypeScript compiler and reports what is wrong with it, with the one command that heals each finding. It exits 0 when nothing is found, 1 when findings remain, and 2 when it could not run. `--fix` writes the files `check` owns and then verifies again, and is refused when `CI` is set. `--only` and `--skip` take a comma-separated list of groups, and `--json` prints the findings and nothing else.
 
-A read `check` cannot name, such as a Topic chosen at runtime, takes a `// gonogo:reads <topic or family>` comment above the call, where a family is a pattern for a set of Topic ids with whole-segment `<name>` placeholders, such as one Topic per body. The groups are `declarations`, `page`, `manifest`, `bake`, `codegen`, `imports`, `plugin`, `actions` and `docs-prose`, one per part of the Uplink the rules read, and `docs-prose` has no rules yet so it is reported skipped.
+A read `check` cannot name, such as a Topic chosen at runtime, takes a `// gonogo:reads <topic or family>` comment above the call, where a family is a pattern for a set of Topic ids with whole-segment `<name>` placeholders, such as one Topic per body. The groups are `declarations`, `page`, `manifest`, `bake`, `codegen`, `imports`, `plugin`, `actions` and `docs-prose`, one per part of the Uplink the rules read, and `docs-prose` has no rules yet so it is reported skipped. Three more groups run only when named in `--only`: `loadable`, `nodenext` (the client's types under Node's resolution, from `tsconfig.nodenext.json`) and `minsize`. `npm run check` names `nodenext`.
 
 On a new Uplink `check` reports `bake/stale` until the first `npm run release`: the plugin carries no hash yet, because the bundle's hash is only known once the client has been built, and `release` bundles, bakes and compiles in that order. That finding is expected, and its fix is `release`. What `bake` writes (the three `*.g.cs` files in `mod/`) is never committed: the scaffold's `.gitignore` lists them, so a `check` run in CI follows a `release` step in the same job.
 
