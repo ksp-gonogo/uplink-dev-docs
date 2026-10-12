@@ -10,6 +10,8 @@ export interface UplinkLink {
   label: string;
 }
 
+const LOOPBACK = new Set(["localhost", "127.0.0.1", "[::1]"]);
+
 const JSDELIVR = "https://cdn.jsdelivr.net";
 
 /** The file names an Uplink's folder can end in when pasted, which are not part of the folder. */
@@ -25,15 +27,20 @@ function trimSlashes(path: string): string {
  * Accepts a GitHub folder link (`https://github.com/<owner>/<repo>/tree/<ref>/<path>`),
  * a jsDelivr link (`https://cdn.jsdelivr.net/gh/<owner>/<repo>@<ref>/<path>`),
  * a raw.githubusercontent.com link, and the URL of a released bundle or its
- * sidecar. Nothing else: the viewer fetches the folder from the browser, and
- * only these hosts answer with CORS headers.
+ * sidecar, or a plain http link to a folder on this machine (`localhost`).
+ * Nothing else: the viewer fetches the folder from the browser, and only these
+ * hosts answer with CORS headers.
  */
 export function resolveUplinkLink(input: string): UplinkLink | { error: string } {
   const text = input.trim();
   if (!URL.canParse(text)) return { error: "That is not a link. Paste the URL of an Uplink's folder." };
   const url = new URL(text);
-  if (url.protocol !== "https:") return { error: "Only https links are read." };
   const path = trimSlashes(url.pathname).replace(TRAILING_FILE, "");
+  // A folder served from this machine, for an author reading their own Uplink while they build it.
+  if (url.protocol === "http:" && LOOPBACK.has(url.hostname)) {
+    return { base: `${url.origin}${path}`, label: `${url.host}${path}` };
+  }
+  if (url.protocol !== "https:") return { error: "Only https links are read." };
 
   if (url.host === "github.com") {
     const match = /^\/([^/]+)\/([^/]+)\/(?:tree|blob)\/([^/]+)(?:\/(.*))?$/.exec(path);

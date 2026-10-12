@@ -2,19 +2,26 @@
 /**
  * Reads other authors' Uplinks by link. Paste a link to an Uplink's folder; it is
  * remembered in this browser and fetched again on every visit, so a branch link
- * follows the Uplink as it changes. Everything shown is the Uplink's spec sheet
- * (`docs/spec.json`) drawn as text: no value is ever treated as markup.
+ * follows the Uplink as it changes. The spec sheet (`docs/spec.json`) is drawn as
+ * text, never as markup. A folder that carries a released client also has it
+ * loaded and its widgets drawn, as the app does.
  */
-import { onMounted, ref } from "vue";
+import { markRaw, onMounted, ref } from "vue";
+import { type LoadedClient, loadClient } from "../uplinks/client";
 import { resolveUplinkLink } from "../uplinks/link";
 import { loadUplink, type LoadedUplink } from "../uplinks/load";
 import { readSaved, type SavedUplink, withoutSaved, withSaved, writeSaved } from "../uplinks/store";
+import UplinkWidget from "./UplinkWidget.vue";
 
 interface Entry {
   saved: SavedUplink;
   state: "loading" | "ready" | "failed";
   loaded?: LoadedUplink;
   error?: string;
+  /** The Uplink's released client, once its bundle has been fetched, checked and run. */
+  client?: LoadedClient;
+  clientState: "none" | "loading" | "ready" | "failed";
+  clientError?: string;
 }
 
 const input = ref("");
@@ -29,7 +36,30 @@ async function fetchEntry(entry: Entry): Promise<void> {
   } catch (error) {
     entry.error = error instanceof Error ? error.message : String(error);
     entry.state = "failed";
+    return;
   }
+  await fetchClient(entry);
+}
+
+/** Runs the Uplink's released client the way the app does, when the folder carries one. */
+async function fetchClient(entry: Entry): Promise<void> {
+  const manifestUrl = entry.loaded?.manifestUrl;
+  if (!manifestUrl) {
+    entry.clientState = "none";
+    return;
+  }
+  entry.clientState = "loading";
+  try {
+    entry.client = markRaw(await loadClient(manifestUrl));
+    entry.clientState = "ready";
+  } catch (error) {
+    entry.clientError = error instanceof Error ? error.message : String(error);
+    entry.clientState = "failed";
+  }
+}
+
+function sizeOf(entry: Entry, id: string, fallback: { w: number; h: number } | null | undefined): { w: number; h: number } {
+  return entry.loaded?.spec.widgets.find((widget) => widget.id === id)?.defaultSize ?? fallback ?? { w: 6, h: 4 };
 }
 
 function persist(): void {
@@ -51,7 +81,7 @@ function add(): void {
     input.value = "";
     return;
   }
-  const entry = ref<Entry>({ saved: link, state: "loading" }).value;
+  const entry = ref<Entry>({ saved: link, state: "loading", clientState: "none" }).value;
   entries.value = [...entries.value, entry];
   persist();
   input.value = "";
@@ -76,7 +106,7 @@ function dash(items: readonly string[]): string {
 }
 
 onMounted(() => {
-  entries.value = readSaved().map((saved) => ({ saved, state: "loading" as const }));
+  entries.value = readSaved().map((saved) => ({ saved, state: "loading" as const, clientState: "none" as const }));
   for (const entry of entries.value) void fetchEntry(entry);
 });
 </script>
@@ -152,6 +182,19 @@ onMounted(() => {
               </tr>
             </tbody>
           </table>
+        </template>
+
+        <template v-if="entry.clientState !== 'none'">
+          <h3>Drawn</h3>
+          <p v-if="entry.clientState === 'loading'" role="status">Loading the client…</p>
+          <p v-else-if="entry.clientState === 'failed'" class="uplink-viewer__problem">{{ entry.clientError }}</p>
+          <template v-else-if="entry.client">
+            <p v-if="entry.client.widgets.size === 0" class="uplink-viewer__hint">The client registered no widgets.</p>
+            <figure v-for="[id, def] in entry.client.widgets" :key="id" class="uplink-viewer__drawn">
+              <figcaption><strong>{{ def.name }}</strong> <code>{{ id }}</code></figcaption>
+              <UplinkWidget :host="entry.client.host" :def="def" :size="sizeOf(entry, id, def.defaultSize)" />
+            </figure>
+          </template>
         </template>
 
         <template v-if="entry.loaded.spec.topics.length > 0">
@@ -240,6 +283,7 @@ onMounted(() => {
 .uplink-viewer__uplink { margin-top: 32px; padding-top: 16px; border-top: 1px solid var(--vp-c-divider); }
 .uplink-viewer__head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
 .uplink-viewer__head h2 { margin: 0; border: 0; padding: 0; }
+.uplink-viewer__drawn { margin: 12px 0; }
 .uplink-viewer__pictures { display: flex; flex-wrap: wrap; gap: 12px; }
 .uplink-viewer__pictures img { max-width: 100%; height: auto; border: 1px solid var(--vp-c-divider); border-radius: 4px; }
 </style>

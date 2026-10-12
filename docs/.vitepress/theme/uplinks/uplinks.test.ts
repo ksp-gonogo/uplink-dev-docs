@@ -31,6 +31,14 @@ test("other hosts and non-links are refused with a sentence", () => {
   assert.match(String((resolveUplinkLink("http://github.com/o/r/tree/m/x") as { error: string }).error), /https/);
 });
 
+test("a folder served from this machine is read over http, and no other http link is", () => {
+  assert.deepEqual(resolveUplinkLink("http://localhost:4000/dist/demo/gonogo-uplink.json"), {
+    base: "http://localhost:4000/dist/demo",
+    label: "localhost:4000/dist/demo",
+  });
+  assert.match(String((resolveUplinkLink("http://example.com/x") as { error: string }).error), /https/);
+});
+
 test("a valid spec sheet reads, and one of another version is refused", () => {
   assert.equal(readSpec(minimal).topics[0].delivery, "lossy-latest");
   assert.throws(() => readSpec({ ...minimal, specVersion: 2 }), /version 2/);
@@ -54,6 +62,7 @@ test("loading tries a release folder then a source folder, and lists committed p
   const loaded = await loadUplink("https://h/b", fetcher);
   assert.equal(loaded.spec.uplink.id, "demo");
   assert.equal(loaded.manifest?.contractMajor, 40);
+  assert.equal(loaded.manifestUrl, "https://h/b/client/gonogo-uplink.json");
   assert.deepEqual(loaded.pictures.map((p) => p.name), ["w--default.png"]);
 });
 

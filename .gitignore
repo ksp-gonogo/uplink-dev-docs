@@ -8,3 +8,6 @@ obj/
 # install. The pages written from them ignore themselves (docs/.gitignore).
 artifacts/
 .reference/
+
+# The modules a loaded Uplink client imports, built by npm run externals.
+docs/public/uplink-externals/

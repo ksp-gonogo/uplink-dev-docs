@@ -5,6 +5,8 @@ export interface LoadedUplink {
   spec: Spec;
   /** Where the spec sheet was found. */
   specUrl: string;
+  /** Where the manifest was found, when there is one. */
+  manifestUrl: string | null;
   /** The Uplink's manifest, when one sits beside it: the contract it was built against. */
   manifest: { contractMajor?: number; contractMinor?: number; apiVersion?: string; version?: string } | null;
   /** The pictures the folder commits, by file name, when it has a shape record. */
@@ -68,5 +70,5 @@ export async function loadUplink(base: string, fetcher: Fetcher = (url) => fetch
     .filter((name) => /^[\w.-]+\.(png|gif)$/.test(name))
     .sort()
     .map((name) => ({ name, url: `${docsFolder}/assets/${name}` }));
-  return { spec, specUrl: found.url, manifest, pictures };
+  return { spec, specUrl: found.url, manifestUrl: manifestFound?.url ?? null, manifest, pictures };
 }

@@ -80,13 +80,25 @@ function storyResolution(storybook: string): Plugin {
   };
 }
 
-/** The Vite settings the live examples need, or none when there is no Storybook checkout. */
+/** Resolves the sdk's `uplink-load` subpath, which the viewer reads, from the installed artifacts. */
+function installedUplinkLoad(): Plugin {
+  const fromArtifacts = resolve(INSTALL, "package.json");
+  return {
+    name: "gonogo-uplink-load",
+    enforce: "pre",
+    resolveId(source) {
+      return source === "@ksp-gonogo/sitrep-sdk/uplink-load" ? this.resolve(source, fromArtifacts, { skipSelf: true }) : null;
+    },
+  };
+}
+
+/** The Vite settings the viewer and the live examples need; the examples are left out when there is no Storybook checkout. */
 export function islandVite(): UserConfig {
   const storybook = storybookRoot();
-  if (storybook === null) return {};
+  if (storybook === null) return { plugins: [installedUplinkLoad()] };
   const repo = resolve(storybook, "../..");
   return {
-    plugins: [storyResolution(storybook)],
+    plugins: [installedUplinkLoad(), storyResolution(storybook)],
     resolve: { dedupe: SHARED },
     server: { fs: { allow: [ROOT, repo] } },
     define: { "process.env.NODE_ENV": JSON.stringify(process.env.NODE_ENV ?? "production") },

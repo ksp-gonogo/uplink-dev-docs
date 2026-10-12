@@ -3,8 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "npm run reference && vitepress dev docs",
-    "build": "npm run reference && npm run check && npm run test:uplinks && npm run check:units && npm run test:published-current && vitepress build docs && npm run check:rendered && npm run check:links && npm run check:demos",
+    "dev": "npm run reference && npm run externals && vitepress dev docs",
+    "build": "npm run reference && npm run externals && npm run check && npm run test:uplinks && npm run check:units && npm run test:published-current && vitepress build docs && npm run check:rendered && npm run check:links && npm run check:demos && npm run check:uplink-viewer",
     "preview": "vitepress preview docs",
     "check": "node scripts/check-snippets.mjs",
     "test:uplinks": "node --test docs/.vitepress/theme/uplinks/uplinks.test.ts",
@@ -15,9 +15,11 @@
     "check:rendered": "node scripts/check-rendered.mjs",
     "check:links": "node scripts/check-symbol-links.mjs",
     "check:demos": "node scripts/check-demos.mjs",
+    "check:uplink-viewer": "node scripts/check-uplink-viewer.mjs",
     "check:pages": "node scripts/check-reference-pages.mjs",
     "sync:ui-kit-exports": "node scripts/check-doc-symbols.mjs --sync",
     "reference": "node scripts/reference/generate.mjs",
+    "externals": "node scripts/build-uplink-externals.mjs",
     "reference:pack": "node scripts/reference/pack-artifacts.mjs"
   },
   "devDependencies": {
