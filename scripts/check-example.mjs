@@ -58,6 +58,7 @@ export const ADDED = {
   "client/README.md": "npm run page",
   "client/gonogo-uplink.json": "npm run page",
   "client/docs/widgets.json": "npm run page",
+  "client/docs/spec.json": "npm run page",
   "client/src/__generated__/contract.ts": "npm run codegen",
   "client/src/__generated__/topic-map.ts": "npm run codegen",
   "client/src/__generated__/command-map.ts": "npm run codegen",

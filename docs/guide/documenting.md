@@ -25,7 +25,7 @@ To change the page, change what it is written from and run `npm run page` again.
 
 ## The pictures
 
-`npm run page` writes the page with no browser and leaves the pictures alone, so until `npm run docs` has run the page names pictures that do not exist yet. `npm run docs` writes the same three files and draws a picture of every fixture into `docs/assets/`, which needs Chromium (`npx playwright install chromium`). Run it before you publish, and commit `docs/assets/` with the page.
+`npm run page` writes the page with no browser and leaves the pictures alone, so until `npm run docs` has run the page names pictures that do not exist yet. `npm run docs` writes the same three files and draws a picture of every fixture into `docs/assets/`, which needs Chromium (`npx playwright install chromium`). Run it before you publish, and commit `docs/assets/` with the page. Publishing the client does not need the pictures: `release` and `publish` never read `docs/assets/`, so the client can go out first on a machine with no Chromium. Until the pictures are committed and pushed, the README's picture links show as broken images on the repository's page, and nothing else is affected.
 
 A fixture's `_scene.caption` describes its picture to anyone who cannot see it, so say what the widget shows in that scene: "The Example Uplink publishing: 42 ticks since load, at UT 1,000,000", not "Heartbeat widget". [Testing](/guide/testing#fixtures) covers fixtures.
 

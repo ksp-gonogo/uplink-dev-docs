@@ -1,7 +1,8 @@
 /**
  * Holds the docs checks themselves to account: each debt list must refuse
  * growth and report a stale entry, every `check-*.mjs` script must be reached
- * by `npm run build`, and CI must run that build on every push.
+ * by `npm run build` (or be declared in RUNS_ELSEWHERE and run by a pages.yml
+ * step), and CI must run that build on every push.
  *
  * Before grading the repo it grades planted faults with the same functions and
  * fails as BLIND unless every one is found, because a ratchet that cannot see a
@@ -32,6 +33,20 @@ export function expandScripts(command, scripts, seen = new Set()) {
 /** Check scripts nothing in the build reaches. `wired` is the build's text plus the aggregator's source. */
 export function unwiredChecks(files, wired) {
   return files.filter((file) => !wired.includes(file));
+}
+
+/**
+ * Checks that cannot run in the build and run in a job of their own instead.
+ * A check here is a promise, and `elsewhereFaults` holds pages.yml to it.
+ * check-published-current.mjs asks the npm registry which candidate is current
+ * and must not hold a deploy when a new one is published, so a `current` job
+ * runs it nightly and on every push; its unit test (no network) is in the build.
+ */
+export const RUNS_ELSEWHERE = ["check-published-current.mjs"];
+
+/** Files declared as run elsewhere that the workflow does not actually run as a step. */
+export function elsewhereFaults(declared, yml) {
+  return declared.filter((file) => !new RegExp(`^\\s+- run: node scripts/${file.replace(/\./g, "\\.")}\\s*$`, "m").test(yml));
 }
 
 /** Why a workflow would not run the build on every push, as a list of faults. */
@@ -94,6 +109,9 @@ function blind() {
   const scripts = { build: "npm run a && npm run b", a: "node scripts/check-x.mjs", b: "node y.mjs" };
   const wired = expandScripts(scripts.build, scripts);
   if (unwiredChecks(["check-x.mjs", "check-lost.mjs"], wired).join() !== "check-lost.mjs") lost.push("a check script outside the build");
+  const withJob = "jobs:\n  current:\n    steps:\n      - run: node scripts/check-x.mjs\n";
+  if (elsewhereFaults(["check-x.mjs"], "jobs:\n  current:\n    steps:\n      - run: echo\n").join() !== "check-x.mjs") lost.push("a check declared as run elsewhere that no workflow step runs");
+  if (elsewhereFaults(["check-x.mjs"], withJob).length !== 0) lost.push("(clean) a check declared as run elsewhere that a step runs was faulted");
   if (workflowFaults(PLANT_WORKFLOW).length !== 3) lost.push("a workflow that filters, gates and tolerates failure");
   if (workflowFaults(GOOD_WORKFLOW).length !== 0) lost.push("(clean) a workflow that runs the build on every push was faulted");
   return lost;
@@ -113,7 +131,16 @@ export function checkRatchets() {
     console.log(`BLIND: only ${checks.length} check scripts found under scripts/.`);
     return ["ratchets (blind)"];
   }
-  const unwired = unwiredChecks(checks, wired);
+  const pagesYml = readFileSync(resolve(ROOT, ".github/workflows/pages.yml"), "utf8");
+  const missingJob = elsewhereFaults(RUNS_ELSEWHERE, pagesYml);
+  if (missingJob.length > 0) {
+    console.log(`Declared as run by a pages.yml job, and no step runs it:\n  ${missingJob.join("\n  ")}`);
+    failures.push("ratchets (elsewhere check not run)");
+  }
+  const unwired = unwiredChecks(
+    checks.filter((file) => !RUNS_ELSEWHERE.includes(file)),
+    wired,
+  );
   if (unwired.length > 0) {
     console.log(`A check that \`npm run build\` never runs enforces nothing:\n  ${unwired.join("\n  ")}`);
     failures.push("ratchets (unwired check)");
@@ -125,7 +152,7 @@ export function checkRatchets() {
   }
   if (failures.length === 0) {
     const listed = Object.keys(STALE_PAGE_DEBT).length + Object.keys(MISSING_SYMBOL_DEBT).length + UNRESOLVED_LINK_DEBT.length;
-    console.log(`Ratchets: ${checks.length} check scripts wired into the build, pages.yml builds on every push, ${listed} debt entries (planted faults found: 9).`);
+    console.log(`Ratchets: ${checks.length} check scripts wired into the build, pages.yml builds on every push, ${listed} debt entries (planted faults found: 11).`);
   }
   return failures;
 }
