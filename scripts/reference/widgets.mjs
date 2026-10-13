@@ -147,8 +147,8 @@ const definitionLink = (label, member) => `[${label}](/reference/client/register
 export function widgetHeaderMd(record) {
   if (facts === null) throw new Error("widgetHeaderMd needs the installed widget-facts module: await loadWidgetRecords() first");
   const rows = facts.widgetFactsOf(record, { omitSlot: (slot) => standardSegmentsOf().has(slot.slice(record.id.length + 1)) }).map((fact) => {
-    // A widget that lists flat keys declares them in `dataRequirements`, not `channels`.
-    const member = fact.id === "reads" && /flat keys/.test(fact.label) ? "dataRequirements" : MEMBER_OF_FACT[fact.id];
+    // A widget that lists dotted paths declares them in `dataRequirements`, not `channels`.
+    const member = fact.id === "reads" && /dotted paths|flat keys/.test(fact.label) ? "dataRequirements" : MEMBER_OF_FACT[fact.id];
     const label = member ? definitionLink(fact.label, member) : fact.label;
     const linked = (anchor) => fact.items.map((item) => ("code" in item ? `[\`${item.code}\`](${anchor(item.code)})` : text(item.prose))).join(", ");
     const value =
