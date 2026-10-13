@@ -218,14 +218,21 @@ function fencedMd(text, index, reflection) {
   return `${block}\n\nTypes in this declaration: ${names.map((n) => linked(n, index)).join(", ")}`;
 }
 
-/** A type as inline Markdown, each named part linked where it can be. */
-export function typeMd(type, index) {
+/** The type parameters in scope at a reflection: its own and those of every symbol that holds it, such as the `Row` of `DataTableProps<Row>`. */
+function scopeTypeParams(reflection) {
+  const names = new Set();
+  for (let r = reflection; r; r = r.parent) for (const p of r.typeParameters ?? []) names.add(p.name);
+  return names;
+}
+
+/** A type as inline Markdown, each named part linked where it can be. `scope`: type parameter names that stand for no export. */
+export function typeMd(type, index, scope = new Set()) {
   if (!type) return "";
-  const t = (x) => typeMd(x, index);
+  const t = (x) => typeMd(x, index, scope);
   switch (type.type) {
     case "reference": {
       // A type parameter such as `Unit` in `Value<Unit>` is named by its declaration, never by an export that shares its name, so it is marked as a name no link pass touches.
-      if (type.refersToTypeParameter) return memberName(type.name);
+      if (type.refersToTypeParameter || scope.has(type.name)) return memberName(type.name);
       // A named union of literals is shown as its values, which is what an author has to write.
       const alias = type.reflection?.kind === ReflectionKind.TypeAlias ? type.reflection.type : undefined;
       if (!index.url(type.name) && alias?.type === "union" && alias.types.every((m) => m.type === "literal")) {
@@ -250,7 +257,7 @@ export function typeMd(type, index) {
       // An object type written inline: whole where it is short, by its member names where it is not.
       const children = type.declaration.children ?? [];
       const whole = type.toString();
-      if (children.length === 0 || whole.length <= 80) return linkedCode(whole, index, declaredTypeParams(whole, []));
+      if (children.length === 0 || whole.length <= 80) return linkedCode(whole, index, declaredTypeParams(whole, scope));
       const names = children.map((c) => `${c.name}${c.flags.isOptional ? "?" : ""}`);
       return code(`{ ${names.slice(0, 6).join("; ")}${names.length > 6 ? "; ..." : ""} }`);
     }
@@ -258,7 +265,7 @@ export function typeMd(type, index) {
     case "literal":
       return code(type.toString());
     default:
-      return linkedCode(type.toString(), index, declaredTypeParams(type.toString(), []));
+      return linkedCode(type.toString(), index, declaredTypeParams(type.toString(), scope));
   }
 }
 
@@ -575,7 +582,7 @@ function nestedRows(member, index, path, withDefaults, depth = 3) {
   const through = member.type?.type === "array" || (member.type?.type === "union" && member.type.types.some((t) => t.type === "array")) ? "[]" : "";
   return object.children.filter(hasDocs).flatMap((child) => {
     const name = `${path}${through}.${child.name}${child.flags.isOptional ? "?" : ""}`;
-    const cells = [memberName(name), cellSafe(typeMd(child.type, index))];
+    const cells = [memberName(name), cellSafe(typeMd(child.type, index, scopeTypeParams(member)))];
     if (withDefaults) cells.push("");
     cells.push(cellMd(child.comment?.summary, index));
     return [`| ${cells.join(" | ")} |`, ...nestedRows(child, index, `${path}${through}.${child.name}`, withDefaults, depth - 1)];
@@ -599,7 +606,7 @@ function memberTable(own, index) {
   const rows = own.flatMap((member) => {
     const optional = member.flags.isOptional ? "?" : "";
     const type = typeOfMember(member)
-      ? cellSafe(typeMd(typeOfMember(member), index))
+      ? cellSafe(typeMd(typeOfMember(member), index, scopeTypeParams(member)))
       : member.signatures
         ? linkedCode(methodText(member.signatures[0]), index, excludedFor(member, methodText(member.signatures[0])))
         : "";
@@ -682,7 +689,7 @@ function parametersMd(signature, index, level) {
   const params = signature.parameters ?? [];
   if (params.length === 0 || params.every((p) => !p.comment)) return "";
   const rows = params.map(
-    (p) => `| ${memberName(paramName(p))} | ${cellSafe(typeMd(p.type, index))} | ${cellMd(p.comment?.summary, index)} |`,
+    (p) => `| ${memberName(paramName(p))} | ${cellSafe(typeMd(p.type, index, scopeTypeParams(signature)))} | ${cellMd(p.comment?.summary, index)} |`,
   );
   return `${"#".repeat(level)} Parameters\n\n| Name | Type | Description |\n| --- | --- | --- |\n${rows.join("\n")}`;
 }
