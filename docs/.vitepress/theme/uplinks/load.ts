@@ -1,5 +1,12 @@
 import { manifestCandidates, specCandidates } from "./link.ts";
+import type { UplinkDoc } from "./markdown.ts";
 import { readSpec, type Spec } from "./spec.ts";
+
+/** A docs file the folder carries, read whole. */
+export interface LoadedDoc extends UplinkDoc {
+  url: string;
+  text: string;
+}
 
 export interface LoadedUplink {
   spec: Spec;
@@ -9,6 +16,13 @@ export interface LoadedUplink {
   manifestUrl: string | null;
   /** The Uplink's manifest, when one sits beside it: the contract it was built against. */
   manifest: { contractMajor?: number; contractMinor?: number; apiVersion?: string; version?: string } | null;
+  /** The Uplink's client folder: the source folder itself, or a released version's folder. */
+  root: string;
+  /**
+   * The Markdown the folder carries. A source folder has its README; a release
+   * is the bundle, its manifest and its spec sheet, so has none.
+   */
+  docs: LoadedDoc[];
   /** The pictures the folder commits, by file name, when it has a shape record. */
   pictures: { url: string; name: string }[];
 }
@@ -34,6 +48,17 @@ function number(value: unknown): number | undefined {
 function text(value: unknown): string | undefined {
   return typeof value === "string" ? value : undefined;
 }
+
+async function firstText(url: string, fetcher: Fetcher): Promise<string | undefined> {
+  try {
+    const response = await fetcher(url);
+    return response.ok ? await response.text() : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+const SPEC_IN_SOURCE = "/docs/spec.json";
 
 /**
  * Fetches an Uplink's spec sheet, manifest and picture list from its folder.
@@ -70,5 +95,9 @@ export async function loadUplink(base: string, fetcher: Fetcher = (url) => fetch
     .filter((name) => /^[\w.-]+\.(png|gif)$/.test(name))
     .sort()
     .map((name) => ({ name, url: `${docsFolder}/assets/${name}` }));
-  return { spec, specUrl: found.url, manifestUrl: manifestFound?.url ?? null, manifest, pictures };
+  const root = found.url.endsWith(SPEC_IN_SOURCE) ? found.url.slice(0, -SPEC_IN_SOURCE.length) : docsFolder;
+  const docs: LoadedDoc[] = [];
+  const readme = await firstText(`${root}/README.md`, fetcher);
+  if (readme !== undefined) docs.push({ path: "README.md", title: "README", url: `${root}/README.md`, text: readme });
+  return { spec, specUrl: found.url, root, docs, manifestUrl: manifestFound?.url ?? null, manifest, pictures };
 }
