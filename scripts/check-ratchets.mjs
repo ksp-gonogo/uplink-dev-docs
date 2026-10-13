@@ -4,12 +4,15 @@
  * by `npm run build` (or be declared in RUNS_ELSEWHERE and run by a pages.yml
  * step), and CI must run that build on every push.
  *
+ * Tracked assistant instruction files and tool config are refused too.
+ *
  * Before grading the repo it grades planted faults with the same functions and
  * fails as BLIND unless every one is found, because a ratchet that cannot see a
  * violation reports a clean tree.
  *
  *   node scripts/check-ratchets.mjs
  */
+import { execFileSync } from "node:child_process";
 import { readdirSync, readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -66,6 +69,15 @@ export function workflowFaults(yml) {
   return faults;
 }
 
+/** Tracked paths that are an author's private working notes or tool config, never published. */
+const NOTES = ["CLAUDE", "AGENTS", "GEMINI"].map((name) => `${name}\\.md`).join("|");
+const PRIVATE_NOTE_PATH = new RegExp(`(^|/)(${NOTES}|\\.mcp\\.json)$|(^|/)\\.claude/`);
+
+/** The tracked paths that must not be tracked. */
+export function privateNoteFaults(tracked) {
+  return tracked.filter((file) => PRIVATE_NOTE_PATH.test(file));
+}
+
 const PLANT_WORKFLOW = `name: x
 on:
   push:
@@ -112,6 +124,8 @@ function blind() {
   const withJob = "jobs:\n  current:\n    steps:\n      - run: node scripts/check-x.mjs\n";
   if (elsewhereFaults(["check-x.mjs"], "jobs:\n  current:\n    steps:\n      - run: echo\n").join() !== "check-x.mjs") lost.push("a check declared as run elsewhere that no workflow step runs");
   if (elsewhereFaults(["check-x.mjs"], withJob).length !== 0) lost.push("(clean) a check declared as run elsewhere that a step runs was faulted");
+  if (privateNoteFaults(["docs/a.md", `${"CLAUDE"}.md`, `x/.${"claude"}/settings.json`, ".mcp.json"]).length !== 3) lost.push("a tracked private notes or tool config file");
+  if (privateNoteFaults(["docs/a.md", "README.md"]).length !== 0) lost.push("(clean) ordinary tracked files were faulted as private notes");
   if (workflowFaults(PLANT_WORKFLOW).length !== 3) lost.push("a workflow that filters, gates and tolerates failure");
   if (workflowFaults(GOOD_WORKFLOW).length !== 0) lost.push("(clean) a workflow that runs the build on every push was faulted");
   return lost;
@@ -150,9 +164,15 @@ export function checkRatchets() {
     console.log(`pages.yml must run \`npm run build\` on every push, and it ${workflow.join("; and it ")}.`);
     failures.push("ratchets (workflow)");
   }
+  const tracked = execFileSync("git", ["ls-files"], { cwd: ROOT, encoding: "utf8" }).split("\n").filter(Boolean);
+  const privateNotes = privateNoteFaults(tracked);
+  if (privateNotes.length > 0) {
+    console.log(`Private working notes and tool config must stay untracked:\n  ${privateNotes.join("\n  ")}`);
+    failures.push("ratchets (tracked private notes)");
+  }
   if (failures.length === 0) {
     const listed = Object.keys(STALE_PAGE_DEBT).length + Object.keys(MISSING_SYMBOL_DEBT).length + UNRESOLVED_LINK_DEBT.length;
-    console.log(`Ratchets: ${checks.length} check scripts wired into the build, pages.yml builds on every push, ${listed} debt entries (planted faults found: 11).`);
+    console.log(`Ratchets: ${checks.length} check scripts wired into the build, pages.yml builds on every push, ${listed} debt entries (planted faults found: 13).`);
   }
   return failures;
 }

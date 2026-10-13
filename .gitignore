@@ -11,3 +11,10 @@ artifacts/
 
 # The modules a loaded Uplink client imports, built by npm run externals.
 docs/public/uplink-externals/
+
+# Private working notes and tool config, kept out of the public tree.
+/CLAUDE.md
+/AGENTS.md
+/GEMINI.md
+/.mcp.json
+/.claude/
