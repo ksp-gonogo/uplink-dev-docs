@@ -135,7 +135,7 @@ function examplesMd(page, widgetName) {
   const settings = (e) => {
     const config = (e.scene ?? page.scene)?.config;
     if (page.kind !== "widget" || !config || Object.keys(config).length === 0) return "";
-    return `\n\nThe settings the tile has in this example, which an operator changes in the widget's settings:\n\n\`\`\`json\n${JSON.stringify(config, null, 2)}\n\`\`\``;
+    return `\n\nThe settings the tile has in this example. An operator sets them in the tile's settings, and they are saved with the dashboard layout; an Uplink does not apply them:\n\n\`\`\`json\n${JSON.stringify(config, null, 2)}\n\`\`\``;
   };
   const one = (e) => `${demoMd(page, e.id, e.file, { code: page.kind !== "widget", label: label(e) })}${settings(e)}`;
   if (examples.length === 1) {

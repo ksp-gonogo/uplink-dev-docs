@@ -1,5 +1,6 @@
-import { defineUplinkClient, stillTrue } from "@ksp-gonogo/sitrep-sdk";
+import { defineUplinkClient, observedValue } from "@ksp-gonogo/sitrep-sdk";
 
+// In an Uplink this call is `src/uplink.ts`, which exports `uplink`; its `id` is the plugin's own.
 const uplink = defineUplinkClient({
   id: "linkbudget",
   version: "1.0.0",
@@ -15,7 +16,8 @@ uplink.registerContribution({
   contributes: "comm-signal.hop-rates",
   deps: ["comms.path"],
   compute: (topics) => {
-    const path = stillTrue(topics["comms.path"], undefined);
+    // A hop's strength is a model's figure, not a fact, so a held path draws no rate.
+    const path = observedValue(topics["comms.path"]);
     if (!path) return null;
     return path.hops.flatMap((hop) =>
       hop.strength
@@ -24,7 +26,6 @@ uplink.registerContribution({
               fromNodeId: hop.from,
               toNodeId: hop.to,
               bitsPerSec: hop.strength.magnitude * FULL_STRENGTH_BITS_PER_SEC,
-              held: topics["comms.path"],
             },
           ]
         : [],

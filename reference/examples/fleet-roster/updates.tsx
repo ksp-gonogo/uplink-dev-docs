@@ -6,6 +6,7 @@ import {
 } from "@ksp-gonogo/sitrep-sdk";
 import { Badge, Text } from "@ksp-gonogo/ui-kit";
 
+// In an Uplink this call is `src/uplink.ts`, which exports `uplink`; its `id` is the plugin's own.
 const uplink = defineUplinkClient({
   id: "fleetsilencenotes",
   version: "1.0.0",
@@ -17,9 +18,11 @@ function SilenceNote({
   vesselId,
   compact,
 }: SlotProps<"fleet-roster.updates">) {
+  // `fleet.silence` lists every vessel in one payload; a single vessel's own state is on `silence.<guid>.state`.
   const silence = useTelemetry("fleet.silence");
   if (silence.state !== "observed") return null;
   const entry = silence.value.vessels.find((v) => v.vesselId === vesselId);
+  // `state` is "Nominal" (in contact), "Silent" or "Lost"; `deadlineBasis` names what the deadline rests on.
   if (!entry || entry.state === "Nominal") return null;
   if (compact) {
     return (
