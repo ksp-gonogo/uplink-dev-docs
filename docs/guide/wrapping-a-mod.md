@@ -104,9 +104,9 @@ Keep every line that names a KSP or mod type in its own file, and leave that fil
 
 - **`name`**: the mod's name as a player knows it
 - **`builtAgainst`**: the version of the mod you built and tested against
-- **`tier`**: how a player gets the mod, one word the generated page prints in brackets after the name. It is free text; the gonogo-uplinks Uplinks use `"ckan"` for a mod CKAN installs and `"manual"` for one a player downloads by hand, as Principia's does
+- **`tier`**: how a player gets the mod, one word the generated page prints in brackets after the name. It is `"ckan"` for a mod CKAN installs or `"manual"` for one a player downloads by hand, as Principia's does
 
-It gates nothing: the generated page prints it, and the app does not read it. The netkan's `depends` is what keeps a player from installing an Uplink that references the mod at compile time without that mod ([uplink.json](/guide/uplink-json)).
+`npx uplink-tools check` reports an error for a block with no `builtAgainst` or no `tier`, or a tier that is neither. The app does not read the block: the generated page prints it. The netkan's `depends` is what keeps a player from installing an Uplink that references the mod at compile time without that mod ([uplink.json](/guide/uplink-json)).
 
 ## What this page cannot show
 
