@@ -9,6 +9,8 @@ export const ARTIFACTS = resolve(ROOT, "artifacts");
 /** Where the artifacts are installed, as an Uplink author would install them. Not committed. */
 export const INSTALL = resolve(ROOT, ".reference");
 export const DOCS = resolve(ROOT, "docs");
+/** The path the site is served under, as `base` in `docs/.vitepress/config.mts`. VitePress prefixes it to a Markdown link, never to an `href` written in raw HTML. */
+export const SITE_BASE = "/uplink-dev-docs";
 /** Each generated page's hash as the generator wrote it, by path from the repo root. Not committed. */
 export const GENERATED_HASHES = resolve(INSTALL, "generated.json");
 

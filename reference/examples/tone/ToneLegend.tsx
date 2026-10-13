@@ -1,3 +1,4 @@
+// npm install @ksp-gonogo/sitrep-sdk @ksp-gonogo/ui-kit
 import { type Tone, TONES } from "@ksp-gonogo/sitrep-sdk";
 import { Badge, Inline, Stack } from "@ksp-gonogo/ui-kit";
 

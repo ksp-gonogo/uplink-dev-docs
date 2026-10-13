@@ -13,7 +13,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { Application, ReflectionKind } from "typedoc";
 import { AMBIGUOUS_SYMBOLS } from "../ambiguous-symbols.mjs";
-import { DOCS, INSTALL } from "./paths.mjs";
+import { DOCS, INSTALL, SITE_BASE } from "./paths.mjs";
 
 /**
  * Load one entry point of an installed package as a TypeDoc project: its root,
@@ -148,28 +148,59 @@ function declaredTypeParams(text, own) {
   return names;
 }
 
+/** Whether a type comes from a package that is not one of ours, such as Testing Library. */
+const foreignPackage = (name) => typeof name === "string" && !name.startsWith("@ksp-gonogo/");
+
+/**
+ * The names of the types a declaration refers to that come from another
+ * package, such as Testing Library's `RenderOptions`. An export here that shares
+ * the name is a different type, so the name is never linked.
+ */
+function externalTypeNames(reflection) {
+  const names = new Set();
+  const seen = new Set();
+  const KEYS = [
+    "types", "elementType", "target", "typeArguments", "elements", "declaration", "children", "signatures",
+    "parameters", "type", "checkType", "extendsType", "trueType", "falseType", "objectType", "indexType",
+    "getSignature", "setSignature", "typeParameters", "default", "constraint",
+  ];
+  const walk = (node) => {
+    if (!node || typeof node !== "object" || seen.has(node)) return;
+    seen.add(node);
+    if (Array.isArray(node)) return node.forEach(walk);
+    if (node.type === "reference" && typeof node.name === "string" && foreignPackage(node.package)) names.add(node.name);
+    for (const key of KEYS) walk(node[key]);
+  };
+  walk(reflection);
+  return names;
+}
+
 /** `exclude`: names that are not references to an export here, such as the symbol's own type parameters. */
 function excludedFor(reflection, text) {
   const params = [];
   const walk = (r) => {
     for (const p of r.typeParameters ?? []) params.push(p.name);
     for (const sig of r.signatures ?? []) walk(sig);
+    // A parameter's name is a name, not a type: `value` in `value is LockedValue` is not the export `value`.
+    for (const parameter of r.parameters ?? []) params.push(parameter.name);
     for (const c of r.children ?? []) walk(c);
     for (const sig of [r.getSignature, r.setSignature]) if (sig) walk(sig);
   };
   if (reflection) walk(reflection);
-  return declaredTypeParams(text, [...params, ...(reflection ? [reflection.name] : [])]);
+  const external = reflection ? [...externalTypeNames(reflection)] : [];
+  return declaredTypeParams(text, [...params, ...external, ...(reflection ? [reflection.name] : [])]);
 }
 
 /** Inline code whose type names link to their entries, as HTML: Markdown cannot put a link inside a code span. */
 function linkedCode(text, index, exclude = new Set()) {
-  const escape = (s) => htmlEscape(s).replace(/\{/g, "&#123;").replace(/\|/g, "&#124;");
+  // A backtick inside inline HTML still opens a Markdown code span, so a template literal type keeps its backticks as entities.
+  const escape = (s) => htmlEscape(s).replace(/\{/g, "&#123;").replace(/\|/g, "&#124;").replace(/`/g, "&#96;");
   let out = "";
   let at = 0;
   for (const { name, start, end } of typeNamesIn(text, exclude)) {
     const url = index.url(name);
     if (!url) continue;
-    out += `${escape(text.slice(at, start))}<a href="${url}">${escape(name)}</a>`;
+    out += `${escape(text.slice(at, start))}<a href="${SITE_BASE}${url}">${escape(name)}</a>`;
     at = end;
   }
   return `<code>${out}${escape(text.slice(at))}</code>`;
@@ -549,6 +580,16 @@ function nestedRows(member, index, path, withDefaults, depth = 3) {
   });
 }
 
+/**
+ * A Topic's description without the clause that names the Topic: the row it
+ * sits in already carries the id, so "The `x` Topic payload: the thing" reads
+ * as "The thing".
+ */
+export function dropRestatedId(text) {
+  const rest = text.replace(/^The `[\w.]+` (?:Topic )?payload:\s*/, "");
+  return rest === text || !/^[a-z]/.test(rest) ? rest : `${rest[0].toUpperCase()}${rest.slice(1)}`;
+}
+
 /** One row per member: its name, its type, its default where any member has one, and its description. */
 function memberTable(own, index) {
   if (own.length === 0) return "";
@@ -562,7 +603,8 @@ function memberTable(own, index) {
         : "";
     const cells = [memberName(`${member.flags.isStatic ? "static " : ""}${member.name}${optional}`, memberAnchor(member)), type];
     if (withDefaults) cells.push(defaultCell(member));
-    cells.push(cellMd((commentOf(member) ?? member.getSignature?.comment)?.summary, index));
+    const description = cellMd((commentOf(member) ?? member.getSignature?.comment)?.summary, index);
+    cells.push(member.parent?.name === "TopicPayloadMap" ? dropRestatedId(description) : description);
     return [`| ${cells.join(" | ")} |`, ...nestedRows(member, index, member.name, withDefaults)];
   });
   const head = withDefaults

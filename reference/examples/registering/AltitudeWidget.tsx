@@ -4,11 +4,12 @@ import {
   registerComponent,
   useTelemetry,
 } from "@ksp-gonogo/sitrep-sdk";
-// Stat and Unit are documented on the ui-kit Readout and Unit pages
+// Stat and Unit are documented at /reference/ui-kit/Readout and /reference/ui-kit/Unit
 import { Stat, Unit } from "@ksp-gonogo/ui-kit";
 
-// The id must match the id the Uplink's mod declares with [SitrepUplink]. The client also needs that mod
-// half and a built bundle to load; `uplink-tools new` writes all three together.
+// The id must match the id the Uplink's mod declares with [SitrepUplink], as /guide/plugin explains. The
+// client also needs that mod half and a built bundle to load; `uplink-tools new` (/guide/first-uplink)
+// writes all three together.
 const uplink = defineUplinkClient({
   id: "altitudeboard",
   version: "1.0.0",

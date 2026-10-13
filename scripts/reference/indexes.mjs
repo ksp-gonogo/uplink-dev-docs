@@ -7,7 +7,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { INSTALL, PUBLISHED } from "./paths.mjs";
-import { cellSafe, code, partsMd, typeMd } from "./typescript.mjs";
+import { cellSafe, code, dropRestatedId, partsMd, typeMd } from "./typescript.mjs";
 
 /**
  * The sections of the reference, in the order the sidebar shows them. Each is
@@ -185,11 +185,26 @@ function mapDescriptions(project, name, index) {
   return new Map(
     (map.children ?? []).map((m) => {
       const own = sentence(m.comment?.summary);
-      const target = m.type?.type === "array" ? m.type.elementType : m.type;
+      const isList = m.type?.type === "array";
+      const target = isList ? m.type.elementType : m.type;
       const payload = target?.type === "reference" ? sentence(target.reflection?.comment?.summary) : "";
-      return [m.name, own || payload];
+      return [m.name, whatItCarries(own || payload, isList)];
     }),
   );
+}
+
+/**
+ * A payload's opening sentence as a table cell beside its Topic id: the id is
+ * already in the row, so a leading "The `x` Topic payload:" is dropped. A Topic
+ * whose payload is a list carries the comment of one entry, so the cell says it
+ * is a list of them.
+ */
+export function whatItCarries(text, isList) {
+  if (!text) return text;
+  const stripped = dropRestatedId(text).replace(/^One entry in the `[\w.]+` (?:Topic )?payload,?:?\s*/, "");
+  const lowerFirst = (t) => (/^[A-Z][a-z]/.test(t) ? `${t[0].toLowerCase()}${t.slice(1)}` : t);
+  if (isList) return `A list. Each entry is ${lowerFirst(stripped)}`;
+  return /^[a-z]/.test(stripped) ? `${stripped[0].toUpperCase()}${stripped.slice(1)}` : stripped;
 }
 
 /** Every Topic the sdk declares, grouped by prefix, with the type of its payload and what it carries. */
@@ -221,9 +236,9 @@ export function topicsPageMd(page, { sdk, index, version, leadOf }) {
   const link = (name) => `[${code(name)}](${index.url(name)})`;
   return [
     `# ${page.title}`,
+    `Every Topic the SDK declares, by prefix, with the type of its payload and what it carries. The ids are the members of ${link("TOPIC_IDS")} and the payload types are in ${link("TopicPayloadMap")}.`,
     leadOf(page),
     `${code(page.package)} · ${version(page.package)}`,
-    `Each Topic in ${link("TOPIC_IDS")}, by prefix, with its payload type in ${link("TopicPayloadMap")}.`,
     topicListMd(sdk, index),
   ];
 }

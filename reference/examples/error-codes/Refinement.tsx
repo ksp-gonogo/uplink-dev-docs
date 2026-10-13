@@ -2,9 +2,12 @@ import { describeErrorCode, registerErrorCodes, type UplinkErrorCodeDeclaration 
 import { Stack, Text } from "@ksp-gonogo/ui-kit";
 
 /**
- * An Uplink's refinements, as `codegen` writes them into its generated
- * `error-codes.ts` from the plugin's refusals. Registering the table once,
- * where the client loads, lets `describeErrorCode` read them like a core code.
+ * An Uplink's refinements: more specific refusals under one of the core codes,
+ * each written `owner.name`. `uplink-tools codegen` writes this table into the
+ * Uplink's generated `client/src/__generated__/error-codes.ts` from the
+ * refusals its C# half declares. Registering it once, where the client loads,
+ * lets `describeErrorCode` read them like a core code. The code and the
+ * heartbeat counter it mentions are made up for this example.
  */
 const EXAMPLE_ERROR_CODES: readonly UplinkErrorCodeDeclaration[] = [
   {
