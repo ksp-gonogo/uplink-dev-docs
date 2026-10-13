@@ -25,13 +25,20 @@ What the answers do:
 - **The id** names the Uplink everywhere: lower-case letters and digits, 2 to 30 of them, starting with a letter. It prefixes the Topics (`example.heartbeat`), the widget ids (`example-heartbeat`) and the C# names: the namespace and assembly are `Gonogo` + the id capitalised + `Uplink` (`GonogoExampleUplink`), and the plugin class is the id capitalised + `Uplink` (`ExampleUplink`). Choose one no other Uplink a player might install is likely to use
 - **`--name`** is the display name, shown in the app and on the generated page
 - **The author** is shown to the operator (the person using the app) when it asks whether to load your client
-- **`--repo`** sets where the released client bundle is fetched from ([Releasing and installing](/guide/release#hosting-the-client)). `acme/example` becomes `https://github.com/acme/example` in `uplink.json`. Use your own GitHub owner: an owner named `you` is the placeholder, and `release` refuses it
+- **`--repo`** sets where the released client bundle is fetched from ([Releasing and installing](/guide/release#hosting-the-client)). `acme/example` becomes `https://github.com/acme/example` in `uplink.json`. Use your own GitHub owner: without `--repo`, `new` writes the owner `your-github-owner`, which is the placeholder, and `release` refuses it
 - **`--topics core`** makes an Uplink that publishes nothing of its own: its widget reads a Topic Gonogo already publishes, and the plugin exists only to announce the client, so it has no contract slice. **`--topics own`**, the default, adds the contract slice and generated types this Guide uses. This Guide builds one with Topics of its own
 - **`--no-repo`** and **`--no-ksp`** decline the two answers that depend on your machine: a GitHub repository, and a KSP folder
 - **`--workflows`** writes a GitHub Actions workflow that checks both halves on every push
 - **`--ksp`** writes your KSP folder into `ksp.local.props`, for a plugin that calls the game ([The plugin class](/guide/plugin#calling-the-game)). It is kept out of git
 
-`new` never overwrites a file. After writing the files it runs four steps: `bake`, `codegen` (which needs the .NET SDK), `npm install` in `client/`, and `npm run page`. A step that fails is reported with the command to run again, and the files stay in place. Its closing message lists what is left to do, starting with the `description` in `client/src/uplink.ts` ([Documenting your Uplink](/guide/documenting)).
+`new` never overwrites a file. After writing the files it runs four steps:
+
+- **`bake`** writes the three `*.g.cs` files in `mod/`, which tell the app where the client is hosted and which bundle the plugin vouches for ([`bake` in the command-line reference](/reference/tools/command-line#bake), and [Releasing and installing](/guide/release#build-both-halves) for when it matters)
+- **`codegen`** reads the contract slice and writes the client's TypeScript types into `client/src/__generated__/`. It needs the .NET SDK ([Publishing a Topic](/guide/topics#generating-the-client-s-types))
+- **`npm install`** in `client/`
+- **`npm run page`** writes the generated page ([Documenting your Uplink](/guide/documenting#the-generated-page))
+
+A step that fails is reported with the command to run again, and the files stay in place. Its closing message lists what is left to do, starting with the `description` in `client/src/uplink.ts` ([Documenting your Uplink](/guide/documenting)).
 
 ## What it writes
 
@@ -49,8 +56,10 @@ example/
 │                                   written by bake, never committed
 ├── mod-contract/                 the contract slice: the Uplink's own wire types
 │   ├── ExamplePayloads.cs          the payload of each Topic, the arguments of each command
-│   ├── ExampleRtConfig.cs          the [Reinforced.Typings](https://www.nuget.org/packages/Reinforced.Typings) configuration (the library that writes TypeScript from C#) codegen runs:
-│                                     which of those types it turns into TypeScript
+│   ├── ExampleRtConfig.cs          the configuration for Reinforced.Typings, the library that
+│   │                                 writes TypeScript from C#: it lists which of those types
+│   │                                 `codegen` turns into TypeScript
+│   │                                 (https://www.nuget.org/packages/Reinforced.Typings)
 │   └── GonogoExampleUplink.Contract.csproj
 ├── mod-contract-codegen/         the build codegen runs, never shipped
 ├── mod-tests/                    the plugin's tests
@@ -81,7 +90,7 @@ The **contract slice** is a small assembly holding the C# classes that describe 
 
 <<< ../../example/uplink.json
 
-This is the example's, made with `--author "Uplink docs"` and `--repo ksp-gonogo/uplink-dev-docs`; yours holds your own answers, and `client.url` is where the released bundle will be fetched from ([Releasing and installing](/guide/release#hosting-the-client)). The file holds the Uplink's identity, where its plugin and client go, and how codegen runs. [uplink.json](/guide/uplink-json) lists each field and the command that reads it. The version lives in `client/package.json` instead, and two other places repeat it: `UPLINK_VERSION` in `client/src/uplink.ts`, and the version folder in `client.url`.
+This is the example's, made with `--author "Uplink docs"` and `--repo ksp-gonogo/uplink-dev-docs`, so it differs from the file the command above writes in three fields: `author`, `repo` and `client.url`. With `--author "Your Name" --repo acme/example` those hold `Your Name`, `https://github.com/acme/example` and `https://cdn.jsdelivr.net/gh/acme/example@releases/releases/example/0.0.1/example.client.js`. `client.url` is where the released bundle will be fetched from ([Releasing and installing](/guide/release#hosting-the-client)). The file holds the Uplink's identity, where its plugin and client go, and how codegen runs. [uplink.json](/guide/uplink-json) lists each field and the command that reads it. The version lives in `client/package.json` instead, and two other places repeat it: `UPLINK_VERSION` in `client/src/uplink.ts`, and the version folder in `client.url`. No command changes all three: you edit them together, then run `npm run page` and `npm run release`, and `release` stops and names the one that disagrees ([A new version](/guide/release#a-new-version)).
 
 ## Prove it works
 
@@ -99,7 +108,7 @@ Everything except what `.gitignore` names: `node_modules`, the build outputs, `k
 
 ## The heartbeat
 
-The scaffold's plugin publishes one Topic, `example.heartbeat`, carrying a count of how many times it has published and the game time of the last sample. Its widget shows both. The next four pages take the plugin apart, and the four after them the client.
+The scaffold's plugin publishes one Topic, `example.heartbeat`, carrying a count of how many times it has published and the game time of the last sample. Its widget shows both. The next four pages take the plugin apart ([The plugin class](/guide/plugin), [Publishing a Topic](/guide/topics), [Accepting a command](/guide/commands) and [Wrapping a mod](/guide/wrapping-a-mod)), and the five after them the client ([A widget](/guide/client-widget), [Sending a command](/guide/client-commands), [Writing a reckoner](/guide/reckoners), [Extensions](/guide/extensions) and [See your Uplink in the app](/guide/dev-loop)).
 
 ## What to change by hand
 
@@ -111,6 +120,12 @@ The heartbeat is a placeholder for your own Topics and widgets, and `new` writes
 - **The netkan** `mod/<GameData name>.netkan`: its `abstract` describes the heartbeat, and its `depends` names only `GonogoCore` (the Gonogo mod, as CKAN, the mod manager players install from, knows it), so add the mod you wrap ([Wrapping a mod](/guide/wrapping-a-mod#by-a-compile-time-reference)); its `license` is `MIT` until you change it
 - **`"mod": null`** in `uplink.json`, which names the mod you wrap, if any ([Wrapping a mod](/guide/wrapping-a-mod#in-uplink-json))
 
-`npm test` and `dotnet test ../mod-tests` both pass on what `new` wrote, so run them after each change: a code reference left behind fails to compile or fails a test. The netkan, the description and `uplink.json` fail nothing when left as they are, so read them over before a release.
+`npm test` and `dotnet test ../mod-tests` both pass on what `new` wrote, so run them after each change: a code reference left behind fails to compile or fails a test. To list every file that still names the heartbeat, run this from the Uplink's folder:
+
+```bash
+grep -rli heartbeat . --exclude-dir=node_modules --exclude-dir=bin --exclude-dir=obj
+```
+
+The files under `client/src/__generated__/`, `client/docs/` and `client/README.md` come from the others: `npm run codegen` and `npm run page` rewrite them, so they stop naming it once the rest do. The netkan, the description and `uplink.json` fail nothing when left as they are, so read them over before a release.
 
 Next: [The plugin class](/guide/plugin).

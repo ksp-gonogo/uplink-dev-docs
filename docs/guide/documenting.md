@@ -10,7 +10,7 @@ An Uplink is documented in two places, both written next to the code: its genera
 | --- | --- |
 | The opening paragraph | `description` in `defineUplinkClient`, in `src/uplink.ts` |
 | The id and version | `id` and `version` in `defineUplinkClient` |
-| Built against | The packages the client was built with: the contract version (the wire contract's own `Major.Minor`, stamped on `Sitrep.Contract.dll`, such as 36.2, not the package's release number) and the extension API version of the sdk and ui-kit (the version of the surface a client may call), the two versions the Gonogo mod and app check an Uplink against when they load one. Neither is the package version |
+| Built against | The packages the client was built with: the contract version (the wire contract's own `Major.Minor`, stamped on `Sitrep.Contract.dll`, not the package's release number; the numbers in the sample below, `40.2` and `6.0.0`, are that example's, and yours show the versions of the packages you installed) and the extension API version of the sdk and ui-kit (the version of the surface a client may call), the two versions the Gonogo mod and app check an Uplink against when they load one. Neither is the package version |
 | The Wire table | The plugin's manifest: each channel's Topic, payload type, delivery and delay |
 | The Commands tables | The contract slice's `SitrepCommandAttribute` classes, through the command map `codegen` writes: each command, its arguments type and its result, then each arguments type's fields |
 | Each widget's heading, paragraph and facts | Its `registerComponent` call: `name`, `description`, `channels`, `defaultSize`, and the number of its fixtures as Scenes |
@@ -56,6 +56,6 @@ The same rules apply as for the descriptions: what it is, not why it came to be 
 
 ## A picture of one Storybook story
 
-The scaffold has no Storybook. If you keep one, `npx uplink-tools story <story-id>` draws one of its stories to `renders/<id>.png`, or to a GIF when the story is tagged `playback`. It reads `./storybook-static`, and `--storybook <dir|url>` points at a built Storybook or a running one. `--list [text]` prints the story ids that contain the text instead of rendering.
+This is optional, and the scaffold has no Storybook, so skip it unless you keep one of your own. If you do, `npx uplink-tools story <story-id>` draws one of its stories to `renders/<id>.png`, or to a GIF when the story is tagged `playback`, the tag for a story that plays over time and has a button that starts it (`--start <name>` names the button). It reads `./storybook-static`, and `--storybook <dir|url>` points at a built Storybook or a running one. `--list [text]` prints the story ids that contain the text instead of rendering.
 
 Next: [Releasing and installing](/guide/release).

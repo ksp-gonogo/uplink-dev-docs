@@ -4,12 +4,14 @@ What to install before running `uplink-tools new`, and what an Uplink may depend
 
 ## Tools
 
+The commands in this Guide are written for macOS and Linux, and `new` is supported on those two. On Windows, run them under WSL (Windows Subsystem for Linux), which is the tested setup ([Known limits](/guide/limits#the-tools)).
+
 - **Node 20 or later**, with npm. The client's test runner needs it
 - **The .NET SDK 10 or later.** The plugin targets `net48`, which KSP loads, and the scaffold brings in the .NET Framework reference assemblies as a package (`Microsoft.NETFramework.ReferenceAssemblies`), so it builds on macOS and Linux with no Mono install. The plugin's tests run on `net10.0`
-- **Chromium for Playwright**, only to draw your widget's pictures (`npm run render`, `npm run docs` and `npm run docs:check`): `npx playwright install chromium`, a download of about 100 MB from `cdn.playwright.dev` into Playwright's browser cache (`~/Library/Caches/ms-playwright` on macOS, `~/.cache/ms-playwright` on Linux, or the folder `PLAYWRIGHT_BROWSERS_PATH` names), once per machine. The pictures themselves are drawn on Linux and committed from there: `npm run docs:check` compares their recorded shapes only when it runs in CI (`CI` or `GITHUB_ACTIONS` set), and a picture drawn on macOS would differ from one drawn on Linux in ways nobody edited. On macOS, run `npm run render` to look at your widget and leave `docs` and `docs:check` to a Linux machine or CI. No other command in the Guide needs a browser
-- **KSP, the Gonogo mod and the Gonogo app**, only to try the Uplink in the game ([Start here](/guide/#what-else-you-need) says where to get them). Nothing before [Releasing and installing](/guide/release) needs them, except trying a client in the app as you build it ([See your Uplink in the app](/guide/dev-loop), which also needs a checkout of the app)
+- **Chromium for Playwright**, only to draw your widget's pictures (`npm run render`, `npm run docs` and `npm run docs:check`): run `npx playwright install chromium` in `client/`, where `new` has already installed Playwright as a dependency. It is a download of about 100 MB from `cdn.playwright.dev` into Playwright's browser cache (`~/Library/Caches/ms-playwright` on macOS, `~/.cache/ms-playwright` on Linux, or the folder `PLAYWRIGHT_BROWSERS_PATH` names), once per machine. The pictures themselves are drawn on Linux and committed from there: `npm run docs:check` always draws them, so it needs Chromium on every machine, but it compares the drawn pictures with the committed ones only when it runs in CI (`CI` or `GITHUB_ACTIONS` set). Elsewhere it compares the README, `gonogo-uplink.json`, `docs/widgets.json`, `docs/spec.json` and the picture file names, because a picture drawn on macOS would differ from one drawn on Linux in ways nobody edited. On macOS, run `npm run render` to look at your widget and leave `npm run docs` to a Linux machine or CI. No other command in the Guide needs a browser
+- **KSP, the Gonogo mod and the Gonogo app**, only to try the Uplink in the game ([Start here](/guide/#what-else-you-need) says where to get them). Nothing before [Releasing and installing](/guide/release) needs them, except trying a client in the app as you build it ([See your Uplink in the app](/guide/dev-loop)), which can be done against the hosted app with no checkout of it, or with a checkout of the app
 
-No clone of any repository is needed to build, test and release an Uplink (only the optional [checkout of the app](/guide/dev-loop#with-a-checkout-of-the-app) for the dev loop, which uses pnpm), and no KSP assembly unless your plugin calls the game directly ([The plugin class](/guide/plugin#calling-the-game)).
+No clone of any repository is needed to build, test and release an Uplink (only the optional [checkout of the app](/guide/dev-loop#with-a-checkout-of-the-app) for the dev loop, which uses git and pnpm 10, a package manager that [pnpm.io](https://pnpm.io/installation) shows how to install), and no KSP assembly unless your plugin calls the game directly ([The plugin class](/guide/plugin#calling-the-game)).
 
 ## The packages
 
@@ -17,7 +19,7 @@ No clone of any repository is needed to build, test and release an Uplink (only 
 
 | Package | Where | What it is |
 | --- | --- | --- |
-| `KspGonogo.Sitrep.Contract` | NuGet, each C# project | The Gonogo mod's contract: the plugin interface, the manifest types and the core wire types (the C# types that cross from the game to the app) |
+| `KspGonogo.Sitrep.Contract` | NuGet, each C# project | The Gonogo mod's contract (the `Sitrep` prefix in this package's name, its namespace and its DLL is the code's name for the mod's telemetry stream, and the app never shows it): the plugin interface, the manifest types and the core wire types (the C# types that cross from the game to the app) |
 | `@ksp-gonogo/sitrep-sdk` | npm, the client | Topics, commands, readings and the registration API |
 | `@ksp-gonogo/ui-kit` | npm, the client | The components the app's own widgets are drawn with |
 | `@ksp-gonogo/uplink-tools` | npm, the client's devDependencies | The command line: scaffold, codegen, bundle, bake, release, page and docs |

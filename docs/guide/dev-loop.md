@@ -1,13 +1,19 @@
 # See your Uplink in the app
 
-You can watch a client you are building inside the app, with a rebuild on every save, without releasing anything. There are two ways, depending on whether you have a checkout of the Gonogo app.
+You can watch a client you are building inside the app, with a rebuild on every save, without releasing anything. There are two ways, depending on whether you have a checkout of the Gonogo app: [with a checkout](#with-a-checkout-of-the-app) you run the app from its source and it loads your build directly, and [without one](#without-a-checkout) you use the hosted app and serve your client from your own computer. Either way, the app's page reloads on its own (with a checkout) or you reload it yourself (without).
 
 The loop in short, with a checkout: start the watch build, leave it running, start the app with your Uplink named, and read the **Local builds** tab in Settings to see what became of it. Edit, save, and the page reloads with the new build.
 
 ## With a checkout of the app
 
 ::: warning What this needs
-- A checkout of the Gonogo app ([github.com/ksp-gonogo/gonogo](https://github.com/ksp-gonogo/gonogo), its `staging` branch, which is what the release candidate is built from), installed once with `pnpm install` (pnpm 10, with Node). The dev server is part of the app's source, so this way does not run against the hosted app; [Without a checkout](#without-a-checkout) does
+- A checkout of the Gonogo app, installed once. This needs git and pnpm 10 ([Prerequisites](/guide/prerequisites#tools)):
+  ```bash
+  git clone --branch staging https://github.com/ksp-gonogo/gonogo.git
+  cd gonogo
+  pnpm install
+  ```
+  `staging` is the branch the release candidate is built from. The dev server is part of the app's source, so this way does not run against the hosted app; [Without a checkout](#without-a-checkout) does
 - For live data, your plugin installed in KSP and the game running. Without it the widgets still render, with nothing to show
 :::
 
@@ -25,13 +31,11 @@ In the app checkout, start the app and name your Uplink:
 pnpm dev --uplink ~/projects/example
 ```
 
-The path is your Uplink's directory, the one holding `uplink.json`, and a relative path is read from where you typed the command. Repeat `--uplink` for more than one Uplink, and `pnpm dev --help` prints the options. Everything else `pnpm dev` starts, the relay included, starts as it does without the flag. An Uplink without an `uplink.json` is refused, and so is a path that is not a directory.
+The path is your Uplink's directory, the one holding `uplink.json`, and a relative path is read from where you typed the command. Repeat `--uplink` for more than one Uplink, and `pnpm dev --help` prints the options. Everything else `pnpm dev` starts starts as it does without the flag, including the relay, the small server in the app's source that the app uses to set up connections between the main screen and its stations. An Uplink without an `uplink.json` is refused, and so is a path that is not a directory.
 
 The app loads each one's build output from `client/dist/<id>/`, with no report from the mod, no hash comparison and no consent prompt. It still checks the bundle's contract (the SDK and ui-kit versions it was built against) and the bytes it fetched, and it reloads the page on every rebuild.
 
-An Uplink that ships inside the app's own repository needs no `--uplink`: `pnpm dev` builds those from source when it starts. Naming one without an `uplink.json` of its own is refused with that explanation. Naming one that has its own `uplink.json` replaces the bundled copy of the same id with yours, in the app's index and in Settings, so the build you are working on is the one that loads.
-
-Working inside the `gonogo-uplinks` repository, `pnpm uplink:watch <name>` runs that client's own `uplink-tools bundle --watch` for you, from the repository root. The bundle it writes is the one `npx uplink-tools bundle --watch` writes, so the `--uplink` step is the same.
+If you name an Uplink whose id is also one that ships inside the app, yours replaces that copy in the app's index and in Settings, so the build you are working on is the one that loads.
 
 ## The options of the two commands
 
@@ -63,7 +67,7 @@ dotnet build ../mod -c Release
 npx uplink-tools bundle --serve 5173
 ```
 
-`bake` writes the development URL into the plugin's sources, so build the plugin after it and copy its two `.dll` files into `GameData/GonogoExampleUplink/Plugins/` as [Releasing and installing](/guide/release#trying-a-client-before-you-publish-it) shows; `bundle --serve` then serves the client the plugin points at.
+`bake` writes the development URL into the plugin's sources, so build the plugin after it and copy its two `.dll` files, `GonogoExampleUplink.dll` and `GonogoExampleUplink.Contract.dll`, from `mod/bin/Release/` into `GameData/GonogoExampleUplink/Plugins/` ([Releasing and installing](/guide/release#trying-a-client-before-you-publish-it) shows the whole sequence); `bundle --serve` then serves the client the plugin points at.
 
 `--serve` watches like `--watch` and serves the bundle and its sidecar at `http://localhost:<port>/<id>.client.js`. The app loads a client from a `localhost` address with no hash to check and says on screen that it is an unvouched development client. [Releasing and installing](/guide/release#trying-a-client-before-you-publish-it) has the whole sequence, and why a plugin baked this way is never one to release.
 

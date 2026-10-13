@@ -14,7 +14,7 @@ A widget never reads a bare value. It reads a **reading**: the latest value toge
 
 ## Signal delay and command centres
 
-Gonogo can model the time a radio signal takes to cross space. An operator works from a **command centre**, and a craft far from it is seen as it was when its signal left: its telemetry arrives after the delay, and a command sent to it arrives after the delay too. A mission can have several command centres at different distances from the same craft; a **vantage** is the view from one of them.
+Gonogo can model the time a radio signal takes to cross space. An operator works from a **command centre**, and a craft far from it is seen as it was when its signal left: its telemetry arrives after the delay, and a command sent to it arrives after the delay too. A mission can have several command centres at different distances from the same craft; a **vantage** is the view from one of them. Nothing in this Guide's code names a vantage: you declare a delay role on each Topic and command, and the app applies the delay.
 
 This is why each channel, in its declaration, and each command, in its arguments' attribute, declares a delay role: `Delayed` for anything about a craft, which waits for the signal, and `TrueNow` for anything about the ground or the connection, which does not. A command's `send` resolves only once the command has run, which can be minutes after it was sent, and `CommandDelay` shows the operator where it is. See [Delay and vantage](/reference/concepts/delay-and-vantage).
 
@@ -24,7 +24,7 @@ Between samples, and across a signal delay, the last value received is older tha
 
 ## Values and units
 
-A quantity in a payload is a `Value`: a number with its unit, such as `Value<"m/s">`. The unit id on the client (`"m/s"`, `"ut"`, `"count"`, `"ratio"`) is what the plugin's `Units.MetresPerSecond`, `Units.UniversalTime`, `Units.Count` and `Units.Ratio` arrive as; [Publishing a Topic](/guide/topics#the-payload-type) lists the C# side. Values convert between units and compare with each other, so a widget compares a speed with `lessThan` rather than with a bare number, and `Unit` draws a value in the unit its size suits, such as kilometres for a long distance, unless you pin one with its `format` or `as` prop. [Units and values](/reference/client/units-and-values) defines them.
+A quantity in a payload is a `Value`: a number with its unit, such as `Value<"m/s">`. The unit id on the client (`"m/s"`, `"ut"`, `"count"`, `"ratio"`) is what the plugin's `Units.MetresPerSecond`, `Units.UniversalTime`, `Units.Count` and `Units.Ratio` arrive as; [Publishing a Topic](/guide/topics#the-payload-type) lists the C# side. Values convert between units and compare with each other, so a widget compares a speed with a value's `lessThan` method (`speed.lessThan(1000)`, which means 1,000 metres per second whatever unit `speed` is held in) rather than with a bare number, and `Unit` draws a value in the unit its size suits, such as kilometres for a long distance, unless you pin one with its [`format` or `as` prop](/reference/ui-kit/Unit#UnitProps). [Units and values](/reference/client/units-and-values) defines them.
 
 ## Extending the app's widgets
 
@@ -36,7 +36,7 @@ An **action** is something a widget can be told to do, such as step a value, whi
 
 ## Domains and seats
 
-Some widgets and extensions only make sense while a mod is present, such as one integrating a science mod. A **Domain** is that presence: an Uplink's extension names one in its [`requires`](/guide/extensions#AugmentDefinition.requires), and is mounted only while it is present, which starts with the first value its `<id>.available` Topic publishes, `true` or `false`. A **seat** is where the operator sits, at mission control or aboard the craft as its pilot, and a widget reading a Topic about the ground, such as the space centre or the career, stays at mission control, while every other widget, one reading an Uplink's own Topics included, is offered aboard as well. See [Domain and seat](/reference/concepts/domain-and-seat).
+Some widgets and extensions only make sense while a mod is present, such as one integrating a science mod. A **Domain** is that presence: an Uplink's extension names one in its [`requires`](/guide/extensions#AugmentDefinition.requires), and is mounted only while it is present, which starts with the first value its `<id>.available` Topic publishes, `true` or `false`. A **seat** is where the operator sits, at mission control or aboard the craft as its pilot, and a widget reading a Topic about the ground, such as the space centre or the career, stays at mission control, while every other widget, one reading an Uplink's own Topics included, is offered aboard as well. **Mission control** is where the operator sits on the ground, and **aboard** is where they sit as the craft's pilot. You do nothing for this: a widget that reads your Uplink's Topics is offered in both places. See [Domain and seat](/reference/concepts/domain-and-seat).
 
 ## The main screen and stations
 

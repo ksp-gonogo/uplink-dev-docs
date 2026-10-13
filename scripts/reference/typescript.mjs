@@ -339,9 +339,11 @@ export function partsMd(parts, index) {
       const member = target && ownerOf(target) !== target;
       /*
        * TypeDoc resolves a bare name to a sibling member first. For most names a top-level export of
-       * that name is the one meant; for an ambiguous one the member TypeDoc found is.
+       * that name is the one meant; for an ambiguous one the member TypeDoc found is. A tag written
+       * with its owner (`SettingKind.Text`) always means the member.
        */
-      if (member && (Object.hasOwn(AMBIGUOUS_SYMBOLS, target.name) || !index.url(target.name))) {
+      const qualified = part.text.trim().includes(".");
+      if (member && (qualified || Object.hasOwn(AMBIGUOUS_SYMBOLS, target.name) || !index.url(target.name))) {
         const url = memberUrl(target, index);
         if (url) return `[${code(shown)}](${url})`;
       }

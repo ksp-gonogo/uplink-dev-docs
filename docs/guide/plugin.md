@@ -23,7 +23,7 @@ The class implements `ISitrepUplink`, which is three members: `Manifest`, `Regis
 - **`Id`** must equal the attribute's id
 - **`Version`, `Name`, `Author` and `Repo`** come from `Provenance`, a class `bake` writes into `mod/Provenance.g.cs` from `uplink.json` and `client/package.json`, so the plugin and the client always carry one version
 - **`ExpectedClientHash` and `ClientSource`**, also written by `bake`, say where the client bundle is and which bundle this plugin vouches for. The app loads a client only for a plugin that vouches for its hash ([Releasing and installing](/guide/release#how-the-app-loads-a-client))
-- **`Channels`** lists the Topics the plugin publishes ([Publishing a Topic](/guide/topics)): `Delivery`, `Emission` and `keyframeIntervalUt` in the heartbeat's declaration are covered there
+- **`Channels`** lists the Topics the plugin publishes ([Publishing a Topic](/guide/topics)): `Delivery`, `Emission` and `keyframeIntervalUt` in the heartbeat's declaration are covered there. `keyframeIntervalUt` is in UT, universal time, the game's clock in seconds ([Concepts](/guide/concepts#topics-and-samples)). `Kind` says how the value relates to time: `SampleKind.Continuous` says it moves between samples, which lets the client carry it forward with a forward model of its own, called a reckoner ([Writing a reckoner](/guide/reckoners)), and `Discrete` says it stands until the next sample replaces it. The finished example says `Continuous`; `new` writes `Discrete`
 - **`Commands`** lists the commands it accepts ([Accepting a command](/guide/commands))
 
 ## Register
@@ -31,6 +31,12 @@ The class implements `ISitrepUplink`, which is three members: `Manifest`, `Regis
 <<< ../../example/mod/ExampleUplink.cs#register{cs}
 
 `Register` is called once, on the main thread, after the manifest is read. Wire up every source and handler here and return. An exception thrown out of `Register` marks this Uplink unavailable and leaves the rest of Gonogo running.
+
+There are three ways to tell the app an Uplink cannot work, and each has its own job:
+
+- **`host.SetAvailability(Availability.Unavailable(reason))` and an early return** is for a condition you expect and can test for in `Register`, such as the wrapped mod not being installed. Nothing is registered, and the operator reads your reason in place of the Uplink's widgets. It only works while `Register` is running: called anywhere else, it is ignored and the mod logs that
+- **An exception thrown out of `Register`** is for a fault you did not expect. The Uplink is marked unavailable in the same way, the exception's message is the reason, and the mod writes a `[ChannelEngine]` line to `KSP.log` ([Releasing and installing](/guide/release#checking-it-loaded))
+- **`Health()` returning `UplinkHealth.Unavailable(detail)` or `UplinkHealth.Degraded(detail)`** is for a state that changes after load, such as the mod stopping its updates. The mod polls it, so it can recover. `Degraded` says the Uplink works but something it needs is missing or wrong; `Unavailable` says none of its Topics will carry anything
 
 There is no matching teardown: the Uplink lives as long as the game does, so anything `Register` installs stays installed.
 
@@ -44,7 +50,7 @@ There is no matching teardown: the Uplink lives as long as the game does, so any
 
 `UplinkHealth` is a read-only struct, so an object initialiser (`new UplinkHealth { State = ... }`) does not compile. Build one with the static member of `UplinkHealth` for its state, called as in the snippet below: the field `Healthy`, which has nothing to add, and the functions `Degraded(detail)` and `Unavailable(detail)`, which take the sentence the operator reads. The two functions also take an optional list of labelled facts, rows such as the version of the mod you depend on. The constructor, `new UplinkHealth(state, detail)`, builds the same value.
 
-The Gonogo mod polls it repeatedly: once per sample of the `system.uplinks` Topic, which reports every Uplink's health, and off the main thread. So it must be cheap, must not block, and must not touch the game. The heartbeat has nothing to report; an Uplink wrapping another mod reports that mod's state:
+The Gonogo mod polls it repeatedly: once per sample of the `system.uplinks` Topic, which the Gonogo mod publishes itself and which lists every installed Uplink with whether it is available and its health (the app reads it to decide which clients to load and what to draw in place of a widget whose Uplink is unwell), and off the main thread. So it must be cheap, must not block, and must not touch the game. The heartbeat has nothing to report; an Uplink wrapping another mod reports that mod's state:
 
 <<< ../../reference/examples/mod/GuideExamples.cs#health{cs}
 
@@ -88,7 +94,7 @@ A second overload takes, after the two functions, the Topic prefixes the source 
 
 ### Without the game's assemblies
 
-An author with no copy of KSP cannot compile against `Assembly-CSharp`, and nothing in this Guide verifies a KSP type or member name for them. What they can do is reach KSP's own types by reflection, the way the next section does for other mods: look the type up by name (`Type.GetType("FlightGlobals, Assembly-CSharp")`), read its members, and report a missing one in `Health` instead of failing to load. The names then come from the author's own knowledge or a decompiler ([ILSpy](https://github.com/icsharpcode/ILSpy) on `Assembly-CSharp.dll`), because no page here lists them, and a wrong name is found only when the plugin runs inside the game. The build, the tests and `release` do not need the game at all; reading its state and trying the plugin in KSP do.
+Nothing in this Guide lists KSP's types or members, and nobody can check a name for you without the game's code. The one place the names are written down is `Assembly-CSharp.dll`, in the `Managed` folder of any KSP install; open it with a decompiler such as [ILSpy](https://github.com/icsharpcode/ILSpy) and read the types there. So an Uplink that reads the game needs a copy of KSP at hand to learn what to call, even if the build does not. An author without KSP can still write the plugin: reach KSP's own types by reflection, the way the next section does for other mods (look the type up by name, as `Type.GetType("FlightGlobals, Assembly-CSharp")` does, read its members, and report a missing one in `Health` instead of failing to load), then fill in the names once a copy is available. A wrong name is found only when the plugin runs inside the game. The build, the tests and `release` do not need the game at all; reading its state and trying the plugin in KSP do.
 
 ## Reaching another mod
 

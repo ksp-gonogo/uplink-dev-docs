@@ -18,6 +18,12 @@ npm run release
 4. **Check** that the compiled plugin carries the URL and hash that were baked
 5. **Package** (`uplink-tools package`) the plugin as `dist/GonogoExampleUplink.zip` in the Uplink's own folder, beside `client/` and not inside it, holding `GameData/GonogoExampleUplink/Plugins/` with the plugin and its contract slice, and nothing else. The netkan (CKAN's metadata, see below) is written beside the zip, not inside it
 
+The app loads a client only when the plugin vouches for the exact bundle it fetched, so the bundle must be built and hashed before the plugin is compiled. A plugin compiled first builds and passes its tests, and the app shows none of its widgets. `release` refuses to run while `client.url` in `uplink.json` is still the placeholder `new` writes without a repository, and while the version's three places disagree ([A new version](#a-new-version)).
+
+The `gonogo-uplink.json` to publish is the one `release` writes beside the bundle in `client/dist/example/`, which carries the bundle's hash as its `integrity`. The one committed beside the client, which `npm run page` and `npm run docs` write, has an empty `integrity` until a hash is stamped into it, and `page` and `docs` leave a stamped one alone. An empty one is right for a working copy and refused by the app if published, so publish from `dist/`.
+
+## If `release` hangs in a sandbox
+
 In a sandbox that blocks the local sockets MSBuild's worker processes talk over, `release` can run for minutes and then fail with "dotnet exited with a failure and reported no error". Name the switches that avoid them in `UPLINK_TOOLS_MSBUILD_ARGS`, separated by spaces, for the one command:
 
 ```bash
@@ -25,10 +31,6 @@ UPLINK_TOOLS_MSBUILD_ARGS="-m:1 -p:UseSharedCompilation=false" npm run release
 ```
 
 `-m:1` builds with one node and `-p:UseSharedCompilation=false` keeps the C# compiler from starting its shared server; `release` already passes `-nodeReuse:false`. Outside such a sandbox, leave it unset.
-
-The app loads a client only when the plugin vouches for the exact bundle it fetched, so the bundle must be built and hashed before the plugin is compiled. A plugin compiled first builds and passes its tests, and the app shows none of its widgets. `release` refuses to run while `client.url` in `uplink.json` is still the placeholder `new` writes without a repository, and while the version's three places disagree ([A new version](#a-new-version)).
-
-The `gonogo-uplink.json` to publish is the one `release` writes beside the bundle in `client/dist/example/`, which carries the bundle's hash as its `integrity`. The one committed beside the client, which `npm run page` and `npm run docs` write, has an empty `integrity` until a hash is stamped into it, and `page` and `docs` leave a stamped one alone. An empty one is right for a working copy and refused by the app if published, so publish from `dist/`.
 
 ## How the app loads a client
 
@@ -44,9 +46,23 @@ The order is: set the repository in `uplink.json` (`new --repo`), run `npm run r
 https://cdn.jsdelivr.net/gh/acme/example@releases/releases/example/0.0.1/example.client.js
 ```
 
-That is the file `releases/example/0.0.1/example.client.js` on your repository's `releases` branch. To publish the first version, from the Uplink's folder, with git 2.42 or later (`git --version` shows it; the folder must be a git repository with at least one commit and an `origin` remote; run `git init`, commit and add the remote first if it is not):
+That is the file `releases/example/0.0.1/example.client.js` on your repository's `releases` branch.
 
-`git worktree add --orphan` makes a worktree on a new branch with no history, so the bundles stay off your source branch; `../example-releases` is any folder beside the Uplink's.
+### Publishing with `publish`
+
+For a jsDelivr URL, `publish` does the whole job; the by-hand steps further down do the same and are for a host `publish` does not cover. Run it from the Uplink's `client/` folder, where `npm install` put the tool (from the Uplink's root `npx` looks the name up on the npm registry and finds nothing), and after `release`:
+
+```bash
+npx uplink-tools publish
+```
+
+It copies the built bundle and its `gonogo-uplink.json` into a worktree of the ref the URL names (by default `.releases/` in the Uplink, which it creates from the remote's branch, or as a new orphan branch when the remote has none) and prints the links. A published version is never overwritten: a bundle that differs from the one already there is a new version with its own URL. `--push` commits what changed, pushes it to the ref and checks the remote holds the commit, `--purge` asks jsDelivr to drop its cached copy of both URLs, and `--tag <tag>` refuses unless the tag is `example-v0.0.1`, which is `<id>-v<version>`. `release --tag <tag>` applies the same rule, so a release workflow triggered by a tag can stop on a tag that does not match the version it builds. For any other host, `--to <dir>` names the folder that is served at the URL's root.
+
+`publish` without `--push` is its dry run: it copies the files into the worktree and prints the links, and commits and sends nothing. If a `--push` fails (a remote that cannot be reached, a wrong address), the release stays committed in the worktree, and running `publish --push` again sends that commit, and says "already on" the ref only once the remote holds it.
+
+### Publishing by hand
+
+To publish the first version without `publish`, from the Uplink's folder, with git 2.42 or later (`git --version` shows it; the folder must be a git repository with at least one commit and an `origin` remote; run `git init`, commit and add the remote first if it is not):
 
 ```bash
 git worktree add --orphan -b releases ../example-releases
@@ -56,13 +72,9 @@ cd ../example-releases
 git add releases && git commit -m "Release example 0.0.1" && git push -u origin releases
 ```
 
-Run `publish` from `client/`, not from the Uplink's root. `npx uplink-tools publish` does those steps for a jsDelivr URL, run from the Uplink's `client/` folder (where `npm install` put the tool: from the Uplink's root `npx` looks the name up on the npm registry and finds nothing) and after `release`. It copies the built bundle and its `gonogo-uplink.json` into a worktree of the ref the URL names (by default `.releases/` in the Uplink, which it creates from the remote's branch, or as a new orphan branch when the remote has none) and prints the links. A published version is never overwritten: a bundle that differs from the one already there is a new version with its own URL. `--push` commits what changed, pushes it to the ref and checks the remote holds the commit, `--purge` asks jsDelivr to drop its cached copy of both URLs, and `--tag <tag>` refuses unless the tag is `example-v0.0.1`, as `release` does. For any other host, `--to <dir>` names the folder that is served at the URL's root.
+`git worktree add --orphan` makes a worktree on a new branch with no history, so the bundles stay off your source branch, and `../example-releases` is any folder beside the Uplink's. In PowerShell, `mkdir -p` and `cp` are `New-Item -ItemType Directory -Force` and `Copy-Item` ([Known limits](/guide/limits#the-tools)). For a later version, `git worktree add ../example-releases releases` checks the branch out again, and the files go in that version's folder. Keep `gonogo-uplink.json` beside the bundle under exactly that name: the app finds it from the bundle's own URL.
 
-`publish` without `--push` is its dry run: it copies the files into the worktree and prints the links, and commits and sends nothing. If a `--push` fails (a remote that cannot be reached, a wrong address), the release stays committed in the worktree, and running `publish --push` again sends that commit, and says "already on" the ref only once the remote holds it.
-
-In PowerShell, `mkdir -p` and `cp` are `New-Item -ItemType Directory -Force` and `Copy-Item` ([Known limits](/guide/limits#the-tools)). For a later version, `git worktree add ../example-releases releases` checks the branch out again, and the files go in that version's folder. Keep `gonogo-uplink.json` beside the bundle under exactly that name: the app finds it from the bundle's own URL.
-
-`new` writes this URL only when it knows the repository, from `--repo` or this directory's GitHub remote. With `--no-repo`, or an owner named `you`, it writes a placeholder, and `release` refuses to run until you set `repo` and `client.url` in `uplink.json` to where the bundle will really be published ([uplink.json](/guide/uplink-json#what-release-refuses)). To dry-run the whole of `release` before you have a repository, set them to any owner and name other than the placeholder: `release` contacts nothing, it builds, bakes, compiles and zips, so the run proves every step works. The zip it writes names a URL that serves nothing, so do not install or share it; set the real values and run `release` again when the repository exists.
+`new` writes this URL only when it knows the repository, from `--repo` or this directory's GitHub remote. With `--no-repo`, it writes a placeholder (the owner `your-github-owner`), and `release` refuses to run until you set `repo` and `client.url` in `uplink.json` to where the bundle will really be published ([uplink.json](/guide/uplink-json#what-release-refuses)). To dry-run the whole of `release` before you have a repository, set them to any owner and name other than the placeholder: `release` contacts nothing, it builds, bakes, compiles and zips, so the run proves every step works. The zip it writes names a URL that serves nothing, so do not install or share it; set the real values and run `release` again when the repository exists.
 
 Never change a published file. The plugin vouches for one exact bundle, and jsDelivr keeps serving what it first fetched from a path, so a changed file is refused as a hash mismatch. A wrong file published is fixed with a new version: bump the version ([A new version](#a-new-version)), release again and publish that version's folder. Any other host that serves files over HTTPS works too: put its URL in `client.url` before running `release`.
 
@@ -89,14 +101,14 @@ Never put it inside `GameData/Gonogo/`, and never add a copy of `Sitrep.Contract
 
 ## Checking it loaded
 
-A successful load writes nothing to `KSP.log`, so there is no line to search for; look for the Uplink's data: add its widget in the app, and it shows a value once the game is running a save. Two failures do write a line, marked `[ChannelEngine]`:
+A successful load writes nothing to `KSP.log`, so there is no line to search for; look for the Uplink's data: add its widget in the app, and it shows a value once the game is running a save. Two failures do write a line to `KSP.log`, each marked `[ChannelEngine]`, the part of the Gonogo mod that registers Uplinks:
 
 ```
 uplink "example" marked UNAVAILABLE: registration threw: <message>
 uplink "example" marked UNAVAILABLE: capability declaration threw: <message>
 ```
 
-An Uplink that reports itself unavailable or degraded, through `Health` or `SetAvailability`, has its reason drawn in its widget's place in the app. A class with no public constructor with no parameters is never constructed, and nothing says so: check that first when an Uplink is silent.
+An Uplink that reports itself unavailable or degraded, through `Health` or `SetAvailability`, has its reason drawn in its widget's place in the app. A class carrying the plugin attribute but with no public constructor with no parameters is skipped, and the mod writes a warning to `KSP.log` that begins `[Gonogo] [UplinkDiscovery]` and reads `"<class>" carries [SitrepUplink] but has no parameterless constructor: skipped`; search the log for `UplinkDiscovery` when an Uplink is silent.
 
 ## Trying a client before you publish it
 
@@ -107,7 +119,7 @@ npx uplink-tools bake --dev-path http://localhost:5173/example.client.js
 dotnet build ../mod -c Release
 ```
 
-Copy the two `.dll` files from `mod/bin/Release/` into `GameData/GonogoExampleUplink/Plugins/`, start the game, and leave the plugin there. Then serve the client:
+Copy `GonogoExampleUplink.dll` and `GonogoExampleUplink.Contract.dll` from `mod/bin/Release/` into `GameData/GonogoExampleUplink/Plugins/`, start the game, and leave the plugin there. Then serve the client:
 
 ```bash
 npx uplink-tools bundle --serve 5173
@@ -115,7 +127,7 @@ npx uplink-tools bundle --serve 5173
 
 It rebuilds the bundle on every save and serves it at the URL you baked. Edit, save, and reload the app's page to load the new client.
 
-A plugin with a development URL and no hash vouches for nothing, so the app loads its client unchecked, and only from `localhost`: each of its widgets says "Unvouched development client" on its panel, and the Uplink's tab in the app's **Settings**, **Uplinks** says why. A station (another screen that takes its data from the main screen, the one connected to the game) takes its clients from the main screen, which never passes on an unvouched one. Before releasing, rebuild with `npm run release`, which bakes the released URL and the bundle's hash: a plugin built for development is never one to install anywhere but your own machine. `release --dev-path` still bakes the bundle's hash, so it is not the loop above, and it does not zip what it builds.
+A plugin with a development URL and no hash vouches for nothing, so the app loads its client unchecked, and only from `localhost`: each of its widgets says "Unvouched development client" on its panel, and the Uplink's tab in the app's **Settings**, **Uplinks** says why. A station (another screen that takes its data from the main screen, the one connected to the game) takes its clients from the main screen, which never passes on an unvouched one. Before releasing, rebuild with `npm run release`, which bakes the released URL and the bundle's hash: a plugin built for development is never one to install anywhere but your own machine. `release --dev-path <url>` is a different command from the loop above: it builds a whole release with the development URL baked in place of the released one, still bakes the bundle's hash, and does not zip what it builds unless you also pass `--allow-dev-package`, which is for handing a development build to one machine.
 
 ## CKAN and SpaceDock
 

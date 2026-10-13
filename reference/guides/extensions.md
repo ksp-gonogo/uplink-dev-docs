@@ -4,8 +4,15 @@ A built-in widget can be extended without changing it. Each widget names the
 places an Uplink may add to, called [slots](/reference/concepts/augment-contribution-and-slot), and each slot takes one of two
 kinds of extension: an augment or a contribution. Every widget's reference
 page lists its slots, for example [Crew Status](/reference/widgets/crew-status).
-An augment slot is looked up in `SlotRegistry` below and a contribution slot in
-`ContributionRegistry`; the widget's page says which kind each of its slots is.
+Every slot has an id. The second half of this page lists the ids of augment
+slots as the entries of `SlotRegistry`, each with the props the widget passes
+the augment, and the ids of contribution slots as the entries of
+`ContributionRegistry`, each with the type of entry the widget draws. A
+widget's own page says which kind each of its slots is.
+
+A widget names its slots in its registration, in `augmentSlots` for augments
+and `contributionSlots` for contributions. You do not write either: they are
+how the widget declares which places exist.
 
 An Uplink needs none of this to show its own widgets. Use it to put your
 mod's information inside one of the app's widgets, such as a badge on a crew
@@ -20,6 +27,12 @@ component in that place, passing it the slot's props.
 
 Use an augment when you are drawing something the widget has no way to draw
 for you: an avatar, a section of your own, a control.
+
+Put the component in a file of its own under `client/src/`, and import that
+file from `client/src/index.ts`: a file nothing imports never registers
+([A widget](/guide/client-widget#the-entry)). An augment's id is not prefixed
+for you, so start it with your Uplink's id (`crewportraits-initials`), because
+it must be unique across every Uplink.
 
 This one draws each kerbal's initials in Crew Status's avatar cell. It names
 the Uplink's one client handle, from `defineUplinkClient`, as `owner`, so in
@@ -48,10 +61,18 @@ own rows, badges or meters.
 Use a contribution when the slot's entry type already says what you want to
 show.
 
+Put this in a file of its own under `client/src/` as well, imported from
+`client/src/index.ts`. A contribution's id is prefixed with your Uplink's id
+for you, so it needs only to be unique within your Uplink.
+
 This one adds an experience meter under each kerbal in Crew Status. `deps`
-lists the Topics `compute` receives, each as a reading. `stillTrue` takes the
-value of a reading that is observed or held, a fact that could not have changed
-unseen, and gives its second argument when the reading is confirmed absent. A
+lists the Topics `compute` receives, each as a reading. A reading is observed
+when its value is the newest that could have reached the app, held when updates stopped but the last
+value is known, absent when the game confirms there is none, pending when
+nothing has arrived yet, and unowned when no installed Uplink declares the Topic.
+`stillTrue` is for a fact that cannot change unseen: it returns the value of a
+reading that is observed or held, returns its second argument when the reading
+is absent, and returns `undefined` while the reading is pending or unowned. A
 contribution's `priority` is its band: only the highest band in a slot draws,
 all of it together, and the default band 1 would replace the widget's own
 entries (they are in band 0), so the example uses 0 to draw beside them:

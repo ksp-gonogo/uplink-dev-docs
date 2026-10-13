@@ -12,7 +12,7 @@ So a test needs nothing of its own to render a widget:
 
 - `installDomStubs` adds the browser features the simulated browser lacks and widgets use
 - `installRealTestHost` installs the app's own host, so `useTelemetry`, `useCommand` and `registerComponent` behave as they do in the app. Without a host they throw
-- `PerfBudget`'s `installTestGate` fails a test that pushes one of Gonogo's performance budgets over its limit, such as a widget subscribing in a loop
+- `PerfBudget`'s `installTestGate` fails a test that pushes one of Gonogo's performance budgets over its limit, such as a widget subscribing in a loop. A budget is a ceiling on how often something may happen per second, such as how many times a widget may subscribe to a Topic; the failure names the budget, its limit and the rate the test reached, and the fix is the code that is doing the work too often
 - `setQuantityLocale` fixes how numbers are written, so a test's expected text is the same on every machine
 
 The scaffold's `package.json` installs everything these import, `@testing-library/jest-dom` included. [`render`](/reference/client/testing/rendering#render) and `screen` from `@ksp-gonogo/sitrep-sdk/testing` are Testing Library's, with the kit's theme mounted. `renderWidget` from `@ksp-gonogo/ui-kit/testing` renders a widget by its id inside the provider stack the dashboard puts around it, for a test of something the dashboard draws, such as a status badge on its panel.
@@ -50,7 +50,7 @@ A figure that has stopped updating is drawn with its mark and a spoken caption, 
 
 <<< ../../example/client/src/Heartbeat/__fixtures__/beating.json
 
-A fixture is a scene the render harness draws a widget in: `_scene` names the widget, its picture's `caption` and the modes to draw it in, and `_stream` says what is on the wire. The `min` mode draws the widget at its `minSize`, and exists only while `minSize` is smaller than `defaultSize`: make them equal and a fixture naming `min` fails with a message naming the fixture, saying the widget has no separate smallest size, so take `min` out of `modes` or give the widget a smaller `minSize`. `npm run render` draws every fixture to `client/renders/` in a real browser, and `npm run docs` draws them into the generated page, so a fixture is both a picture to look at and the page's illustration. Rendering needs Chromium, installed once with `npx playwright install chromium`.
+A fixture is a scene the render harness draws a widget in: `_scene` names the widget, its picture's `caption`, the modes to draw it in, and `hero`, and `_stream` says what is on the wire. `"hero": true` marks the fixtures whose pictures the generated page shows for that widget; `npm run docs` fails for a widget that has fixtures and none marked. `_meta.notes` is free text for the next person to read the file, and nothing reads it. The `min` mode draws the widget at its `minSize`, and exists only while `minSize` is smaller than `defaultSize`: make them equal and a fixture naming `min` fails with a message naming the fixture, saying the widget has no separate smallest size, so take `min` out of `modes` or give the widget a smaller `minSize`. `npm run render` draws every fixture to `client/renders/` in a real browser, and `npm run docs` draws them into the generated page, so a fixture is both a picture to look at and the page's illustration. Rendering needs Chromium, installed once with `npx playwright install chromium`.
 
 `_stream` takes four fields:
 
@@ -61,11 +61,11 @@ A fixture is a scene the render harness draws a widget in: `_scene` names the wi
 | `delaySeconds` | number, seconds | a one-way light time between the craft and the screen, so the scene shows modelled values beside received ones |
 | `stopsArriving` | boolean | drops the link once every emit has landed, so every figure is drawn held |
 
-The [`@ksp-gonogo/uplink-tools` README](https://www.npmjs.com/package/@ksp-gonogo/uplink-tools) has the detail of each.
+The [`@ksp-gonogo/uplink-tools` README](https://www.npmjs.com/package/@ksp-gonogo/uplink-tools) has the full list of what a fixture may hold.
 
 ## The plugin's tests
 
-`mod-tests/` is an xunit project that compiles the plugin's own sources, so a test constructs the plugin class and calls it directly: its manifest, its sample function, its command handlers. On a test project the `KspGonogo.Sitrep.Contract` package also brings `Sitrep.Contract.TestSupport`, with fake hosts and checks of the rules a manifest must follow, among them `CommandRegistrationAssertion` (every handler and publisher the plugin registers is one its manifest declares), `UnitCoverageAssertion` (every field of the contract slice names its unit), `ReckonabilityAssertion` (a field the client has a reckoner for publishes what its model needs, [Writing a reckoner](/guide/reckoners)), `WirePayload` (a payload serialised the way the Gonogo mod writes it) and `ClockedUplinkHost` (a host that records what the plugin publishes). The Reference has no page for them yet; their doc comments are in the package. Run them with `dotnet test ../mod-tests` from `client/`.
+`mod-tests/` is an xunit project that compiles the plugin's own sources, so a test constructs the plugin class and calls it directly: its manifest, its sample function, its command handlers. On a test project the `KspGonogo.Sitrep.Contract` package also brings `Sitrep.Contract.TestSupport`, with fake hosts and checks of the rules a manifest must follow, among them `CommandRegistrationAssertion` (every handler and publisher the plugin registers is one its manifest declares), `UnitCoverageAssertion` (every field of the contract slice names its unit), `ReckonabilityAssertion` (a field the client has a reckoner for publishes what its model needs, [Writing a reckoner](/guide/reckoners)), `WirePayload`, a C# helper that serialises a payload the way the Gonogo mod writes it and `ClockedUplinkHost` (a host that records what the plugin publishes). The Reference does not cover these C# helpers; their doc comments are in the package. Run them with `dotnet test ../mod-tests` from `client/`.
 
 A plugin that references KSP's or a mod's assemblies has code the test project cannot compile, since it has no KSP. Keep that code in a file of its own, and leave that file out in `mod-tests/GonogoExampleUplink.Tests.csproj`, beside the line that compiles the plugin's sources:
 
@@ -80,7 +80,7 @@ A plugin that reaches the game or a mod only by reflection names no KSP type, so
 
 ## In CI
 
-From `client/`, every command an Uplink's CI needs, none of them needing the game or a browser. `dotnet test` does bind a port on the local machine to talk to its test host, so a sandbox that blocks local network binding stops it at once, with a `SocketException` for permission denied, until local binding is allowed for the process. In the same kind of sandbox a plain `dotnet build` can appear to hang for minutes; `dotnet build -m:1 --disable-build-servers` avoids the build server's sockets. `uplink-tools release` builds with MSBuild too, and passes `-nodeReuse:false` already; to add switches, such as one build node, set `UPLINK_TOOLS_MSBUILD_ARGS=-m:1` in its environment:
+From `client/`, every command an Uplink's CI needs, none of them needing the game or a browser:
 
 ```bash
 npm ci
@@ -93,6 +93,10 @@ dotnet test ../mod-tests
 ```
 
 `new --workflows` writes these as a GitHub Actions workflow. In CI `bake` prints `Hash (none)`: no client bundle has been built there, so there is no hash to vouch for, and that is expected. `release` is what bakes the real one.
+
+### In a sandbox that blocks local sockets
+
+`dotnet test` binds a port on the local machine to talk to its test host, so a sandbox that blocks local network binding stops it at once, with a `SocketException` for permission denied, until local binding is allowed for the process. In the same kind of sandbox a plain `dotnet build` can appear to hang for minutes; `dotnet build -m:1 --disable-build-servers` avoids the build server's sockets. `uplink-tools release` has its own switch for this ([Releasing and installing](/guide/release#if-release-hangs-in-a-sandbox)).
 
 ## Checking the client
 

@@ -16,7 +16,7 @@ Reflection is the default: it keeps your plugin loadable without the mod, and ke
 
 ## Finding the mod's API
 
-Every name a plugin binds, by reflection or by a reference, comes from the mod's own source. Look in its repository first for a file meant for other mods: many ship a wrapper or an API class (a file named `API.cs`, `*Wrapper.cs` or `*API.cs`, or a class whose members are `public static` and documented for callers), such as Kerbal Alarm Clock's [`KACWrapper.cs`](https://github.com/TriggerAu/KerbalAlarmClock/blob/master/KerbalAlarmClock_APITester/KACWrapper.cs), which names the types and members the mod keeps stable for callers, and that is the surface to bind. Without one, read the classes that hold the state you want, and treat every member you bind as one the mod may rename. Note the version you read, for `builtAgainst` in [`uplink.json`](#in-uplink-json), and bind against the release a player installs, since a repository's default branch can be ahead of it.
+Every name a plugin binds, by reflection or by a reference, comes from the mod's own source. Find its repository from the links on the mod's SpaceDock or forum page, or from the `resources` of its entry in [CKAN-meta](https://github.com/KSP-CKAN/CKAN-meta), then look in the repository first for a file meant for other mods: many ship a wrapper or an API class (a file named `API.cs`, `*Wrapper.cs` or `*API.cs`, or a class whose members are `public static` and documented for callers), such as Kerbal Alarm Clock's [`KACWrapper.cs`](https://github.com/TriggerAu/KerbalAlarmClock/blob/master/KerbalAlarmClock_APITester/KACWrapper.cs), which names the types and members the mod keeps stable for callers, and that is the surface to bind. Without one, read the classes that hold the state you want, and treat every member you bind as one the mod may rename. Note the version you read, for `builtAgainst` in [`uplink.json`](#in-uplink-json), and bind against the release a player installs, since a repository's default branch can be ahead of it.
 
 ## By reflection
 
@@ -24,7 +24,7 @@ A class holding everything the plugin reads from the mod, found once, when the g
 
 <<< ../../reference/examples/mod/WrappingExample.cs#binder{cs}
 
-- **Find the assembly by name** among `AppDomain.CurrentDomain.GetAssemblies()`, when the plugin is constructed, as TestFlight's and Kerbalism's Uplinks do. Gonogo constructs every plugin inside one scan of the assemblies loaded at that moment, from an add-on that starts as the game does, and fixes no order between plugins or between a plugin and the mod it wraps. A mod whose assembly is not yet loaded when the constructor runs is therefore not found, and is not a missing mod. Where that can happen, try the lookup again at the start of `Register`, which runs after every plugin has been constructed, and report the mod missing only if that also finds nothing
+- **Find the assembly by name** among `AppDomain.CurrentDomain.GetAssemblies()`, when the plugin is constructed, as TestFlight's and Kerbalism's Uplinks do. Gonogo constructs your plugin class once, as the game starts, and nothing fixes the order in which plugins and other mods are loaded. A mod whose assembly is not yet loaded when your constructor runs is therefore not found, and is not necessarily a missing mod. Where that can happen, try the lookup again at the start of `Register`, which runs after every plugin has been constructed, and report the mod missing only if that also finds nothing
 - **Resolve each type and member once**, with the binding flags and parameter types the mod actually declares. A member that does not resolve is a mod version you were not built against: record which, so the operator can be told
 - **Read only on the main thread.** The binder's reads run in the main-thread half of `AddSampledSource`, never on the Courier thread
 
@@ -49,7 +49,7 @@ A build server has no KSP install, so a plugin that references the game or a mod
 
 ### Finding a mod's CKAN identifier
 
-The `name` in a netkan relationship is the mod's CKAN identifier, which is not always its name as a player knows it (Action Groups Extended is `AGExt`). Find it in the CKAN client by searching for the mod and opening its details, which list the identifier, with `ckan search <name>` on the command line, or as the name of the mod's folder in the [CKAN-meta](https://github.com/KSP-CKAN/CKAN-meta) repository, which holds one folder per indexed mod. A mod with no folder there is not indexed.
+The `name` in a netkan relationship is the mod's CKAN identifier, which is not always its name as a player knows it (Action Groups Extended is `AGExt`). Find it in the CKAN client by searching for the mod and opening its details, which list the identifier, with `ckan search <name>` on the command line (the `ckan` command comes with [CKAN's own download](https://github.com/KSP-CKAN/CKAN/releases)), or as the name of the mod's folder in the [CKAN-meta](https://github.com/KSP-CKAN/CKAN-meta) repository, which holds one folder per indexed mod. A mod with no folder there is not indexed.
 
 ## Saying the mod is missing
 
@@ -74,7 +74,7 @@ Its payload is a bare boolean, so it needs no wire type in the contract slice: t
 
 [`registerUplinkTopic`](/reference/client/reading-telemetry#registerUplinkTopic) makes the id known at runtime, the way the generated Topics are, and its reference entry has the detail.
 
-`<id>.available` also makes the Uplink's id a [Domain](/reference/concepts/domain-and-seat): an [augment](/reference/concepts/augment-contribution-and-slot) a client registers with the Uplink's id in its `requires` list mounts once the Topic has published anything, `true` or `false`, which says the Uplink is installed. Read its value for whether the mod is.
+`<id>.available` also makes the Uplink's id a **Domain**, a name for "this Uplink is installed" ([Domain and seat](/reference/concepts/domain-and-seat)). An **augment** is a React component an Uplink adds inside one of the app's own widgets ([Extensions](/guide/extensions)), and its `requires` list names the Domains it needs. An augment that names your Uplink's id there is drawn once the Topic has published anything, `true` or `false`, which says the Uplink is installed. Read the Topic's value for whether the mod is.
 
 ## Reading on the main thread
 

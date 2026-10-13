@@ -8,6 +8,8 @@ In `client/src/commands.ts`, which `new` already wrote, so there is nothing to a
 
 <<< ../../example/client/src/commands.ts#commandmaps
 
+The snippets show the middle of the file. Its imports, which `new` wrote, are `registerUplinkCommand` from `@ksp-gonogo/sitrep-sdk` and `GENERATED_COMMAND_IDS`, `GENERATED_COMMAND_RAIL`, `GeneratedCommandArgsMap` and `GeneratedCommandReplyMap` from `./__generated__/command-map.js`.
+
 The SDK types every core command's arguments in `CommandArgsMap` and its reply in `CommandReplyMap`. Your commands join them through the two maps `codegen` writes into `client/src/__generated__/command-map.ts`, one row per `SitrepCommandAttribute` in the contract slice: the arguments type it generated, and the reply, `CommandResult` for a handler that returns `CommandResult` or `CommandResultOf` the payload type for one that returns data. A command you add to the slice is typed after `npm run codegen`, with no line of yours to add.
 
 ## Registering the command {#the-command-known-at-runtime}
@@ -16,7 +18,7 @@ Further down the same file:
 
 <<< ../../example/client/src/commands.ts#command
 
-The declaration types the command; `registerUplinkCommand` makes the app know it exists at runtime. Its second argument, a `CommandRail`, says how the command travels, its rail: whether it waits for the signal delay (`delayed`) and whether a reply comes back (`replies`). `GENERATED_COMMAND_RAIL` holds the rail each command's `SitrepCommandAttribute` declares in the contract slice, and the loop registers every generated command with it, so the app and the plugin agree. The app uses it to show the operator whether a sent command is still crossing the signal delay.
+The declaration types the command; `registerUplinkCommand` makes the app know it exists at runtime. Its second argument, a `CommandRail`, says how the command travels, its **rail**: whether it waits for the signal delay (`delayed`) and whether a reply comes back (`replies`). The ui-kit's delay indicators, such as `CommandDelay`, are drawn from the rail. `GENERATED_COMMAND_RAIL` holds the rail each command's `SitrepCommandAttribute` declares in the contract slice, and the loop registers every generated command with it, so the app and the plugin agree. The app uses it to show the operator whether a sent command is still crossing the signal delay.
 
 Keep the loop `new` wrote. Without it nothing fails: the command still sends, but the app does not know how it travels, so it draws every command as one that crosses the signal delay and expects a reply, whatever its attribute says.
 
@@ -29,6 +31,14 @@ In the widget, `client/src/Heartbeat/index.tsx`, with the `useCommand` line besi
 The widget passes it to its `Panel` as `panelAside={resetButton}`, a control in the panel's header, and imports `useCommand` from `@ksp-gonogo/sitrep-sdk` and `CommandButton` from `@ksp-gonogo/ui-kit` ([the whole widget](/guide/client-widget#reading-a-topic)). `useCommand("example.reset")`, above it in the widget, returns a handle for one command, a `UseCommandResult`. Its `send` takes the arguments and resolves with the reply once the command has run: a delayed command to a distant craft can take minutes. When the plugin refuses it, `send` rejects with an error carrying the `CommandErrorCode` the handler returned, which `classifyCommandRejection` reads, and when no reply comes back it rejects too. Both are also recorded on the handle, so a `send` you do not wait on loses nothing.
 
 Hand the handle to a `CommandButton` rather than wiring a plain button's click to `send`. The button shows where the command is, as its [`CommandButtonPhase`](/reference/ui-kit/CommandButton#CommandButtonPhase): `"idle"` at rest, `"armed"`, `"pending"` while it travels, `"refused"` with the reason, `"lost"` when no reply came, `"found"` when a lost command replies after all, or `"blocked"` by a requirement the mod checks before sending. It announces each outcome to a screen reader. `commandLabel` is what a refusal is named after.
+
+## Commands with arguments
+
+The reset command takes none. A command that does is sent by passing its arguments, typed from the contract slice's class by `codegen`: `handle.send({ value: 1 })` resolves with the reply, and a `CommandButton` takes the same object in its `args` prop and sends it when pressed. One handle can serve several buttons, each with its own `args`. This sends the core command `vessel.control.setThrottle`, whose argument is `value`; an Uplink's own command, such as the `example.setMode` sketch on [Accepting a command](/guide/commands#a-command-about-a-craft), is sent the same way with `{ mode: 1 }`, the property names in camel case:
+
+<<< ../../reference/examples/guide/ThrottleButtons.tsx
+
+The plugin's side of a command with arguments, a class and a handler that reads `args.Mode`, is on [Accepting a command](/guide/commands#a-command-about-a-craft).
 
 ## Destructive commands
 

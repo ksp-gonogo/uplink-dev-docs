@@ -14,6 +14,12 @@ namespace ExampleUplink
         private readonly bool _modLoaded;
         private readonly int _staleSamples;
 
+        public GuideExamples(bool modLoaded, int staleSamples)
+        {
+            _modLoaded = modLoaded;
+            _staleSamples = staleSamples;
+        }
+
         /// <summary>Reports the mod this Uplink wraps as missing, and a stale read as degraded.</summary>
         public UplinkHealth Health()
         {
@@ -27,12 +33,6 @@ namespace ExampleUplink
         }
         #endregion health
 
-        public GuideExamples(bool modLoaded, int staleSamples)
-        {
-            _modLoaded = modLoaded;
-            _staleSamples = staleSamples;
-        }
-
         #region unavailable
         public void Register(IUplinkHost host)
         {
@@ -41,10 +41,25 @@ namespace ExampleUplink
                 host.SetAvailability(Availability.Unavailable("Example Mod is not installed"));
                 return;
             }
+            // RegisterSampled and RegisterSetMode stand for the methods of your own that wire up its sources and handlers.
             RegisterSampled(host);
             RegisterSetMode(host);
         }
         #endregion unavailable
+
+        #region refine
+        /// <summary>The refusals this Uplink adds under the stock ones.</summary>
+        public static class ExampleRefusals
+        {
+            /// <summary>A mode the plugin knows but the current save has not unlocked.</summary>
+            public static readonly RefusalCode ModeLocked =
+                CommandErrorCode.ModeUnavailable.Refine("example.modeLocked", "that mode is not unlocked in this save");
+        }
+
+        // The manifest lists them: new UplinkManifest { ErrorCodes = ErrorCodeCatalog.Of(typeof(ExampleRefusals)), ... }
+        public CommandResult RefuseLockedMode() =>
+            CommandResult.Fail(ExampleRefusals.ModeLocked, "Mode 2 is not unlocked");
+        #endregion refine
 
         #region sampled
         /// <summary>Reads the game on the main thread and publishes off it.</summary>

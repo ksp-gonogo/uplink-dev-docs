@@ -32,19 +32,27 @@ The codes are, with what each means:
 
 <!--@include: @/.vitepress/includes/command-error-codes.md-->
 
-The Gonogo mod runs every handler on the game's main thread, so a handler may call the game, and `Sitrep.Contract` itself does not promise that: write a handler that needs the main thread as the shipped mod gives it, and see [Known limits](/guide/limits#the-plugin) if you need to be safe without it. The thread waits for the handler, so return promptly and never wait on anything inside one.
+### A more specific refusal
+
+The stock codes are the **roots**: a closed set every client can act on. When the app needs to say more than a root does, declare a **refinement** of the root that fits with `RefusalCode.Refine(id, sentence)`. Its id is `<your Uplink's id>.<name>`, both in camel case, and the host drops the whole set of an Uplink that declares under another id. Declare each as a public static field of one class, list them in the manifest's `ErrorCodes` with `ErrorCodeCatalog.Of`, and return one from a handler like any code:
+
+<<< ../../reference/examples/mod/GuideExamples.cs#refine{cs}
+
+The root still travels with the refusal, so a client that knows nothing of your refinement still acts on the root, and one that does can show your sentence. A refinement cannot be refined again. A handler that returns a refinement missing from `ErrorCodes` is sent as its root.
+
+The Gonogo mod runs every handler on the game's main thread, so a handler may read and change the game. The `Sitrep.Contract` package does not promise that, so a handler that needs to be safe on any thread cannot rely on it ([Known limits](/guide/limits#the-plugin) shows how to write one). While the handler runs, the game waits, so return promptly and never wait on anything inside one.
 
 The count is shared between this handler, on the main thread, and the sample, on the Courier thread, so both change it through `Interlocked`, never with a plain `+=`.
 
 ## A command about a craft
 
-A delayed command about a craft names a `Subject` in its declaration: the Topic that describes the craft, so the command travels with that Topic's delay and is held while the craft is out of contact (it has no signal path to the command centre). A handler that replies with data returns `CommandResult<T>`, and its arguments' attribute names `T` as its `Payload`:
+The two snippets below are sketches compiled against the contract, not part of the worked Uplink. A delayed command about a craft names a `Subject` in its `CommandDeclaration`: the Topic that describes the craft, so the command travels with that Topic's delay and is held while the craft is out of contact (it has no signal path to the command centre). A handler that replies with data returns `CommandResult<T>`, and the `Payload` property of its arguments' `SitrepCommandAttribute` names `T`, the type of the data in the reply:
 
 <<< ../../reference/examples/mod/Payloads.cs#args{cs}
 
 <<< ../../reference/examples/mod/GuideExamples.cs#subject{cs}
 
-The client reads the data from the reply's `payload`. `T` is written like a Topic's payload: a dictionary, a list or a plain value.
+The handler reads its arguments from the parameter it is given (`args.Mode` above), already matched to the class's properties as described under [The arguments type](#the-arguments-type). The client supplies them when it sends the command, as [Sending a command](/guide/client-commands#commands-with-arguments) shows, and reads the data from the reply's `payload`. `T` is written like a Topic's payload: a dictionary, a list or a plain value.
 
 ## Testing it
 

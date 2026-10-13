@@ -8,7 +8,7 @@ The client is a package the Gonogo app loads into its own page, so a widget is a
 
 <<< ../../example/client/src/uplink.ts#client
 
-`defineUplinkClient` declares the client and returns its handle, an `UplinkClientHandle`. Its `id` must equal the plugin's, and its `version` the version in `package.json`; after you change either, run `npm run page`, which writes `gonogo-uplink.json` from them. Every registration names the handle as its `owner`, so the app knows which Uplink a widget belongs to, and the handle registers what only an Uplink has, such as a [reckoner](/guide/reckoners). The `description` opens the Uplink's generated page ([Documenting your Uplink](/guide/documenting)).
+`defineUplinkClient` declares the client and returns its handle, an `UplinkClientHandle`. Its `id` must equal the plugin's, and its `version` the version in `package.json`; after you change either, run `npm run page`, which writes `gonogo-uplink.json` from them. Every registration names the handle as its `owner`, so the app knows which Uplink a widget belongs to, and the handle registers what only an Uplink has, such as a [reckoner](/guide/reckoners). The `description` opens the Uplink's generated page ([Documenting your Uplink](/guide/documenting)). `GENERATED_CONTRACT_TAGS`, which `tags` takes, is written by `codegen` into `src/__generated__/units.ts`: it records what the contract slice says about each of your Topics' values, namely whether the value moves between samples or stands until the next one, and which values a reckoner of yours may carry forward ([Writing a reckoner](/guide/reckoners#marking-the-value-in-the-contract)). Pass it on unchanged and run `npm run codegen` after changing the slice.
 
 ## The entry
 
@@ -16,7 +16,7 @@ The client is a package the Gonogo app loads into its own page, so a widget is a
 
 <<< ../../example/client/src/index.ts
 
-`src/index.ts` is what the bundle starts from, and the app runs it once when it loads the client. Registering happens as a module loads, so the entry imports every file that registers something; a file nothing imports never registers. The scaffold's entry imports `topics.js` and `Heartbeat/index.js`; the line importing `reckoner.js` is added on [Writing a reckoner](/guide/reckoners).
+`src/index.ts` is what the bundle starts from, and the app runs it once when it loads the client. Registering happens as a module loads, so the entry imports every file that registers something; a file nothing imports never registers. The scaffold's entry imports `topics.js` and `Heartbeat/index.js`; it has no `import "./reckoner.js";` line, because `new` writes no `reckoner.ts`. That line in the snippet is added on [Writing a reckoner](/guide/reckoners), so leave it out until then.
 
 ## Typing the Topics {#the-topics-typed}
 
@@ -35,7 +35,7 @@ At the foot of `client/src/Heartbeat/index.tsx`:
 `registerComponent` adds the widget to the app's widget list. The `ComponentDefinition` it takes says:
 
 - what an operator, the person using the dashboard, sees in the widget picker, the list they add widgets to a screen from: `name`, `description` and `tags`, free-form words the picker filters by, such as `"telemetry"` or `"control"`
-- how big a new tile is, in grid units: `defaultSize` and `minSize`. A column is about 32 pixels wide ([`COL_WIDTH`](/reference/ui-kit/Layout#COL_WIDTH)) and a row 25 ([`ROW_HEIGHT`](/reference/ui-kit/Layout#ROW_HEIGHT)), with a gap of [`GRID_MARGIN`](/reference/ui-kit/Layout#GRID_MARGIN) between tiles, so `6` by `4` is about 190 by 100 pixels of widget. [`minSize`](/reference/client/registering#ComponentDefinition.minSize) is checked in a real browser by [`uplink-tools docs`](/reference/tools/command-line#docs)
+- how big a new tile is, in grid units: `defaultSize` and `minSize`. A column is about 32 pixels wide ([`COL_WIDTH`](/reference/ui-kit/Layout#COL_WIDTH)) and a row 25 ([`ROW_HEIGHT`](/reference/ui-kit/Layout#ROW_HEIGHT)), with a gap of [`GRID_MARGIN`](/reference/ui-kit/Layout#GRID_MARGIN) between tiles, so `6` by `4` is about 230 by 125 pixels of widget: `6 × 32` plus five gaps of `8`, and `4 × 25` plus three gaps of `8`. [`minSize`](/reference/client/registering#ComponentDefinition.minSize) is checked in a real browser by [`uplink-tools docs`](/reference/tools/command-line#docs)
 - the `component` to render, and the `owner`
 - `channels`: every Topic the widget reads. Listing a Topic does not subscribe to it, since `useTelemetry` does that, but when the Uplink serving it reports itself degraded or unavailable the dashboard draws that Uplink's reason in place of the widget, and the generated page lists it
 
@@ -67,7 +67,7 @@ The widget `new` writes draws the values while the reading is observed or [held]
 
 Each payload field is also on the reading as a `Reading` of its own, `heartbeat.ticks` beside `heartbeat.value.ticks`. Hand that to `Unit`, never the bare value: the field reading carries its own state, so `Unit` draws a held value with the held mark, and the null token when there is no value.
 
-The same goes for a list. An array field is read by index, so each item's fields are readings too, with the Topic's state: `crew.crew[index].experienceLevel` below is one crew member's level, and `Unit` marks it held with the rest. An item taken from `crew.value.crew` holds bare `Value`s, which `Unit` draws as a plain number with no mark, so a list that stopped updating would look current. Map over the payload for the items, and read each figure off the reading:
+The same goes for a list. An array field is read by index, so each item's fields are readings too, with the Topic's state: `crew.crew[index].experienceLevel` below is one crew member's level, and `Unit` marks it held with the rest. An item taken from `crew.value.crew` holds bare `Value`s, which `Unit` draws as a plain number with no mark, so a list that stopped updating would look current. Map over the payload for the items, and read each figure off the reading. The snippet is a component to put in a file of its own under `client/src/` and render inside a widget of yours, whose registration lists `channels: ["vessel.crew"]`:
 
 <<< ../../reference/examples/guide/CrewLevels.tsx
 
@@ -77,7 +77,7 @@ In the heartbeat, `ModelledAlongside` and the `reckoning` lines draw this Uplink
 
 ## A text field
 
-`Unit` draws quantities only: a field the contract slice tags `Units.Text` arrives as a `Reading` of a string, which `Unit` does not take. Draw it with the same care by hand: the null token with no value, and the held mark on a value that stopped updating, which `derivedMarking` reads off the reading and `HeldFigure` draws.
+`Unit` draws quantities only: a field the contract slice tags `Units.Text` arrives as a `Reading` of a string, which `Unit` does not take. Draw it with the same care by hand: the null token with no value, and the held mark on a value that stopped updating, which `derivedMarking` reads off the reading and `HeldFigure` draws. Like the list above, this is a component for a file of its own under `client/src/` that a widget of yours renders, here for a widget that lists `vessel.identity` in its `channels`.
 
 <<< ../../reference/examples/guide/VesselName.tsx
 
@@ -88,7 +88,7 @@ The widget is drawn entirely from `@ksp-gonogo/ui-kit`, the components the app's
 - [**`Stack`**](/reference/ui-kit/Layout#Stack) lays children out in a column, with `gap` naming how far apart, such as `"related-compact"` for items that belong together
 - **`Panel`** is the widget's frame: `panelTitle` its heading, `sections` its body, `panelAside` a control in its header
 - [**`Section`**](/reference/ui-kit/Layout#Section) groups a body's content, and the panel lays sections out in columns when the tile is wide enough
-- **`Unit`** draws a quantity with its symbol, choosing the unit that suits its size (1,500 metres draws as 1.5 kilometres; `format` pins one, `as` converts to another of the same kind), so hand it values as they arrived. It is not the C# `Units` class, which names the unit a contract property is in
+- **`Unit`** draws a quantity with its symbol, choosing the unit that suits its size (1,500 metres draws as 1.5 kilometres; its [`format` prop](/reference/ui-kit/Unit#UnitProps) pins one, and its `as` prop converts to another of the same kind), so hand it values as they arrived. It is not the C# `Units` class, which names the unit a contract property is in
 - **`Text`** draws a string you have already formatted
 - **`EmptyState`** says why there is nothing to show
 

@@ -8,11 +8,15 @@ In `mod-contract/ExamplePayloads.cs`:
 
 <<< ../../example/mod-contract/ExamplePayloads.cs#heartbeat{cs}
 
+The file starts with the `using` lines `new` wrote: `using Sitrep.Contract;`, which provides `SitrepContract`, `SitrepTopic`, `SitrepReckonable`, `SitrepUnit` and `Units`, the guarded `using Reinforced.Typings.Attributes;` that provides `TsInterface`, and the file-scoped `namespace GonogoExampleUplink;`. Start any file of your own for payloads the same way.
+
 Every Topic's payload is a class in the contract slice, carrying three attributes:
 
 - **`SitrepContractAttribute`** marks it as a wire type
 - **`SitrepTopicAttribute`** names the Topic it is the payload of
-- **`TsInterface`**, from the [Reinforced.Typings](https://www.nuget.org/packages/Reinforced.Typings) package codegen runs, tells codegen to write a TypeScript interface for it. It sits inside `#if SITREP_CODEGEN` because it exists only in the build `codegen` runs, never in the assembly you ship, and so does the file's `using Reinforced.Typings.Attributes;` at its top
+- **`TsInterface`**, from the [Reinforced.Typings](https://www.nuget.org/packages/Reinforced.Typings) package codegen runs, tells codegen to write a TypeScript interface for it. It sits inside `#if SITREP_CODEGEN` because it exists only in the build `codegen` runs, never in the assembly you ship, and so does the `using Reinforced.Typings.Attributes;` at the top of the file
+
+In the finished example the heartbeat's `Ticks` property also carries `SitrepReckonableAttribute` (`new` does not write it), which says the client may carry the value forward between samples with a forward model of its own: its first argument names the kind of model (`ReckoningBases.RateIntegration`, a rate carried forward) and its second the other published value the model needs (`"ut"`, the game time of the sample). Add it when you write a reckoner ([Writing a reckoner](/guide/reckoners#marking-the-value-in-the-contract)).
 
 A property carrying `SitrepUnitAttribute` reaches the client as a quantity in that unit, such as `Value<"ut">` for `Units.UniversalTime`. [`Units`](/reference/mod/serialization#Units), on the Serialization page, lists every unit, and [How each unit is drawn](#how-each-unit-is-drawn), below, gives each one's id and how it reads; the ones an Uplink reaches for most:
 
@@ -30,7 +34,11 @@ A property carrying `SitrepUnitAttribute` reaches the client as a quantity in th
 
 Each member is the client's unit id: `Units.MetresPerSecond` is the string `"m/s"`, so a property tagged with it reads as `Value<"m/s">` and `value("m/s", 3)` makes one. The wire carries the unit named, never a converted one, and `Unit` picks the symbol to draw: a mass tagged `Units.Tonnes` is handed to `Unit` as it arrived. [`UNIT_DEFINITIONS`](/reference/client/units-and-values#UNIT_DEFINITIONS) lists every id the SDK knows.
 
-When the catalog lacks a unit your Uplink needs, tag the property with a plain string of your own, namespaced with your Uplink's id (`"snacks:crate"`). On the client declare it for the compiler by merging into [`UnitDeclarations`](/reference/client/units-and-values#UnitDeclarations) with a `declare module "@ksp-gonogo/sitrep-sdk"` block, and register the same unit at runtime with [`registerUnit`](/reference/client/units-and-values#registerUnit), which checks it against the declaration; from then on `Unit`, `Meter` and `Band` take it like a built-in.
+When the catalog lacks a unit your Uplink needs, tag the property with a plain string of your own, namespaced with your Uplink's id: `[SitrepUnit("snacks:crate")]` on the C# property. On the client declare it for the compiler by merging into [`UnitDeclarations`](/reference/client/units-and-values#UnitDeclarations) with a `declare module "@ksp-gonogo/sitrep-sdk"` block, and register the same unit at runtime with [`registerUnit`](/reference/client/units-and-values#registerUnit), which checks it against the declaration. Put both in a client file that `src/index.ts` imports, such as `client/src/units.ts`:
+
+<<< ../../reference/examples/guide/snackUnit.ts
+
+From then on `Unit`, `Meter` and `Band` take it like a built-in.
 
 A string meant to be read by a person, such as a name or a status message, takes `Units.Text`; a string that identifies something and is never read as prose takes `Units.Id`. A property that holds a list of a nested payload type, such as `List<Alarm>`, is supported: codegen writes `Alarm[]`, the nested type needs its own entry in the wire types below, and the units on its fields do the describing, so the list property itself carries no `SitrepUnitAttribute`.
 
@@ -40,11 +48,11 @@ Name Topics `<uplinkId>.<thing>`. The prefix keeps them clear of every other Upl
 
 ### How each unit is drawn
 
-`Unit` and `writeQuantity` choose the symbol, the precision and the step on the ladder (metres to kilometres, kilowatts to megawatts) from the unit id and the size of the value, so a field is handed over as it arrived. The table gives each unit's id and what a sample value comes out as, written with `writeQuantity`; `Unit` draws the same text, with a thin space before the symbol. A duration is the one that surprises: `Units.Seconds` is drawn as steps of time (`95` is `1min 35s`, `3600` is `1h`) with no symbol after it, and a moment, `Units.UniversalTime`, is drawn as a date and a clock time, never as a number of seconds. A test that asserts what a widget shows asserts these strings ([Testing](/guide/testing#what-unit-draws)).
+`Unit` and `writeQuantity` choose the symbol, the precision and the step on the ladder (metres to kilometres, kilowatts to megawatts) from the unit id and the size of the value, so a field is handed over as it arrived. The table gives each unit's id and what a sample value comes out as, written with `writeQuantity`; `Unit` draws the same text, with a thin space before the symbol. The *Drawn as* column is what `Unit` writes for the value in the *Value sent* column, so it can differ from the unit id: a unit is drawn on the step that suits the size of the value (`Units.RadPerSecond` of `0.001` is drawn in radians per hour, and `Units.Metres` of `1234.5` in kilometres), funds carry an `f` after the number, and science and reputation are followed by their game icon, written here as "the science mark" and "the reputation mark". A duration is the one that surprises: `Units.Seconds` is drawn as steps of time (`95` is `1min 35s`, `3600` is `1h`) with no symbol after it, and a moment, `Units.UniversalTime`, is drawn as a date and a clock time, never as a number of seconds. A test that asserts what a widget shows asserts these strings ([Testing](/guide/testing#what-unit-draws)).
 
 For a latitude or a longitude use `Units.Degrees`: it is what the contract's own `latitude` and `longitude` fields carry, drawn as `28.61°`. The wire carries the angle in degrees, not radians, and a longitude is passed through in the range the game reports. `Units.Radians` is for an angle a field carries in radians.
 
-A vector field is a `Vec3`, which carries x, y and z and nothing about what they measure. Mark it with `[SitrepUnit(...)]` for the unit of all three components and `[SitrepFrame(Frames.…)]` for the frame they are expressed in. `Frames.BodyCentredInertial` and `Frames.BodyCentredRotating` have their origin at the reference body's centre, with axes that stay fixed or turn with the body's spin. `Frames.SubjectRelative` is a displacement from the active vessel or its docking port, along the game's scene axes. `Frames.VesselLocal` and `Frames.PartLocal` use the construction axes of the vessel or of one part. A position read from another mod that does not say which frame it is in is no exception: find out, convert it, or say in the field's doc comment that the frame is unverified.
+A vector field is a `Vec3`, which carries x, y and z and nothing about what they measure. Mark it with `[SitrepUnit(...)]` for the unit of all three components and `[SitrepFrame(Frames.BodyCentredInertial)]`, or another member of `Frames` listed next, for the frame they are expressed in. `Frames.BodyCentredInertial` and `Frames.BodyCentredRotating` have their origin at the reference body's centre, with axes that stay fixed or turn with the body's spin. `Frames.SubjectRelative` is a displacement from the active vessel or its docking port, along the game's scene axes. `Frames.VesselLocal` and `Frames.PartLocal` use the construction axes of the vessel or of one part. A position read from another mod that does not say which frame it is in is no exception: find out, convert it, or say in the field's doc comment that the frame is unverified.
 
 | Member | Client unit id | Value sent | Drawn as |
 | --- | --- | --- | --- |
@@ -121,7 +129,7 @@ The manifest's `Channels` list declares each Topic with a `ChannelDeclaration`:
 - **`Delay`**: `DelayRole.Delayed` holds each sample for the signal delay between the craft and the operator's command centre, so the operator sees it when a real signal would arrive. `TrueNow` skips the delay, for facts about the ground or about the connection itself, like this heartbeat. A fact about a craft is `Delayed`
 - **`Emission`**: an `EmissionPolicy`. `keyframeIntervalUt` is the longest a Topic goes without a sample, in game seconds; `quantum`, an `EmissionQuantum`, is how much a number must change before a new sample goes out early. `EmissionQuantum.Absolute(0)` sends one on any change
 
-Emission is counted in game seconds, and under time warp a game second passes in a fraction of a real one. A value that changes on every tick, with a quantum of zero, is published on every tick at any warp, so give a value that changes continuously a quantum of a size an operator would notice. The heartbeat's `Absolute(0)` is on purpose: its count changes on every tick, and each new count is what it exists to show.
+Emission is counted in game seconds, and under time warp a game second passes in a fraction of a real one. A value that changes on every tick, with a quantum of zero, is published on every tick at any warp, so give a value that changes continuously a quantum of a size an operator would notice, such as `EmissionQuantum.Absolute(1)` for an altitude in metres. The heartbeat is the exception, not the pattern to copy for a measurement: its count is a whole number that goes up by one on every tick, and each new count is what it exists to show, so its `Absolute(0)` sends every one.
 
 ### Limiting how often a Topic changes
 

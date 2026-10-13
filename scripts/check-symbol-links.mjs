@@ -74,6 +74,9 @@ function grade(page, html, index, site) {
     const [tag, close, name, attrs] = m;
     if (name === "a") {
       href = close ? null : (/href="([^"]*)"/.exec(attrs)?.[1] ?? null);
+      if (href !== null && href.startsWith("/") && !href.startsWith("//") && !href.startsWith(`${BASE}/`)) {
+        faults.push(`link ${href} has no ${BASE} prefix, so it is a 404 on the published site`);
+      }
       continue;
     }
     if (close) continue;
@@ -96,13 +99,14 @@ const idsOf = (html) => new Set([...html.matchAll(/\sid="([^"]+)"/g)].map((m) =>
 
 const index = loadSymbolIndex();
 
-const PLANTED_FAULTS = 3;
+const PLANTED_FAULTS = 4;
 const ambiguous = Object.keys(AMBIGUOUS_SYMBOLS).find((name) => Object.hasOwn(index, name)) ?? "";
 const planted = grade(
   "/planted",
   "<main><p><code>useTelemetry</code> and " +
     '<a href="/uplink-dev-docs/nowhere#x"><code>useTelemetry</code></a> and ' +
     '<a href="/uplink-dev-docs/nowhere#x"><code class="member">useTelemetry</code></a>, beside ' +
+    '<a href="/reference/nowhere">no prefix</a>, and ' +
     `<code class="member">useTelemetry</code> and <code>${ambiguous}</code></p></main>`,
   index,
   new Map([["/planted", new Set()]]),
