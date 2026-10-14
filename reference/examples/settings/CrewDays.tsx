@@ -1,3 +1,4 @@
+// npm install @ksp-gonogo/sitrep-sdk @ksp-gonogo/ui-kit
 import {
   registerSetting,
   SettingKind,
@@ -29,10 +30,12 @@ registerSetting({
   label: "Link to the command centre",
   category: "Habitat",
   backing: "stream-backed",
+  // comms.connectivity is the Comms page's Topic for the vessel's link home; `select` picks its `connected` field, whether a control path home exists.
   topic: "comms.connectivity",
   select: (connectivity) => connectivity.connected,
 });
 
+// The dashboard mounts one SettingsProvider for its widgets, so a widget needs none of this wrapper; it is here only so this example renders on its own.
 const service = new SettingsService();
 
 function CrewDays() {

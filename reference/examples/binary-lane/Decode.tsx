@@ -1,3 +1,4 @@
+// npm install @ksp-gonogo/sitrep-sdk @ksp-gonogo/ui-kit
 import {
   BINARY_LANE_MAGIC,
   BINARY_LANE_STREAM_BINARY,
@@ -8,11 +9,10 @@ import {
 import { Stack, Text } from "@ksp-gonogo/ui-kit";
 import { useEffect, useState } from "react";
 
-// npm install @ksp-gonogo/sitrep-sdk @ksp-gonogo/ui-kit
 /**
  * A binary-lane frame built by hand, the bytes a socket would deliver: the
- * four-byte prefix, the JSON header, then the segments. The page renders it
- * with no socket; `listen` below is the path real bytes take. A widget that
+ * four-byte prefix, the JSON header, then the segments. `Decode` below decodes
+ * it with no socket; `listen` is the path real bytes take. A widget that
  * reads Topics with `useTelemetry` never handles frames itself, so this page
  * is for a client that owns its own socket.
  */
@@ -23,7 +23,7 @@ function sampleFrame(): Uint8Array {
       topic: "commcast.radio",
       // Byte counts of the segments that follow the header. A real commcast.radio frame carries a JSON batch description first and Opus packets after it; these five bytes stand in for them.
       segments: [3, 2],
-      // The sample's Meta, as on every stream message (documented as `Meta` on the Stream messages page, /reference/client/stream-messages): validAt is when it was true in the game, deliveredAt when the mod sent it, and vantage where it was seen from.
+      // The sample's Meta, as on every stream message (documented as `Meta` on the Stream messages page, /reference/client/stream-messages): source is what produced the sample, validAt is when it was true in the game, deliveredAt when the mod sent it, and vantage where it was seen from.
       meta: {
         source: "radio",
         validAt: 41823.5,

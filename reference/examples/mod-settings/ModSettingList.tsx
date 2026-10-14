@@ -1,3 +1,4 @@
+// npm install @ksp-gonogo/sitrep-sdk @ksp-gonogo/ui-kit
 import { type ModSettingRow, useModSettings } from "@ksp-gonogo/sitrep-sdk";
 import { Badge, Stack, Text } from "@ksp-gonogo/ui-kit";
 
@@ -7,6 +8,7 @@ function describe(row: ModSettingRow): string {
 }
 
 export function ModSettingList() {
+  // The id of the Uplink whose host mod's settings are listed; "example" stands for your own Uplink's id.
   const model = useModSettings("example");
   if (model.state !== "observed" && model.state !== "held") return <Badge tone="offline">Waiting for the mod</Badge>;
   if (model.value.failure) return <Text>{model.value.failure}</Text>;

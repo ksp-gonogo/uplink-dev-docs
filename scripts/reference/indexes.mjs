@@ -15,14 +15,18 @@ import { cellSafe, code, dropRestatedId, partsMd, typeMd } from "./typescript.mj
  * description introduces it.
  */
 export const SECTIONS = [
-  { dir: "reference/concepts", name: "Concepts" },
+  {
+    dir: "reference/concepts",
+    name: "Concepts",
+    about: "The ideas the rest of the reference assumes: actions and bindings, augments and slots, the binary lane, delay and vantage, domains and seats, held and reckoned readings, and stations. Read these first.",
+  },
   { dir: "reference/mod", name: "Mod API", nuget: "KspGonogo.Sitrep.Contract", specifier: "Sitrep.Contract" },
   { dir: "reference/client", name: "Client SDK", package: "@ksp-gonogo/sitrep-sdk" },
   {
     dir: "reference/widgets",
     name: "Widgets",
     about:
-      "The widgets the Gonogo app ships. Each page shows the widget as it draws, then the Topics it reads, the commands it sends, the actions an input can be bound to, its default and smallest sizes, and the slots an Uplink can extend it through.",
+      "The widgets the Gonogo app ships. Each page opens with the widget and a table of the Topics it reads, the commands it sends, the actions an input can be bound to and its default and smallest sizes, then shows it as it draws and in each state, and ends with the slots an Uplink can extend it through. A widget that charts whatever Topics the operator chooses lists those under its settings and not as Topics it reads.",
   },
   { dir: "reference/tools", name: "uplink-tools", package: "@ksp-gonogo/uplink-tools" },
   { dir: "reference/ui-kit", name: "ui-kit", package: "@ksp-gonogo/ui-kit" },
@@ -120,7 +124,10 @@ export function packageIndexMd(page, { pages, projects, index, urlOf, specifierO
 
 /** The reference index: each section, what its package is, and a link to every page in it. */
 export function referenceIndexMd(page, { pages, projects, index, urlOf, title }) {
-  const out = [`# ${page.title}`];
+  const out = [
+    `# ${page.title}`,
+    "The reference describes what an Uplink is built against. Concepts explain the ideas the other sections assume. The Mod API is the C# contract an Uplink's game-side plugin implements, and the Client SDK is the TypeScript package its client imports, with ui-kit as the design system the client draws with. uplink-tools is the command line that scaffolds, builds and checks an Uplink, and Widgets documents the widgets the app ships and the slots each lets an Uplink fill. A concept and an API page can share a name, such as Delay and vantage: the concept explains the idea, so read it first, and the API page lists the functions and types.",
+  ];
   for (const section of SECTIONS) {
     const listed = pages.filter((p) => p !== page && sectionOf(p) === section.dir);
     if (listed.length === 0) continue;

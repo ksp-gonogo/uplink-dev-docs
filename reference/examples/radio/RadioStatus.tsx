@@ -1,3 +1,4 @@
+// npm install @ksp-gonogo/sitrep-sdk @ksp-gonogo/ui-kit
 import { radioSupportStatus } from "@ksp-gonogo/sitrep-sdk/media";
 import { Badge, Stat } from "@ksp-gonogo/ui-kit";
 import { useState } from "react";

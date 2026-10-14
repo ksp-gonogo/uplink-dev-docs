@@ -22,6 +22,10 @@ export async function loadWidgetRecords() {
     throw new Error(`${WIDGET_RECORDS} is not installed: add @ksp-gonogo/uplink-tools to reference/artifacts.json and pack it`);
   }
   facts = await import(pathToFileURL(path.replace(/widgets\.json$/, "widget-facts.js")).href);
+  const sdkDir = resolve(INSTALL, "node_modules/@ksp-gonogo/sitrep-sdk");
+  const root = JSON.parse(readFileSync(resolve(sdkDir, "package.json"), "utf8")).exports["."];
+  const sdk = await import(pathToFileURL(resolve(sdkDir, typeof root === "string" ? root : (root.import?.default ?? root.import ?? root.default))).href);
+  topicPrefixes = new Set(sdk.TOPIC_IDS.map((id) => id.split(".")[0]));
   const { widgets } = require(path);
   allRecords = widgets;
   return new Map(widgets.map((record) => [record.id, record]));
@@ -34,8 +38,8 @@ export function recordOf(records, page) {
   return record;
 }
 
-/** What a widget page module may say: which widget, and how the page shows it. `path` is the loader's, from the module's own location. */
-const PAGE_FIELDS = new Set(["kind", "widget", "scene", "examples", "extensions", "stories", "path"]);
+/** What a widget page module may say: which widget, how the page shows it, and `statesNote`, the names its fixtures use for parts of the widget. `path` is the loader's, from the module's own location. */
+const PAGE_FIELDS = new Set(["kind", "widget", "scene", "examples", "extensions", "stories", "statesNote", "path"]);
 
 /** Page-module fields that would restate the record, by the record field they restate. */
 const RECORD_FACTS = {
@@ -85,6 +89,15 @@ export function assertModulesStateNoRecordFacts(pages) {
  * section from, read off the installed package by `loadWidgetRecords`.
  */
 let facts = null;
+
+/** The first segment of every Topic id the SDK declares, which is each heading of the Topics page. */
+let topicPrefixes = new Set();
+
+/** A Topic id or a field path linked to its group on the Topics page, or the code alone for one that page does not list. */
+function topicLinkedCode(code) {
+  const prefix = code.split(".")[0];
+  return topicPrefixes.has(prefix) && code.includes(".") ? `[\`${code}\`](/reference/client/topics#${prefix})` : `\`${code}\``;
+}
 
 /** Every core widget's record, so a description that names another widget can link to its page. */
 let allRecords = [];
@@ -151,8 +164,10 @@ export function widgetHeaderMd(record) {
     const member = fact.id === "reads" && /dotted paths|flat keys/.test(fact.label) ? "dataRequirements" : MEMBER_OF_FACT[fact.id];
     const label = member ? definitionLink(fact.label, member) : fact.label;
     const linked = (anchor) => fact.items.map((item) => ("code" in item ? `[\`${item.code}\`](${anchor(item.code)})` : text(item.prose))).join(", ");
-    const value =
-      fact.id === "slots"
+    const topicIds = fact.id === "reads" || fact.id === "drawsOnly" || fact.id === "alsoReads";
+    const value = topicIds
+      ? fact.items.map((item) => ("code" in item ? topicLinkedCode(item.code) : text(item.prose))).join(", ")
+      : fact.id === "slots"
         ? fact.items.map(({ code }) => `[\`${code}\`](#${anchorOf(code)})`).join(", ")
         : fact.id === "sends"
           ? linked((code) => `/reference/client/commands#CommandArgsMap.${code}`)

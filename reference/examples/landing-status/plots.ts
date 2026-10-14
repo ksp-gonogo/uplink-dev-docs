@@ -1,3 +1,4 @@
+// npm install @ksp-gonogo/sitrep-sdk
 import {
   defineUplinkClient,
   observedValue,
@@ -11,7 +12,9 @@ const uplink = defineUplinkClient({
   description: "Draws the corridor of descent speeds a lander can still stop from.",
 });
 
+// The plot draws only the last 400 m of the descent, in metres.
 const CEILING = 400;
+// The deceleration the lander is assumed to hold, in m/s squared, which sets the speed it can still stop from at each height.
 const BRAKING = 2;
 
 uplink.registerContribution({
@@ -27,6 +30,7 @@ uplink.registerContribution({
     const heights = Array.from({ length: 21 }, (_, i) => (CEILING * i) / 20);
     return [
       {
+        // This plot is this Uplink's own, so a plain string names its subject; one that other Uplinks add layers to is declared in PlotSubjectRegistry.
         subject: "descentcorridor",
         title: "Descent corridor",
         frame: { xDomain: [0, 50], yDomain: [0, CEILING], xUnit: "m/s", yUnit: "m" },
@@ -42,6 +46,7 @@ uplink.registerContribution({
           {
             id: "you",
             kind: "marker",
+            // Placed against the frame's 50 m/s: a faster descent is outside it, where the marker is clipped.
             at: { x: -climb, y: height },
             tone: "info",
             label: "You",

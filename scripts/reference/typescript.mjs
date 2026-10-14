@@ -183,7 +183,11 @@ function excludedFor(reflection, text) {
     for (const sig of r.signatures ?? []) walk(sig);
     // A parameter's name is a name, not a type: `value` in `value is LockedValue` is not the export `value`.
     for (const parameter of r.parameters ?? []) params.push(parameter.name);
-    for (const c of r.children ?? []) walk(c);
+    // A member's name is a name, not a type: `PerfBudget.clearRegistry` is not the export `clearRegistry`.
+    for (const c of r.children ?? []) {
+      params.push(c.name);
+      walk(c);
+    }
     for (const sig of [r.getSignature, r.setSignature]) if (sig) walk(sig);
   };
   if (reflection) walk(reflection);

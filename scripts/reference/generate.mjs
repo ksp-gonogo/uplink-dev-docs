@@ -135,7 +135,7 @@ function examplesMd(page, widgetName) {
   const settings = (e) => {
     const config = (e.scene ?? page.scene)?.config;
     if (page.kind !== "widget" || !config || Object.keys(config).length === 0) return "";
-    return `\n\nThe settings the tile has in this example. An operator sets them in the tile's settings, and they are saved with the dashboard layout; an Uplink does not apply them:\n\n\`\`\`json\n${JSON.stringify(config, null, 2)}\n\`\`\``;
+    return `\n\nThe settings this widget has in this example. An operator sets them in the widget's settings, and they are saved with the dashboard layout; an Uplink does not apply them:\n\n\`\`\`json\n${JSON.stringify(config, null, 2)}\n\`\`\``;
   };
   const one = (e) => `${demoMd(page, e.id, e.file, { code: page.kind !== "widget", label: label(e) })}${settings(e)}`;
   if (examples.length === 1) {
@@ -213,8 +213,9 @@ function storyExports(root, file) {
   );
 }
 
-/** A story's name as a heading: `eva-suit-low-o2` reads "Eva suit low o2". */
-const storyTitle = (shown) => shown.charAt(0).toUpperCase() + shown.slice(1).replace(/-/g, " ");
+/** A story's name as a heading: `eva-suit-low-o2` reads "EVA suit low O2", with the abbreviations its fixtures use in capitals. */
+const storyTitle = (shown) =>
+  (shown.charAt(0).toUpperCase() + shown.slice(1).replace(/-/g, " ")).replace(/\b(lko|ksc|eva|o2|co2|soi)\b/gi, (word) => word.toUpperCase());
 
 /**
  * The install profile a story is drawn against, from its name: one fixture
@@ -537,7 +538,9 @@ function widgetPage(page, record, sdk, kit, index) {
     const label = story.scene ? `The ${record.name} widget on the ${story.scene} scene` : `The ${record.name} widget, ${story.title}`;
     return [`### ${story.title} {#${story.id}}`, story.description ?? "", demoMd(page, story.id, undefined, { label })].filter(Boolean).join("\n\n");
   };
-  const states = stories.states.length === 0 ? [] : ["## States {#states}", ...stories.states.map(stateMd)];
+  const statesIntro =
+    "Each state is the widget drawn from one recorded situation. In a state whose link is lost, the connection to the vessel has dropped, so the widget keeps each reading at its last value and marks it as [held](/reference/concepts/held), or shows it empty where it keeps no last value; each description says which. LKO is low Kerbin orbit and KSC is the Kerbin Space Center.";
+  const states = stories.states.length === 0 ? [] : ["## States {#states}", [statesIntro, page.statesNote].filter(Boolean).join(" "), ...stories.states.map(stateMd)];
   const out = [
     widgetHeaderMd(record),
     `${code(SDK)} ${versionOf(SDK)} · ${code(KIT)} ${versionOf(KIT)} · ${code(TOOLS)} ${versionOf(TOOLS)}`,

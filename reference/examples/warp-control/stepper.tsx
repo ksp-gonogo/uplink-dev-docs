@@ -1,3 +1,4 @@
+// npm install @ksp-gonogo/sitrep-sdk @ksp-gonogo/ui-kit
 import {
   defineUplinkClient,
   registerAugment,
@@ -24,6 +25,7 @@ function CruiseButton() {
   const delay = useTelemetry("comms.delay");
   const setWarpIndex = useCommand("time.setWarpIndex");
   if (warp.state !== "observed") return null;
+  // warpRates lists the on-rails rate of each index and is null outside flight, where there is no index to find.
   const index = warp.value.warpRates?.findIndex((rate) => rate.equals(CRUISE_RATE));
   if (index === undefined || index < 0) return null;
   // Unknown delay is not long delay; no path home is the far end of it.

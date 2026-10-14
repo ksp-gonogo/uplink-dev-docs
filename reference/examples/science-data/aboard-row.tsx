@@ -1,3 +1,4 @@
+// npm install @ksp-gonogo/sitrep-sdk @ksp-gonogo/ui-kit
 import {
   defineUplinkClient,
   registerAugment,
@@ -13,6 +14,7 @@ const uplink = defineUplinkClient({
   description: "Adds the science worth of each file to the Science Data aboard rows.",
 });
 
+// The widget renders this once for each science subject, passing only that subject's id, so one subject with both a data file and a sample aboard gets one line.
 function Worth({ subjectId }: SlotProps<"science-data.aboard-row">) {
   const experiments = useTelemetry("science.experiments");
   if (experiments.state !== "observed") return null;
