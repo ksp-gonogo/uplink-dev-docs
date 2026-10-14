@@ -24,7 +24,7 @@ The client is a package the Gonogo app loads into its own page, so a widget is a
 
 <<< ../../example/client/src/topics.ts#maps
 
-The SDK types every core Topic in `TopicPayloadMap`. Your Uplink's Topics join it through this `declare module` block, with the payload types `codegen` generated from your contract slice, so `useTelemetry("example.heartbeat")` is typed exactly like a core Topic and a misspelt name does not compile. Add a line here for each Topic you add to the plugin. The imports below it serve the unit registrations further down the file, which [Publishing a Topic](/guide/topics#generating-the-client-s-types) covers. The commands are typed and registered in `client/src/commands.ts`, which [Sending a command](/guide/client-commands) covers.
+The SDK types every core Topic in `TopicPayloadMap`. Your Uplink's Topics join it through this `declare module` block, with the payload types `codegen` generated from your contract slice, so `useTelemetry("example.heartbeat")` is typed exactly like a core Topic and a misspelt name does not compile. Add a line here for each Topic you add to the plugin. The imports at the top of the file serve the unit registrations further down it, which [Publishing a Topic](/guide/topics#generating-the-client-s-types) shows. The commands are typed and registered in `client/src/commands.ts`, which [Sending a command](/guide/client-commands) covers.
 
 ## Registering the widget
 
@@ -39,7 +39,7 @@ At the foot of `client/src/Heartbeat/index.tsx`:
 - the `component` to render, and the `owner`
 - `channels`: every Topic the widget reads. Listing a Topic does not subscribe to it, since `useTelemetry` does that, but when the Uplink serving it reports itself degraded or unavailable the dashboard draws that Uplink's reason in place of the widget, and the generated page lists it
 
-`defaultConfig` and `actions` are optional. The scaffold writes them empty so the place to add them is in front of you. A widget with settings the operator can change gives a [`configComponent`](/reference/client/registering#ComponentDefinition.configComponent) and its starting `defaultConfig`, as [Settings an operator can change](#settings-an-operator-can-change) shows; a widget a key or a controller can drive declares its [`actions`](/reference/client/registering#ComponentDefinition.actions). Each widget id is unique across every Uplink, so start it with your Uplink's id.
+`defaultConfig` and `actions` are optional. The scaffold writes them empty so the place to add them is in front of you. A widget with settings the operator can change gives a [`configComponent`](/reference/client/registering#ComponentDefinition.configComponent) and its starting `defaultConfig`, as [Settings an operator can change](#settings-an-operator-can-change) shows; a widget a key or a controller can drive declares its [`actions`](/reference/client/registering#ComponentDefinition.actions), the things an operator can bind to a key or a controller button, and handles them with [`useActionInput`](/reference/client/actions#useActionInput), whose entry has a complete widget as its example. Each widget id is unique across every Uplink, so start it with your Uplink's id.
 
 ## Settings an operator can change
 
@@ -57,7 +57,7 @@ The widget itself, `client/src/Heartbeat/index.tsx`:
 
 This is the finished widget. The one `new` writes is the same less three things the later pages add: the `useCommand` line, the `resetButton` and `panelAside` ([Sending a command](/guide/client-commands)); the `reckoning` lines and `ModelledAlongside` ([Writing a reckoner](/guide/reckoners)); and the two sentences of its doc comment and description that mention them.
 
-`useTelemetry` returns the Topic's `TopicReading`: its latest value together with how current that value is. Every core Topic you can read this way is listed in [`TopicPayloadMap`](/reference/client/reading-telemetry#TopicPayloadMap), such as `vessel.identity` and `vessel.crew` below. `state` is one of:
+`useTelemetry` returns the Topic's `TopicReading`: its latest value together with how current that value is. Every core Topic you can read this way is listed in [`TopicPayloadMap`](/reference/client/reading-telemetry#TopicPayloadMap), such as `vessel.identity` and `vessel.crew` below; the entry for a Topic is its payload type, which lists its fields, and your editor shows them as you type the Topic's id. `state` is one of:
 
 <!--@include: @/.vitepress/includes/reading-states.md-->
 
@@ -65,7 +65,7 @@ A `held` reading also carries a `grade` saying why it is held, one of the [`Held
 
 The widget `new` writes draws the values while the reading is observed or [held](/reference/concepts/held), and says which of the other three it is otherwise, never a zero: a value you have not received is not a value of zero, and the two mean opposite things to an operator. The example adds the modelled count and the reset button to it.
 
-Each payload field is also on the reading as a `Reading` of its own, `heartbeat.ticks` beside `heartbeat.value.ticks`. Hand that to `Unit`, never the bare value: the field reading carries its own state, so `Unit` draws a held value with the held mark, and the null token when there is no value.
+Each payload field is also on the reading as a `Reading` of its own, `heartbeat.ticks` beside `heartbeat.value.ticks`. Hand that to `Unit`, never the bare value: the field reading carries its own state, so `Unit` draws a held value with the held mark, and the **null token** (the dash [`NULL_DISPLAY`](/reference/ui-kit/Unit#NULL_DISPLAY) holds, drawn where there is no value and never a zero) when there is none.
 
 The same goes for a list. An array field is read by index, so each item's fields are readings too, with the Topic's state: `crew.crew[index].experienceLevel` below is one crew member's level, and `Unit` marks it held with the rest. An item taken from `crew.value.crew` holds bare `Value`s, which `Unit` draws as a plain number with no mark, so a list that stopped updating would look current. Map over the payload for the items, and read each figure off the reading. The snippet is a component to put in a file of its own under `client/src/` and render inside a widget of yours, whose registration lists `channels: ["vessel.crew"]`:
 
@@ -86,11 +86,11 @@ In the heartbeat, `ModelledAlongside` and the `reckoning` lines draw this Uplink
 The widget is drawn entirely from `@ksp-gonogo/ui-kit`, the components the app's own widgets use, so it looks like them and reflows the way they do when the operator resizes its tile:
 
 - [**`Stack`**](/reference/ui-kit/Layout#Stack) lays children out in a column, with `gap` naming how far apart, such as `"related-compact"` for items that belong together
-- **`Panel`** is the widget's frame: `panelTitle` its heading, `sections` its body, `panelAside` a control in its header
+- [**`Panel`**](/reference/ui-kit/Panel) is the widget's frame: `panelTitle` its heading, `sections` its body, `panelAside` a control in its header
 - [**`Section`**](/reference/ui-kit/Layout#Section) groups a body's content, and the panel lays sections out in columns when the tile is wide enough
-- **`Unit`** draws a quantity with its symbol, choosing the unit that suits its size (1,500 metres draws as 1.5 kilometres; its [`format` prop](/reference/ui-kit/Unit#UnitProps) pins one, and its `as` prop converts to another of the same kind), so hand it values as they arrived. It is not the C# `Units` class, which names the unit a contract property is in
-- **`Text`** draws a string you have already formatted
-- **`EmptyState`** says why there is nothing to show
+- [**`Unit`**](/reference/ui-kit/Unit) draws a quantity with its symbol, choosing the unit that suits its size (1,500 metres draws as 1.5 kilometres; its [`format` prop](/reference/ui-kit/Unit#UnitProps) pins one, and its `as` prop converts to another of the same kind), so hand it values as they arrived. It is not the C# `Units` class, which names the unit a contract property is in
+- [**`Text`**](/reference/ui-kit/Typography#Text) draws a string you have already formatted
+- [**`EmptyState`**](/reference/ui-kit/EmptyState) says why there is nothing to show
 
 The [ui-kit reference](/reference/ui-kit/) has a page for every component, each with a live example.
 

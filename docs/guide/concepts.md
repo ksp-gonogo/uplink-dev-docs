@@ -32,11 +32,13 @@ The app's own widgets name **slots**, places an Uplink may add to. An **augment*
 
 ## Actions and bindings
 
-An **action** is something a widget can be told to do, such as step a value, which the operator can bind to a key, a joystick button or a physical device. A widget declares its actions when it registers and handles them in its body. See [Action and binding](/reference/concepts/action-and-binding).
+An **action** is something a widget can be told to do, such as step a value, which the operator can bind to a key, a joystick button or a physical device. A widget declares its actions when it registers and handles them in its body ([A widget](/guide/client-widget#registering-the-widget) says how; an Uplink needs actions only for a widget with something to drive). See [Action and binding](/reference/concepts/action-and-binding).
 
 ## Domains and seats
 
-Some widgets and extensions only make sense while a mod is present, such as one integrating a science mod. A **Domain** is that presence: an Uplink's extension names one in its [`requires`](/guide/extensions#AugmentDefinition.requires), and is mounted only while it is present, which starts with the first value its `<id>.available` Topic publishes, `true` or `false`. A **seat** is where the operator sits, at mission control or aboard the craft as its pilot, and a widget reading a Topic about the ground, such as the space centre or the career, stays at mission control, while every other widget, one reading an Uplink's own Topics included, is offered aboard as well. **Mission control** is where the operator sits on the ground, and **aboard** is where they sit as the craft's pilot. You do nothing for this: a widget that reads your Uplink's Topics is offered in both places. See [Domain and seat](/reference/concepts/domain-and-seat).
+Some widgets and extensions only make sense while a mod is present, such as one integrating a science mod. A **Domain** is that presence: an Uplink's extension names one in its [`requires`](/guide/extensions#AugmentDefinition.requires), and is mounted only while it is present, which starts with the first value its `<id>.available` Topic publishes, `true` or `false`. 
+
+A **seat** is where the operator sits: at **mission control**, on the ground, or **aboard** the craft as its pilot. A widget reading a Topic about the ground, such as the space centre or the career, stays at mission control; every other widget, one reading an Uplink's own Topics included, is offered aboard as well. You do nothing for this: a widget that reads your Uplink's Topics is offered in both places. See [Domain and seat](/reference/concepts/domain-and-seat).
 
 ## The main screen and stations
 
@@ -44,6 +46,6 @@ The app runs on one **main screen**, connected to the game, and any number of **
 
 ## The binary lane
 
-Most samples travel as JSON. A Topic that carries bytes, such as audio, travels on the **binary lane** instead, as raw bytes rather than JSON. An Uplink meets it only when it publishes bytes. See [Binary lane](/reference/concepts/binary-lane).
+Most samples travel as JSON. A Topic that carries bytes, such as audio, travels on the **binary lane** instead, as raw bytes rather than JSON. An Uplink meets it only when it publishes bytes: the plugin sets [`OpaquePayload`](/reference/mod/channels-and-emission#ChannelDeclaration.OpaquePayload) on the channel's declaration and its source returns a `byte[]`, or a list of them, which the mod frames as [`BinaryLane`](/reference/mod/serialization#BinaryLane) describes. No Topic in this Guide does this. See [Binary lane](/reference/concepts/binary-lane).
 
 Next: [Known limits](/guide/limits).
