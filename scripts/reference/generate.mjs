@@ -502,7 +502,7 @@ function howToMd(point, index) {
     const receives = shape ? `Its component receives ${shape} as props.` : "Its component receives no props.";
     return `An augment: ${linkedName("AugmentDefinition", index)} with \`augments: "${point.id}"\`, registered with ${linkedName("registerAugment", index)}. ${receives}`;
   }
-  return `A contribution: ${linkedName("ContributionDefinition", index)} with \`contributes: "${point.id}"\`, registered with your client handle's \`registerContribution\`. Its \`compute\` returns a list of ${shape}, or \`null\` for none.`;
+  return `A contribution: ${linkedName("ContributionDefinition", index)} with \`contributes: "${point.id}"\`, registered with the \`registerContribution\` method of your client handle, ${linkedName("UplinkClientHandle", index)}. Its \`compute\` returns a list of ${shape}, or \`null\` for none.`;
 }
 
 function linkedName(name, index) {
@@ -557,7 +557,7 @@ function widgetPage(page, record, sdk, kit, index) {
     }
     const story = stories.extensions.get(point.id);
     if (story) {
-      out.push(`#### Where it renders {#${story.id}}`, demoMd(page, story.id, undefined, { label: `Where ${point.id} renders on the ${record.name} widget` }));
+      out.push(`#### Where it renders {#${story.id}}`, `The ${record.name} widget with ${point.id} filled, as the example above fills it:`, demoMd(page, story.id, undefined, { label: `Where ${point.id} renders on the ${record.name} widget` }));
     }
     const name = point.type?.type === "reference" && !noProps(point.type) ? point.type.name : null;
     // A standard slot's type is the same on every widget, so it is linked to its one definition rather than printed again.
