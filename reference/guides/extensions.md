@@ -17,7 +17,8 @@ how the widget declares which places exist.
 An Uplink needs none of this to show its own widgets. Use it to put your
 mod's information inside one of the app's widgets, such as a badge on a crew
 row or a section in the Map View. The second half of the page is the
-reference for every type it names.
+reference for every type it names; the Reference's Client SDK pages do not
+repeat them.
 
 ## Augments
 

@@ -2,9 +2,9 @@
 
 The plugin is one class in `mod/`, `ExampleUplink.cs`. This page covers what Gonogo needs from it: how it is found, what its manifest declares, where its work is wired up, and how it reports its own health.
 
-The snippets on this page come from the finished example, so they already carry the `example.reset` command (`ResetCommand`, its declaration and its handler) that [Accepting a command](/guide/commands) adds. The file `new` writes is the same without those lines. The Health, unavailable and sampled-source snippets come from a separate file of sketches, compiled against the contract: they are not in the example, and their fields (`_modLoaded`, `_staleSamples`) stand for state your own plugin finds when the game loads, which [Wrapping a mod](/guide/wrapping-a-mod) shows being found.
+The snippets on this page come from the finished example, so they already carry the `example.reset` command (`ResetCommand`, its declaration and its handler) that [Accepting a command](/guide/commands) adds. The file `new` writes is the same without those lines. The Health, unavailable and sampled-source snippets come from a separate file of sketches, compiled against the contract: they are not in the example. Their fields (`_modLoaded`, `_staleSamples`) stand for state your own plugin finds when the game loads, which [Wrapping a mod](/guide/wrapping-a-mod) shows being found; the sketch class takes them as constructor arguments so the snippets compile, while your plugin class keeps a constructor with no parameters.
 
-Two threads matter throughout. The **main thread** is the game's own, the only one that may touch KSP. The **Courier thread** is the Gonogo mod's background thread, which samples every Topic and writes the stream; code running on it must never touch the game.
+Two threads matter throughout. The **main thread** is the game's own, the only one that may touch KSP. The **Courier thread** is the Gonogo mod's background thread, which samples every Topic and writes the telemetry stream the app reads ([Start here](/guide/#what-an-uplink-is)); code running on it must never touch the game.
 
 ## How Gonogo finds it
 
@@ -21,7 +21,7 @@ The class implements `ISitrepUplink`, which is three members: `Manifest`, `Regis
 `UplinkManifest` declares everything the Uplink publishes and accepts before any of it runs, and Gonogo refuses a handler for a command the manifest does not declare.
 
 - **`Id`** must equal the attribute's id
-- **`Version`, `Name`, `Author` and `Repo`** come from `Provenance`, a class `bake` writes into `mod/Provenance.g.cs` from `uplink.json` and `client/package.json`, so the plugin and the client always carry one version
+- **`Version`, `Name`, `Author` and `Repo`** come from `Provenance`, a class `bake` writes into `mod/Provenance.g.cs` from `uplink.json` and `client/package.json`, so the plugin and the client always carry one version. `new` has run `bake` for you, but these files are never committed, so a fresh clone of your repository runs `npx uplink-tools bake` from `client/` before the plugin compiles
 - **`ExpectedClientHash` and `ClientSource`**, also written by `bake`, say where the client bundle is and which bundle this plugin vouches for. The app loads a client only for a plugin that vouches for its hash ([Releasing and installing](/guide/release#how-the-app-loads-a-client))
 - **`Channels`** lists the Topics the plugin publishes ([Publishing a Topic](/guide/topics)): `Delivery`, `Emission` and `keyframeIntervalUt` in the heartbeat's declaration are covered there. `keyframeIntervalUt` is in UT, universal time, the game's clock in seconds ([Concepts](/guide/concepts#topics-and-samples)). `Kind` says how the value relates to time: `SampleKind.Continuous` says it moves between samples, which lets the client carry it forward with a forward model of its own, called a reckoner ([Writing a reckoner](/guide/reckoners)), and `Discrete` says it stands until the next sample replaces it. The finished example says `Continuous`; `new` writes `Discrete`
 - **`Commands`** lists the commands it accepts ([Accepting a command](/guide/commands))
@@ -34,8 +34,8 @@ The class implements `ISitrepUplink`, which is three members: `Manifest`, `Regis
 
 There are three ways to tell the app an Uplink cannot work, and each has its own job:
 
-- **`host.SetAvailability(Availability.Unavailable(reason))` and an early return** is for a condition you expect and can test for in `Register`, such as the wrapped mod not being installed. Nothing is registered, and the operator reads your reason in place of the Uplink's widgets. It only works while `Register` is running: called anywhere else, it is ignored and the mod logs that
-- **An exception thrown out of `Register`** is for a fault you did not expect. The Uplink is marked unavailable in the same way, the exception's message is the reason, and the mod writes a `[ChannelEngine]` line to `KSP.log` ([Releasing and installing](/guide/release#checking-it-loaded))
+- **`host.SetAvailability(Availability.Unavailable(reason))` and an early return** is for a condition you expect and can test for in `Register`, such as the wrapped mod not being installed. Nothing after it is registered (a wrapping Uplink registers its `<id>.available` source before it, as [Wrapping a mod](/guide/wrapping-a-mod#saying-the-mod-is-missing) shows), and the operator reads your reason in place of the Uplink's widgets. It only works while `Register` is running: called anywhere else, it is ignored and the mod logs that
+- **An exception thrown out of `Register`** is for a fault you did not expect. The Uplink is marked unavailable in the same way, the exception's message is the reason, and the mod writes a line marked `[ChannelEngine]`, the part of the mod that registers Uplinks, to `KSP.log` ([Releasing and installing](/guide/release#checking-it-loaded))
 - **`Health()` returning `UplinkHealth.Unavailable(detail)` or `UplinkHealth.Degraded(detail)`** is for a state that changes after load, such as the mod stopping its updates. The mod polls it, so it can recover. `Degraded` says the Uplink works but something it needs is missing or wrong; `Unavailable` says none of its Topics will carry anything
 
 There is no matching teardown: the Uplink lives as long as the game does, so anything `Register` installs stays installed.
@@ -48,9 +48,9 @@ There is no matching teardown: the Uplink lives as long as the game does, so any
 
 <!--@include: @/.vitepress/includes/uplink-health-states.md-->
 
-`UplinkHealth` is a read-only struct, so an object initialiser (`new UplinkHealth { State = ... }`) does not compile. Build one with the static member of `UplinkHealth` for its state, called as in the snippet below: the field `Healthy`, which has nothing to add, and the functions `Degraded(detail)` and `Unavailable(detail)`, which take the sentence the operator reads. The two functions also take an optional list of labelled facts, rows such as the version of the mod you depend on. The constructor, `new UplinkHealth(state, detail)`, builds the same value.
+`UplinkHealth` is a read-only struct, so an object initialiser (`new UplinkHealth { State = ... }`) does not compile. Build one with `UplinkHealth.Healthy`, a ready-made value for an Uplink with nothing to report, or with `UplinkHealth.Degraded(detail)` or `UplinkHealth.Unavailable(detail)`, which take the sentence the operator reads, as in the snippet below. The two functions also take an optional list of labelled facts, rows such as the version of the mod you depend on. The constructor, `new UplinkHealth(state, detail)`, builds the same value.
 
-The Gonogo mod polls it repeatedly: once per sample of the `system.uplinks` Topic, which the Gonogo mod publishes itself and which lists every installed Uplink with whether it is available and its health (the app reads it to decide which clients to load and what to draw in place of a widget whose Uplink is unwell), and off the main thread. So it must be cheap, must not block, and must not touch the game. The heartbeat has nothing to report; an Uplink wrapping another mod reports that mod's state:
+The Gonogo mod polls it repeatedly, once per sample of the `system.uplinks` Topic, and off the main thread. That Topic is one the mod publishes itself: it lists every installed Uplink with whether it is available and its health, and the app reads it to decide which clients to load and what to draw in place of a widget whose Uplink is unwell. So it must be cheap, must not block, and must not touch the game. The heartbeat has nothing to report; an Uplink wrapping another mod reports that mod's state:
 
 <<< ../../reference/examples/mod/GuideExamples.cs#health{cs}
 
@@ -84,11 +84,15 @@ A plugin that reads live game state, rather than the snapshot every source share
 
 A build that needs it and cannot find it says which of these to set.
 
-**A source registered with `IUplinkHost.AddSampledSource`** rather than `AddChannelSource`. It takes two functions: the first runs on the main thread, where reading the game is safe, and returns plain data; the second runs on the Courier thread with exactly what the first returned, and publishes it.
+**A source registered with `IUplinkHost.AddSampledSource`** rather than `AddChannelSource`. Register one this way when the value needs the game. It takes two functions: the first runs on the main thread, where reading the game is safe, and returns plain data; the second runs on the Courier thread with exactly what the first returned, and publishes it.
 
 <<< ../../reference/examples/mod/GuideExamples.cs#sampled{cs}
 
-The comment in that snippet assumes a `ChannelDeclaration` for `example.status` in the manifest's `Channels`, as the manifest above declares `example.heartbeat`: `host.Publisher` for a Topic the manifest does not declare is refused. The second argument to `Publish` is the game time the payload was true at.
+`host.Publisher` is refused for a Topic the manifest does not declare, so the manifest's `Channels` needs a `ChannelDeclaration` for `example.status`, as it has one for `example.heartbeat`:
+
+<<< ../../reference/examples/mod/GuideExamples.cs#status{cs}
+
+The second argument to `Publish` is the game time the payload was true at.
 
 A second overload takes, after the two functions, the Topic prefixes the source publishes (an exact Topic is its own prefix), and skips the main-thread read on every tick no client is watching them; [Wrapping a mod](/guide/wrapping-a-mod#reading-on-the-main-thread) uses it. Never pass a live game object, such as a `Vessel` or a `Part`, from the first function to the second: reading one off the main thread can crash the game.
 

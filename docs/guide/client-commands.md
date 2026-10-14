@@ -10,7 +10,7 @@ In `client/src/commands.ts`, which `new` already wrote, so there is nothing to a
 
 The snippets show the middle of the file. Its imports, which `new` wrote, are `registerUplinkCommand` from `@ksp-gonogo/sitrep-sdk` and `GENERATED_COMMAND_IDS`, `GENERATED_COMMAND_RAIL`, `GeneratedCommandArgsMap` and `GeneratedCommandReplyMap` from `./__generated__/command-map.js`.
 
-The SDK types every core command's arguments in `CommandArgsMap` and its reply in `CommandReplyMap`. Your commands join them through the two maps `codegen` writes into `client/src/__generated__/command-map.ts`, one row per `SitrepCommandAttribute` in the contract slice: the arguments type it generated, and the reply, `CommandResult` for a handler that returns `CommandResult` or `CommandResultOf` the payload type for one that returns data. A command you add to the slice is typed after `npm run codegen`, with no line of yours to add.
+The SDK types every core command's arguments in `CommandArgsMap` and its reply in `CommandReplyMap`. Your commands join them through the two maps `codegen` writes into `client/src/__generated__/command-map.ts`, one row per `SitrepCommandAttribute` in the contract slice: the arguments type it generated, and the reply, `CommandResult` for a handler that returns `CommandResult` or `CommandResultOf` the payload type for one that returns data. A command you add to the slice is typed after `npm run codegen`, with no line of yours to add. The file also exports `UPLINK_COMMAND_IDS`, this Uplink's own command ids as the generated map declares them, and `src/index.ts` re-exports it so a test or another package can name your commands without typing the strings.
 
 ## Registering the command {#the-command-known-at-runtime}
 
@@ -39,6 +39,14 @@ The reset command takes none. A command that does is sent by passing its argumen
 <<< ../../reference/examples/guide/ThrottleButtons.tsx
 
 The plugin's side of a command with arguments, a class and a handler that reads `args.Mode`, is on [Accepting a command](/guide/commands#a-command-about-a-craft).
+
+A handler that replies with data, such as that page's `example.setMode`, answers `send` with a reply whose `payload` holds the data, typed from the handler's `CommandResult<T>`. This sketch is not part of the worked Uplink:
+
+```tsx
+const setMode = useCommand("example.setMode");
+const reply = await setMode.send({ mode: 1 });
+const mode = reply.payload; // the number the handler returned, or null when it returned none
+```
 
 ## Destructive commands
 

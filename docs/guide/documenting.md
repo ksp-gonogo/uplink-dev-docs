@@ -4,13 +4,13 @@ An Uplink is documented in two places, both written next to the code: its genera
 
 ## The generated page
 
-`npm run page`, from `client/`, writes three files, the same three `npm run docs` writes: `README.md`, `gonogo-uplink.json` (what the app reads about the client before it loads it) and `docs/widgets.json` (each widget's registration, as a record). Each part of the page comes from one place:
+`npm run page`, from `client/`, writes four files, the same four `npm run docs` writes: `README.md`, `gonogo-uplink.json` (what the app reads about the client before it loads it), `docs/widgets.json` (each widget's registration, as a record) and `docs/spec.json` (the Uplink's Topics, commands and registrations as data, for tools). Each part of the page comes from one place:
 
 | On the page | Written in |
 | --- | --- |
 | The opening paragraph | `description` in `defineUplinkClient`, in `src/uplink.ts` |
 | The id and version | `id` and `version` in `defineUplinkClient` |
-| Built against | The packages the client was built with: the contract version (the wire contract's own `Major.Minor`, stamped on `Sitrep.Contract.dll`, not the package's release number; the numbers in the sample below, `40.2` and `6.0.0`, are that example's, and yours show the versions of the packages you installed) and the extension API version of the sdk and ui-kit (the version of the surface a client may call), the two versions the Gonogo mod and app check an Uplink against when they load one. Neither is the package version |
+| Built against | The packages the client was built with: two versions, which the Gonogo mod and app check an Uplink against when they load one. The contract version is the version of the wire types the mod speaks, a `Major.Minor` stamped on `Sitrep.Contract.dll`. The extension API version is the version of the surface a client may call, shared by the sdk and ui-kit. Neither is a package version. The numbers in the sample below, `40.2` and `6.0.0`, are that example's; yours show the versions of the packages you installed |
 | The Wire table | The plugin's manifest: each channel's Topic, payload type, delivery and delay |
 | The Commands tables | The contract slice's `SitrepCommandAttribute` classes, through the command map `codegen` writes: each command, its arguments type and its result, then each arguments type's fields |
 | Each widget's heading, paragraph and facts | Its `registerComponent` call: `name`, `description`, `channels`, `defaultSize`, and the number of its fixtures as Scenes |
@@ -21,11 +21,11 @@ Here is the example's, as `npm run page` writes it:
 
 <<< ../../example/client/README.md{md}
 
-To change the page, change what it is written from and run `npm run page` again. Never edit the three files by hand: `npm test` includes a check that fails when they no longer match what the client registers, and the next `npm run page` would overwrite the edit. Commit them with the change that moved them. `npm run page` refuses an Uplink or a widget with no description.
+To change the page, change what it is written from and run `npm run page` again. Never edit the four files by hand: `npm test` includes a check that fails when they no longer match what the client registers, and the next `npm run page` would overwrite the edit. Commit them with the change that moved them. `npm run page` refuses an Uplink or a widget with no description.
 
 ## The pictures
 
-`npm run page` writes the page with no browser and leaves the pictures alone, so until `npm run docs` has run the page names pictures that do not exist yet. `npm run docs` writes the same three files and draws a picture of every fixture into `docs/assets/`, which needs Chromium (`npx playwright install chromium`). Run it before you publish, and commit `docs/assets/` with the page. Publishing the client does not need the pictures: `release` and `publish` never read `docs/assets/`, so the client can go out first on a machine with no Chromium. Until the pictures are committed and pushed, the README's picture links show as broken images on the repository's page, and nothing else is affected.
+`npm run page` writes the page with no browser and leaves the pictures alone, so until `npm run docs` has run the page names pictures that do not exist yet. `npm run docs` writes the same four files and draws a picture of every fixture into `docs/assets/`, which needs Chromium (`npx playwright install chromium`). Run it before you publish, and commit `docs/assets/` with the page. Publishing the client does not need the pictures: `release` and `publish` never read `docs/assets/`, so the client can go out first on a machine with no Chromium. Until the pictures are committed and pushed, the README's picture links show as broken images on the repository's page, and nothing else is affected.
 
 A fixture's `_scene.caption` describes its picture to anyone who cannot see it, so say what the widget shows in that scene: "The Example Uplink publishing: 42 ticks since load, at UT 1,000,000", not "Heartbeat widget". [Testing](/guide/testing#fixtures) covers fixtures.
 

@@ -40,7 +40,7 @@ So a player needs only your plugin installed: the client follows from it.
 
 ## Hosting the client
 
-The order is: set the repository in `uplink.json` (`new --repo`), run `npm run release`, publish the bundle it built at `client.url`, then install the zip. `client.url` in `uplink.json` is where the app fetches the bundle, and it must be set before `release` bakes it, though the file need not exist there until a player's app loads it. With `--repo acme/example`, `new` points it at jsDelivr, which serves files from a GitHub repository:
+The order is: set the repository in `uplink.json` (`new --repo`), run `npm run release`, publish the bundle it built at `client.url`, then install the zip. `client.url` in `uplink.json` is where the app fetches the bundle, and it must be set before `release` bakes it, though the file need not exist there until a player's app loads it. With `--repo acme/example` (here `acme/example` stands for the `--repo` you gave `new`, and your own owner and name are in `client.url`), `new` points it at jsDelivr, which serves files from a GitHub repository:
 
 ```
 https://cdn.jsdelivr.net/gh/acme/example@releases/releases/example/0.0.1/example.client.js
@@ -62,7 +62,7 @@ It copies the built bundle and its `gonogo-uplink.json` into a worktree of the r
 
 ### Publishing by hand
 
-To publish the first version without `publish`, from the Uplink's folder, with git 2.42 or later (`git --version` shows it; the folder must be a git repository with at least one commit and an `origin` remote; run `git init`, commit and add the remote first if it is not):
+To publish the first version without `publish`, from the Uplink's folder, with git 2.42 or later (`git --version` shows it; older git has no `worktree add --orphan` and answers with its usage text, and [git-scm.com](https://git-scm.com/downloads) has a newer one; the folder must be a git repository with at least one commit and an `origin` remote; run `git init`, commit and add the remote first if it is not):
 
 ```bash
 git worktree add --orphan -b releases ../example-releases
@@ -72,7 +72,7 @@ cd ../example-releases
 git add releases && git commit -m "Release example 0.0.1" && git push -u origin releases
 ```
 
-`git worktree add --orphan` makes a worktree on a new branch with no history, so the bundles stay off your source branch, and `../example-releases` is any folder beside the Uplink's. In PowerShell, `mkdir -p` and `cp` are `New-Item -ItemType Directory -Force` and `Copy-Item` ([Known limits](/guide/limits#the-tools)). For a later version, `git worktree add ../example-releases releases` checks the branch out again, and the files go in that version's folder. Keep `gonogo-uplink.json` beside the bundle under exactly that name: the app finds it from the bundle's own URL.
+`git worktree add --orphan` makes a worktree on a new branch with no history, so the bundles stay off your source branch, and `../example-releases` is any folder beside the Uplink's. Outside WSL, in PowerShell, `mkdir -p` and `cp` are `New-Item -ItemType Directory -Force` and `Copy-Item` ([Known limits](/guide/limits#the-tools)). For a later version, `git worktree add ../example-releases releases` checks the branch out again, and the files go in that version's folder. Keep `gonogo-uplink.json` beside the bundle under exactly that name: the app finds it from the bundle's own URL.
 
 `new` writes this URL only when it knows the repository, from `--repo` or this directory's GitHub remote. With `--no-repo`, it writes a placeholder (the owner `your-github-owner`), and `release` refuses to run until you set `repo` and `client.url` in `uplink.json` to where the bundle will really be published ([uplink.json](/guide/uplink-json#what-release-refuses)). To dry-run the whole of `release` before you have a repository, set them to any owner and name other than the placeholder: `release` contacts nothing, it builds, bakes, compiles and zips, so the run proves every step works. The zip it writes names a URL that serves nothing, so do not install or share it; set the real values and run `release` again when the repository exists.
 
