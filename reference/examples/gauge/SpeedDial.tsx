@@ -11,7 +11,6 @@ export function SpeedDial() {
       max={value("m/s", 2400)}
       startAngle={225}
       sweep={270}
-      // TONE_MARK maps a tone to the colour a mark in that tone is drawn in, so the zone follows the theme.
       zones={[{ from: value("m/s", 1800), to: value("m/s", 2400), color: TONE_MARK.warn }]}
     />
   );

@@ -12,7 +12,7 @@ Do not write one for a value that changes on its own terms, such as a switch the
 
 ## Marking the value in the contract
 
-A model can be registered only for a value your contract slice marks as one a model may carry forward, and the app refuses a registration for a value nothing marks. Mark it in `ExamplePayloads.cs`, on the property the model carries, with `SitrepReckonableAttribute`. Its first argument names the kind of model (`ReckoningBases.RateIntegration` here: a rate multiplied by elapsed time), and the entries after it name the other inputs the model needs besides the value itself: a property of the same payload (`"ut"`, the game time the sample was true at), or `@<topic id>` for another Topic's whole payload and `@<topic id>#<path>` for one field of it. The build rejects a name that matches no property or Topic, so a misspelt input fails before the client does. The count advances by its rate against the sample's own `ut`:
+A model can be registered only for a value your contract slice marks as one a model may carry forward, and the app refuses a registration for a value nothing marks. Mark it in `ExamplePayloads.cs`, on the property the model carries, with `SitrepReckonableAttribute`. Its first argument names the kind of model (`ReckoningBases.RateIntegration` here: a rate multiplied by elapsed time), and its second names the other value in the same sample that the model needs besides the value itself (`"ut"`, the game time the sample was true at). The count advances by its rate against the sample's own `ut`:
 
 ```cs
 [SitrepUnit(Units.Count)]
@@ -44,8 +44,6 @@ The second half of the file:
 
 `UplinkClientHandle.registerReckoner` takes the Topic and a [`ReckonerDefinition`](/reference/client/reckoners#ReckonerDefinition), whose own `reckon` the app calls with the sample, the resolved `deps` and a `ReckonerFrame`, and which answers with a `ReckonerAnswer`; here it passes the frame's `history` and `reckonUt` on to `reckonTicks`.
 
-In the snippet's `window`, `maxSamples: 30` keeps at most thirty samples of the Topic and `minSamples: 2` is the fewest the model can work with (a rate needs two points). `_deps` is the second parameter of `reckon`, where the app passes the resolved `deps`; it is unused here because the model lists none.
-
 - **`deps`** lists other Topics the model reads, resolved before `reckon` runs. When one has not arrived, the app does not call `reckon` and the reading declines with `"input-absent"`. The heartbeat's model reads only its own Topic, so it lists none
 - **`window`** is a `ReckonerWindow`: how far back to keep samples of the Topic itself, in game seconds (`spanUt`), how many at most, and the fewest the model can work with. With fewer than `minSamples`, the reading declines with `"insufficient-history"` and `reckon` is not called. Without a window the model gets the latest sample alone
 
@@ -71,6 +69,6 @@ And test the widget with the model running, through a stream fixture: two sample
 
 <<< ../../example/client/src/Heartbeat/index.test.tsx#reckoned
 
-The `ut` in a payload and the `validAt` beside it name the same game time, the moment the sample was true at, so give them one value, as the test above does. `setupStreamFixture` (from `@ksp-gonogo/sitrep-sdk/testing`, the SDK's test helpers, which are part of the package you already installed) runs the app's own telemetry pipeline over a transport the test feeds by hand, so the reckoner is asked exactly as it is in the app. Its `pinnedUt` option fixes the game time the operator's screen is at, `stream.emit` sends a sample as the plugin would, and `stream.store.beginFrame()` makes the pipeline process what arrived, so React and the pipeline both settle before an assertion. [Testing](/guide/testing) covers fixtures.
+`setupStreamFixture` (from `@ksp-gonogo/sitrep-sdk/testing`, the SDK's test helpers, which are part of the package you already installed) runs the app's own telemetry pipeline over a transport the test feeds by hand, so the reckoner is asked exactly as it is in the app. Its `pinnedUt` option fixes the game time the operator's screen is at, `stream.emit` sends a sample as the plugin would, and `stream.store.beginFrame()` makes the pipeline process what arrived, so React and the pipeline both settle before an assertion. [Testing](/guide/testing) covers fixtures.
 
 Next: [Extensions](/guide/extensions).

@@ -739,7 +739,7 @@ function aliasParts(alias) {
   for (const arm of arms) {
     if (arm?.type === "reflection" && arm.declaration.children?.length) parts.push({ members: arm.declaration.children });
     else if (arm?.type === "reference" && arm.reflection?.kind === ReflectionKind.Interface) parts.push({ members: ownMembers(arm.reflection).own, from: arm.reflection });
-    else if (arm?.type === "reference") parts.push({ unread: arm.name, arm });
+    else if (arm?.type === "reference") parts.push({ unread: arm.name, say: unreadSentence(arm) });
     else if (arm?.type === "union" && arm.types.every((t) => t.type === "reflection")) {
       parts.push({ choices: arm.types.map((t) => (t.declaration.children ?? []).filter((c) => String(c.type) !== "never")) });
     }
@@ -751,21 +751,13 @@ function aliasParts(alias) {
  * What an arm the package cannot list adds to the props, said in words. A
  * built-in utility type is read through to the type it wraps rather than named.
  */
-function unreadSentence(arm, index) {
-  if (arm.refersToTypeParameter) return `It also takes every prop of the type ${code(arm.name)} it is given.`;
+function unreadSentence(arm) {
   const [subject, keys] = arm.typeArguments ?? [];
-  // A type parameter is whatever the caller supplies; a type with an entry is linked rather than called missing.
-  const of = (ref) => {
-    if (ref.refersToTypeParameter) return { say: `the type ${code(ref.name)} it is given`, entry: true };
-    const url = index.url(ref.name);
-    return url ? { say: linked(ref.name, index), entry: true } : { say: code(ref.name), entry: false };
-  };
-  const named = subject?.type === "reference" ? of(subject) : undefined;
-  const missing = (n) => (n.entry ? "" : ` ${n.say} is a type with no entry in this reference.`);
-  if (named && ["Readonly", "Partial", "Required"].includes(arm.name)) return `It also takes every prop of ${named.say}.${missing(named)}`.trim();
+  const named = subject?.type === "reference" ? code(subject.name) : undefined;
+  if (named && ["Readonly", "Partial", "Required"].includes(arm.name)) return `It also takes every prop of ${named}, a type with no entry in this reference.`;
   if (named && arm.name === "Omit") {
     const left = keys?.type === "literal" ? ` except ${code(String(keys.value))}` : keys?.type === "union" ? ` except ${keys.types.map((t) => code(String(t.value ?? t))).join(" and ")}` : "";
-    return `It also takes every prop of ${named.say}${left}.${missing(named)}`.trim();
+    return `It also takes every prop of ${named}${left}. ${named} is a type with no entry in this reference.`;
   }
   return `It also takes every prop of ${code(arm.name)}, a type with no entry in this reference.`;
 }
@@ -779,7 +771,7 @@ function aliasPropsMd(alias, index) {
   const unique = [...new Map(members.map((m) => [m.name, m])).values()];
   const notes = [];
   for (const part of parts) {
-    if (part.unread) notes.push(unreadSentence(part.arm, index));
+    if (part.unread) notes.push(part.say);
     if (part.choices) {
       const sets = part.choices.map((arm) => arm.map((m) => code(m.name)).join(" and "));
       notes.push(`Pass exactly one of ${sets.join(" or ")}.`);

@@ -20,7 +20,7 @@ Every name a plugin binds, by reflection or by a reference, comes from the mod's
 
 ## By reflection
 
-A class holding everything the plugin reads from the mod, found once, when the game loads, and called the **binder** in the rest of this page. This example reaches KSP's own `Planetarium` as a stand-in, so it compiles and runs with no mod installed (in a unit test outside the game it reports the mod missing, as `Assembly-CSharp` is not loaded); a real Uplink names its mod's assembly, types and members in the same places:
+A class holding everything the plugin reads from the mod, found once, when the game loads. This example reaches KSP's own `Planetarium` as a stand-in, so it compiles and runs with no mod installed (in a unit test outside the game it reports the mod missing, as `Assembly-CSharp` is not loaded); a real Uplink names its mod's assembly, types and members in the same places:
 
 <<< ../../reference/examples/mod/WrappingExample.cs#binder{cs}
 
@@ -88,7 +88,7 @@ Some of a mod's state is not the operator's (the person using the app) to see un
 
 In that snippet `unlocked` stands for however your plugin learns the state, such as a flag the main-thread read of the mod sets.
 
-`Evaluate` is handed the requirement and an `IGateArguments`, the arguments of the command being asked about (empty when a client asks only whether the command can be sent at all), and returns `GateVerdict.Pass()`, a refusal such as `GateVerdict.NotUnlocked` with the sentence the operator reads, or `GateVerdict.Unknown` when the state it needs has not been read. A kind a declaration names with no evaluator registered for it is a startup failure, checked once every Uplink has registered, so a gate cannot silently not exist. MechJeb's Uplink locks its autopilot commands by MechJeb's own unlock check, in [MechJebUnlockGate.cs](https://github.com/ksp-gonogo/gonogo-uplinks/blob/addc1fa21877b9de1e60909f4ec572d3b51a86ef/uplinks/mechjeb/mod/MechJebUnlockGate.cs).
+`Evaluate` returns `GateVerdict.Pass()`, a refusal such as `GateVerdict.NotUnlocked` with the sentence the operator reads, or `GateVerdict.Unknown` when the state it needs has not been read. A kind a declaration names with no evaluator registered for it is a startup failure, checked once every Uplink has registered, so a gate cannot silently not exist. MechJeb's Uplink locks its autopilot commands by MechJeb's own unlock check, in [MechJebUnlockGate.cs](https://github.com/ksp-gonogo/gonogo-uplinks/blob/addc1fa21877b9de1e60909f4ec572d3b51a86ef/uplinks/mechjeb/mod/MechJebUnlockGate.cs).
 
 ## Testing without the mod
 
@@ -106,11 +106,11 @@ Keep every line that names a KSP or mod type in its own file, and leave that fil
 - **`builtAgainst`**: the version of the mod you built and tested against
 - **`tier`**: how a player gets the mod, one word the generated page prints in brackets after the name. It is `"ckan"` for a mod CKAN installs or `"manual"` for one a player downloads by hand, as Principia's does
 
-`npx uplink-tools check`, run from `client/`, reports an error for a block with no `builtAgainst` or no `tier`, or a tier that is neither. The app does not read the block: the generated page prints it. The netkan's `depends` is what keeps a player from installing an Uplink that references the mod at compile time without that mod ([uplink.json](/guide/uplink-json)).
+`npx uplink-tools check` reports an error for a block with no `builtAgainst` or no `tier`, or a tier that is neither. The app does not read the block: the generated page prints it. The netkan's `depends` is what keeps a player from installing an Uplink that references the mod at compile time without that mod ([uplink.json](/guide/uplink-json)).
 
 ## What this page cannot show
 
-- **A wrapped mod running.** Every example here compiles against the contract alone; none runs against a mod, because an example that did would need KSP and that mod to compile. The linked gonogo-uplinks sources are the worked examples that do
+- **A wrapped mod running.** Every example here compiles against the contract alone; none runs against a mod, because this documentation is built with no KSP. The linked gonogo-uplinks sources are the worked examples that do
 - **Patching a mod with Harmony** to read a value at the moment it is written. Kerbalism's and kOS's Uplinks do it, against KSP and the mod; a snippet would need both to compile
 
 Next: [A widget](/guide/client-widget).

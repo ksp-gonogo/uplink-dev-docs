@@ -77,7 +77,7 @@ namespace ExampleUplink
         }
         #endregion sampled
 
-        #region status
+        #region subject
         /// <summary>The Topic describing the craft: a fact about a vessel, so it waits for the signal.</summary>
         public static readonly ChannelDeclaration Status = new ChannelDeclaration
         {
@@ -87,9 +87,7 @@ namespace ExampleUplink
             Delay = DelayRole.Delayed,
             Emission = new EmissionPolicy(keyframeIntervalUt: 30, quantum: EmissionQuantum.Absolute(0)),
         };
-        #endregion status
 
-        #region subject
         /// <summary>A delayed command to the craft <c>example.status</c> describes, which replies with a number.</summary>
         public static readonly CommandDeclaration SetMode = new CommandDeclaration
         {

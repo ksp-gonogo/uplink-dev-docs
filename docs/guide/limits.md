@@ -5,7 +5,7 @@ At the <Published field="name" /> <Published field="version" />, the published p
 ## The plugin
 
 - **A payload is a dictionary.** The Gonogo mod writes dictionaries, lists, strings, numbers and booleans, and its own contract's types, but not a class of yours, so `IChannelPublisher.Publish` takes `object?` and nothing checks a payload at compile time. Hold the dictionary's keys to the contract slice's type in the plugin's tests ([Publishing a Topic](/guide/topics#publishing))
-- **Command handlers run on the main thread because the shipped mod runs them there.** `Sitrep.Contract` does not promise it, and a test calls a handler from its own thread. A handler that touches the game, or state shared with another thread, records the request in a field and applies it from the main-thread half of an `IUplinkHost.AddSampledSource` ([The plugin class](/guide/plugin#calling-the-game)), reading and writing the field with `Interlocked`
+- **Command handlers run on the main thread because the shipped mod runs them there.** `Sitrep.Contract` does not promise it. A handler that must be safe on any thread records the request in a field and applies it from the main-thread half of an `IUplinkHost.AddSampledSource` ([The plugin class](/guide/plugin#calling-the-game)), reading and writing the field with `Interlocked`
 - **A successful load is silent.** Look for the Uplink's data, not for a line in `KSP.log` ([Releasing and installing](/guide/release#checking-it-loaded))
 
 ## The client
@@ -18,4 +18,4 @@ At the <Published field="name" /> <Published field="version" />, the published p
 ## The tools
 
 - **The version is in three places**: `client/package.json`, `UPLINK_VERSION` in `client/src/uplink.ts`, and the folder in `client.url`. `release` refuses while they disagree, but changing them is yours ([Releasing and installing](/guide/release#a-new-version))
-- **`new` is supported on macOS and Linux**, not on Windows. Its commands need only Node and the .NET SDK, but nothing checks them there; under WSL they run in Linux, the tested setup. The shell lines in this Guide are POSIX; outside WSL, in PowerShell, `mkdir -p <dir>` is `New-Item -ItemType Directory -Force <dir>` and `cp` is `Copy-Item`
+- **`new` is supported on macOS and Linux**, not on Windows. Its commands need only Node and the .NET SDK, but nothing checks them there; under WSL they run in Linux, the tested setup. The shell lines in this Guide are POSIX: in PowerShell, `mkdir -p <dir>` is `New-Item -ItemType Directory -Force <dir>` and `cp` is `Copy-Item`

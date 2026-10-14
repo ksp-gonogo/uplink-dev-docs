@@ -16,7 +16,7 @@ Every Topic's payload is a class in the contract slice, carrying three attribute
 - **`SitrepTopicAttribute`** names the Topic it is the payload of
 - **`TsInterface`**, from the [Reinforced.Typings](https://www.nuget.org/packages/Reinforced.Typings) package codegen runs, tells codegen to write a TypeScript interface for it. It sits inside `#if SITREP_CODEGEN` because it exists only in the build `codegen` runs, never in the assembly you ship, and so does the `using Reinforced.Typings.Attributes;` at the top of the file
 
-In the finished example the heartbeat's `Ticks` property also carries `SitrepReckonableAttribute` (`new` does not write it), which says the client may carry the value forward between samples with a forward model of its own: its first argument names the kind of model (`ReckoningBases.RateIntegration`, a rate carried forward) and its second the other input the model needs, named as a property of the same payload (`"ut"`, the game time of the sample). Add it when you write a reckoner ([Writing a reckoner](/guide/reckoners#marking-the-value-in-the-contract)).
+In the finished example the heartbeat's `Ticks` property also carries `SitrepReckonableAttribute` (`new` does not write it), which says the client may carry the value forward between samples with a forward model of its own: its first argument names the kind of model (`ReckoningBases.RateIntegration`, a rate carried forward) and its second the other published value the model needs (`"ut"`, the game time of the sample). Add it when you write a reckoner ([Writing a reckoner](/guide/reckoners#marking-the-value-in-the-contract)).
 
 A property carrying `SitrepUnitAttribute` reaches the client as a quantity in that unit, such as `Value<"ut">` for `Units.UniversalTime`. [`Units`](/reference/mod/serialization#Units), on the Serialization page, lists every unit, and [How each unit is drawn](#how-each-unit-is-drawn), below, gives each one's id and how it reads; the ones an Uplink reaches for most:
 
@@ -30,7 +30,7 @@ A property carrying `SitrepUnitAttribute` reaches the client as a quantity in th
 | `Units.Ratio` | `"ratio"` | a fraction from 0 to 1, drawn as a percentage |
 | `Units.Count` | `"count"` | a whole number of things, such as crew or samples |
 | `Units.Funds`, `Units.Science`, `Units.Reputation` | `"funds"`, `"science"`, `"rep"` | a career resource |
-| `Units.Id`, `Units.Text`, `Units.Flag`, `Units.Enumeration` | `"id"`, `"text"`, `"flag"`, `"enum"` | a field that is not a measured quantity: an identifier, a string, a boolean, a member of an enum |
+| `Units.Id`, `Units.Text`, `Units.Flag`, `Units.Enumeration` | `"id"`, `"text"`, `"flag"`, `"enum"` | a field that is not a quantity: an identifier, a string, a boolean, a member of an enum |
 
 Each member is the client's unit id: `Units.MetresPerSecond` is the string `"m/s"`, so a property tagged with it reads as `Value<"m/s">` and `value("m/s", 3)` makes one. The wire carries the unit named, never a converted one, and `Unit` picks the symbol to draw: a mass tagged `Units.Tonnes` is handed to `Unit` as it arrived. [`UNIT_DEFINITIONS`](/reference/client/units-and-values#UNIT_DEFINITIONS) lists every id the SDK knows.
 
@@ -38,15 +38,13 @@ When the catalog lacks a unit your Uplink needs, tag the property with a plain s
 
 <<< ../../reference/examples/guide/snackUnit.ts
 
-`ladder` and `rungs` are optional: a unit with no ladder is always drawn as itself, and a `ladder` with `rungs` lets `Unit` move it between steps as it does metres and kilometres ([`UnitDeclaration`](/reference/client/units-and-values#UnitDeclaration) and [`registerUnit`](/reference/client/units-and-values#registerUnit) list them). From then on `Unit`, `Meter` and `Band` take it like a built-in.
+From then on `Unit`, `Meter` and `Band` take it like a built-in.
 
 A string meant to be read by a person, such as a name or a status message, takes `Units.Text`; a string that identifies something and is never read as prose takes `Units.Id`. A property that holds a list of a nested payload type, such as `List<Alarm>`, is supported: codegen writes `Alarm[]`, the nested type needs its own entry in the wire types below, and the units on its fields do the describing, so the list property itself carries no `SitrepUnitAttribute`.
 
 A nullable property reaches the client as a field that can be `null`. The doc comments reach the client too, so say what each field is, its unit and when it is `null`. A paragraph inside `<internal>` stays in the C#, for notes meant only for whoever maintains the plugin.
 
 Name Topics `<uplinkId>.<thing>`. The prefix keeps them clear of every other Uplink's.
-
-The class is the type of the payload, but the plugin publishes a dictionary and not an instance of it ([Publishing](#publishing) below), so the dictionary's keys and this class are kept in step by hand.
 
 ### How each unit is drawn
 
@@ -99,7 +97,7 @@ A vector field is a `Vec3`, which carries x, y and z and nothing about what they
 | `Units.ResourceUnits` | `"units"` | `1234.5` | 1234.5 units |
 | `Units.ResourceUnitsPerSecond` | `"units/s"` | `1.5` | 1.50 units/s |
 
-`Units.Id` is drawn as its plain number, as the table shows. `Units.Text`, `Units.Flag`, `Units.Enumeration` and `Units.NotApplicable` name a field that is not a quantity at all (`"text"`, `"flag"`, `"enum"`, `"n/a"`), so `Unit` does not draw them: a string, a boolean or an enum is read from the reading and drawn by the widget.
+`Units.Text`, `Units.Flag`, `Units.Enumeration` and `Units.NotApplicable` name a field that is not a quantity (`"text"`, `"flag"`, `"enum"`, `"n/a"`), so `Unit` does not draw them: a string, a boolean or an enum is read from the reading and drawn by the widget.
 
 ## Generating the client's types
 
@@ -127,7 +125,7 @@ The manifest's `Channels` list declares each Topic with a `ChannelDeclaration`:
 <<< ../../example/mod/ExampleUplink.cs#channels{cs}
 
 - **`Topic`** is the name, exactly as the payload type's `SitrepTopicAttribute` gives it
-- **`Delivery`**: `Delivery.LossyLatest` drops a superseded sample under load, which is right for anything a later value replaces. `Delivery.ReliableOrdered` keeps every sample in order, for events that cannot be dropped
+- **`Delivery`**: `Delivery.LossyLatest` drops a superseded sample under load, which is right for anything a later value replaces. `ReliableOrdered` keeps every sample in order, for events that cannot be dropped
 - **`Delay`**: `DelayRole.Delayed` holds each sample for the signal delay between the craft and the operator's command centre, so the operator sees it when a real signal would arrive. `TrueNow` skips the delay, for facts about the ground or about the connection itself, like this heartbeat. A fact about a craft is `Delayed`
 - **`Emission`**: an `EmissionPolicy`. `keyframeIntervalUt` is the longest a Topic goes without a sample, in game seconds; `quantum`, an `EmissionQuantum`, is how much a number must change before a new sample goes out early. `EmissionQuantum.Absolute(0)` sends one on any change
 
@@ -137,7 +135,7 @@ Emission is counted in game seconds, and under time warp a game second passes in
 
 The quantum applies to numbers only. A payload that is not a number, such as a list, a record or a string, is sent whenever it differs by value from the last one sent, so a list holding a countdown differs on every sample and is sent on every one. Two more arguments of `EmissionPolicy`, in game seconds like the rest, limit that, and they apply to every payload whatever its type:
 
-- **`minSampleIntervalUt`** is how often, in game seconds, a new sample is looked at at all: a sample arriving sooner than this after the last one that was looked at is dropped without being compared with the last one sent. `0`, the default, looks at every sample. A keyframe that is due is sent regardless
+- **`minSampleIntervalUt`** is the least game time between two samples that are even compared with the last one sent. `0`, the default, compares every sample. A keyframe that is due is sent regardless
 - **`maxRateIntervalUt`** is the least game time between two changes sent, however often the value differs. `0`, the default, sets no limit. Keyframes are not held back by it
 
 ```cs
