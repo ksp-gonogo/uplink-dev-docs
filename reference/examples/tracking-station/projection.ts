@@ -1,22 +1,22 @@
 import {
   defineUplinkClient,
   stillTrue,
-  type SystemViewProjection,
+  type TrackingStationProjection,
 } from "@ksp-gonogo/sitrep-sdk";
 
 const uplink = defineUplinkClient({
   id: "pairframes",
   version: "1.0.0",
   name: "Pair Frames",
-  description: "Offers a frame that turns with a body and its parent on the System View.",
+  description: "Offers a frame that turns with a body and its parent on the Tracking Station.",
 });
 
 uplink.registerContribution({
   id: "rotating-with-parent",
-  contributes: "system-view.projection",
-  deps: ["system.bodies"],
-  compute: (topics): SystemViewProjection[] => {
-    const bodies = stillTrue(topics["system.bodies"], undefined)?.bodies ?? [];
+  contributes: "tracking-station.projection",
+  deps: ["trackingStation.bodies"],
+  compute: (topics): TrackingStationProjection[] => {
+    const bodies = stillTrue(topics["trackingStation.bodies"], undefined)?.bodies ?? [];
     return bodies.flatMap((body) => {
       if (body.parentIndex == null || body.parentIndex === body.index) return [];
       return [

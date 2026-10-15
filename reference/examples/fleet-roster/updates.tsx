@@ -1,4 +1,5 @@
 import {
+  CatalogContact,
   defineUplinkClient,
   registerAugment,
   type SlotProps,
@@ -14,26 +15,36 @@ const uplink = defineUplinkClient({
   description: "Adds a note to the Fleet Roster updates when a vessel has gone silent.",
 });
 
+const CONTACT_LABEL: Record<CatalogContact, string> = {
+  [CatalogContact.InContact]: "In contact",
+  [CatalogContact.Silent]: "Silent",
+  [CatalogContact.Overdue]: "Overdue",
+  [CatalogContact.Lost]: "Lost",
+  [CatalogContact.Gone]: "Gone",
+};
+
 function SilenceNote({
   vesselId,
   compact,
 }: SlotProps<"fleet-roster.updates">) {
-  // `fleet.silence` lists every vessel in one payload; a single vessel's own state is on `silence.<guid>.state`.
-  const silence = useTelemetry("fleet.silence");
-  if (silence.state !== "observed") return null;
-  const entry = silence.value.vessels.find((v) => v.vesselId === vesselId);
-  // `state` is "Nominal" (in contact), "Silent" or "Lost"; `deadlineBasis` names what the deadline rests on.
-  if (!entry || entry.state === "Nominal") return null;
+  const catalog = useTelemetry("trackingStation.catalog");
+  if (catalog.state !== "observed") return null;
+  const entry = catalog.value.entries.find((e) => e.vesselId === vesselId);
+  // `contact` is absent where no word of any route to the craft has reached this centre, and that is not "in contact".
+  const contact = entry?.contact;
+  if (contact === undefined || contact === null || contact === CatalogContact.InContact) return null;
+  const label = CONTACT_LABEL[contact];
   if (compact) {
     return (
       <Badge tone="warn" size="sm">
-        {entry.state}
+        {label}
       </Badge>
     );
   }
+  const overdueAfter = entry?.overdueAfterUt;
   return (
     <Text size="sm" level="muted">
-      Not answering, a {entry.deadlineBasis} deadline applies
+      {overdueAfter == null ? "Not answering" : `Not answering, overdue after UT ${Math.round(overdueAfter.magnitude)}`}
     </Text>
   );
 }
@@ -42,6 +53,6 @@ registerAugment({
   id: "fleet-silence-note",
   augments: "fleet-roster.updates",
   component: SilenceNote,
-  channels: ["fleet.silence"],
+  channels: ["trackingStation.catalog"],
   owner: uplink,
 });

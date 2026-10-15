@@ -9,7 +9,7 @@ const uplink = defineUplinkClient({
   id: "launchsites",
   version: "1.0.0",
   name: "Launch Sites",
-  description: "Marks the launch sites on the Map View.",
+  description: "Marks the launch sites on the Ground Track.",
 });
 
 function KerbalSpaceCenter({
@@ -17,7 +17,7 @@ function KerbalSpaceCenter({
   height,
   project,
   bodyName,
-}: SlotProps<"map-view.overlay">) {
+}: SlotProps<"ground-track.overlay">) {
   if (bodyName !== "Kerbin") return null;
   const { x, y } = project(-0.0972, -74.5577);
   return (
@@ -44,7 +44,7 @@ function KerbalSpaceCenter({
 
 registerAugment({
   id: "launchsites-ksc",
-  augments: "map-view.overlay",
+  augments: "ground-track.overlay",
   component: KerbalSpaceCenter,
   owner: uplink,
 });

@@ -1,5 +1,5 @@
 {
-  "subscribed": ["vessel.identity", "system.bodies"],
+  "subscribed": ["vessel.identity", "trackingStation.bodies"],
   "emits": [
     {
       "topic": "vessel.identity",
@@ -13,7 +13,7 @@
       }
     },
     {
-      "topic": "system.bodies",
+      "topic": "trackingStation.bodies",
       "payload": {
         "bodies": [
           {

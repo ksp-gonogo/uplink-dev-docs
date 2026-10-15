@@ -16,7 +16,7 @@ how the widget declares which places exist.
 
 An Uplink needs none of this to show its own widgets. Use it to put your
 mod's information inside one of the app's widgets, such as a badge on a crew
-row or a section in the Map View. The second half of the page is the
+row or a section in the Ground Track. The second half of the page is the
 reference for every type it names; the Reference's Client SDK pages do not
 repeat them.
 
@@ -92,7 +92,7 @@ entries (they are in band 0), so the example uses 0 to draw beside them:
 
 ## Search terms
 
-A widget that draws a list with a search box, such as Experiments, Resource Ops, Science Data and Tech Tree, can offer one-press terms above it. A `filters` contribution returns the terms, plain strings, and the widget shows each as a toggle that narrows the list to rows containing it. The slot id is the widget's id and `filters`:
+A widget that draws a list with a search box, such as Experiments, Resource Ops, Science Data and Research and Development, can offer one-press terms above it. A `filters` contribution returns the terms, plain strings, and the widget shows each as a toggle that narrows the list to rows containing it. The slot id is the widget's id and `filters`:
 
 <<< ../../reference/examples/extensions/filter-terms.ts
 

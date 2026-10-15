@@ -9,7 +9,7 @@ The Uplink the Gonogo Uplink Guide builds: a heartbeat it publishes, a command t
 | --- | --- |
 | Uplink id | `example` |
 | Version | `0.0.1` |
-| Built against | contract 40.2, extension API 6.0.0 |
+| Built against | contract 44.2, extension API 6.0.0 |
 
 ## Wire
 
@@ -37,8 +37,8 @@ How many samples the Example Uplink has published, and the game time of the late
 | --- | --- |
 | Widget id | `example-heartbeat` |
 | Reads | `example.heartbeat` |
-| Default size | 6 × 4 |
-| Smallest size | 5 × 4 |
+| Default size, in grid units | 6 × 4 |
+| Smallest size, in grid units | 5 × 4 |
 | Scenes | 1 |
 
 ## Models

@@ -87,7 +87,7 @@ namespace ExampleUplink
             host.SetSignalDelaySource(_ => new CommsDelay());
             host.SetVesselDelay("vessel-id", 1.5);
             host.SetCentreDelay("centre-a", "centre-b", 0.2);
-            host.SetHomeCommandDelay("centre-id", 1.5);
+            host.SetHomeCommandDelays(new Dictionary<string, double> { ["centre-id"] = 1.5 });
             host.SetActiveVesselDelays(new Dictionary<string, double> { ["centre-id"] = 1.5 });
             host.SetVesselConnectivity("vessel-id", true);
             host.SetConnectivitySource(_ => true);

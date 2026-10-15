@@ -21,7 +21,8 @@ uplink.registerContribution({
     const parts = observedValue(topics["vessel.parts"])?.parts ?? [];
     return parts.flatMap((part) => {
       const ore = part.resources.Ore;
-      if (!ore) return [];
+      // An amount or capacity that is absent is not zero, so such a tank gets no meter.
+      if (!ore?.amount || !ore.maxAmount) return [];
       const low = ore.amount.lessThan(ore.maxAmount.scaled(LOW_ORE));
       return [
         {

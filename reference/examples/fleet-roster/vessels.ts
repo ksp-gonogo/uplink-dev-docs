@@ -1,8 +1,8 @@
 import { type TopicPayload, type WireOf } from "@ksp-gonogo/sitrep-sdk";
 
-/** The `system.vessels` value every Fleet Roster example draws, as the Gonogo mod sends it. */
-export const systemVessels: WireOf<TopicPayload<"system.vessels">> = {
-  vessels: [
+/** The `trackingStation.catalog` value every Fleet Roster example draws, as the Gonogo mod sends it. */
+export const trackingCatalog: WireOf<TopicPayload<"trackingStation.catalog">> = {
+  entries: [
     {
       vesselId: "v-station-1",
       name: "Kerbin Station Alpha",
@@ -46,22 +46,10 @@ export const systemVessels: WireOf<TopicPayload<"system.vessels">> = {
       crewCapacity: 1,
       commsConnected: false,
       commsControlSource: 0,
-    },
-  ],
-};
-
-/** The `fleet.silence` value the Fleet Roster updates example reads: Eve Orbiter Charlie has stopped answering. */
-export const fleetSilence: WireOf<TopicPayload<"fleet.silence">> = {
-  vessels: [
-    { vesselId: "v-station-1", state: "Nominal" },
-    { vesselId: "v-probe-mun", state: "Nominal" },
-    { vesselId: "v-lander-duna", state: "Nominal" },
-    {
-      vesselId: "v-orbiter-eve",
-      state: "Silent",
-      silenceSinceUt: 3_000_000,
-      deadlineUt: 3_400_000,
-      deadlineBasis: "orbital-period",
+      contact: 1,
+      lastContactUt: 3_000_000,
+      expectedReturnUt: 3_400_000,
+      overdueAfterUt: 3_600_000,
     },
   ],
 };

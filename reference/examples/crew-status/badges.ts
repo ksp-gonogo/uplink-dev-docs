@@ -17,7 +17,8 @@ uplink.registerContribution({
   deps: ["vessel.crew"],
   compute: (topics): BadgeEntry[] | null => {
     const crew = stillTrue(topics["vessel.crew"], undefined);
-    if (!crew) return null;
+    // A seat count or capacity that is absent is not zero, so there is no figure to badge.
+    if (!crew || !crew.capacity || !crew.count) return null;
     const free = crew.capacity.magnitude - crew.count.magnitude;
     return [{ id: "free-seats", label: `Seats free: ${free}`, tone: "info" }];
   },

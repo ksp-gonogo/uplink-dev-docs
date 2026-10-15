@@ -8,7 +8,7 @@ const uplink = defineUplinkClient({
   id: "relayring",
   version: "1.0.0",
   name: "Relay Ring",
-  description: "Draws a ring of relay satellites around Kerbin on the System View.",
+  description: "Draws a ring of relay satellites around Kerbin on the Tracking Station.",
 });
 
 const SYNCHRONOUS_SMA = 3_463_330;
@@ -16,10 +16,10 @@ const RELAYS = 3;
 
 uplink.registerContribution({
   id: "kerbin-relays",
-  contributes: "system-view.entities",
-  deps: ["system.bodies"],
+  contributes: "tracking-station.entities",
+  deps: ["trackingStation.bodies"],
   compute: (topics): SystemEntity[] => {
-    const hasKerbin = stillTrue(topics["system.bodies"], undefined)?.bodies.some(
+    const hasKerbin = stillTrue(topics["trackingStation.bodies"], undefined)?.bodies.some(
       (body) => body.name === "Kerbin",
     );
     if (!hasKerbin) return [];

@@ -10,7 +10,7 @@ const uplink = defineUplinkClient({
   id: "surveyzones",
   version: "1.0.0",
   name: "Survey Zones",
-  description: "Draws survey zones as the base layer of the Map View.",
+  description: "Draws survey zones as the base layer of the Ground Track.",
 });
 
 const LAYER_ID = "surveyzones-tint";
@@ -48,7 +48,7 @@ function keepRevealed(ctx: CanvasRenderingContext2D, gate: MapCoverageGate) {
   ctx.drawImage(mask, 0, 0, WIDTH, HEIGHT);
 }
 
-function SurveyZones({ bodyId, coverageGate, onLayer }: SlotProps<"map-view.base">) {
+function SurveyZones({ bodyId, coverageGate, onLayer }: SlotProps<"ground-track.base">) {
   const drawn = useRef(0);
   useEffect(() => {
     if (bodyId !== "Kerbin") return;
@@ -71,7 +71,7 @@ function SurveyZones({ bodyId, coverageGate, onLayer }: SlotProps<"map-view.base
 
 registerAugment({
   id: LAYER_ID,
-  augments: "map-view.base",
+  augments: "ground-track.base",
   component: SurveyZones,
   // A tint over the stock texture, which stays beneath it, so suppressesVanillaBase is left unset.
   owner: uplink,

@@ -9,7 +9,7 @@ const uplink = defineUplinkClient({
   id: "dockangles",
   version: "1.0.0",
   name: "Dock Angles",
-  description: "Reads out the docking approach angles over the Targeting view.",
+  description: "Reads out the docking approach angles over the Rendezvous view.",
 });
 
 function AngleReadout({
@@ -18,7 +18,7 @@ function AngleReadout({
   aligned,
   ax,
   ay,
-}: SlotProps<"targeting.overlay">) {
+}: SlotProps<"rendezvous.overlay">) {
   if (ax === undefined || ay === undefined) return null;
   return (
     <Box
@@ -38,7 +38,7 @@ function AngleReadout({
 
 registerAugment({
   id: "dockangles-readout",
-  augments: "targeting.overlay",
+  augments: "rendezvous.overlay",
   component: AngleReadout,
   owner: uplink,
 });

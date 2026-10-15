@@ -15,7 +15,7 @@ const uplink = defineUplinkClient({
 
 function SynchronousRing({ center, scale }: SlotProps<"orbit-view.overlay">) {
   const identity = useTelemetry("vessel.identity");
-  const bodies = useTelemetry("system.bodies");
+  const bodies = useTelemetry("trackingStation.bodies");
   if (identity.state !== "observed" || bodies.state !== "observed") return null;
   const body = bodies.value.bodies.find(
     (candidate) => candidate.index === identity.value.parentBodyIndex,
@@ -56,6 +56,6 @@ registerAugment({
   id: "synchronousorbit-ring",
   augments: "orbit-view.overlay",
   component: SynchronousRing,
-  channels: ["vessel.identity", "system.bodies"],
+  channels: ["vessel.identity", "trackingStation.bodies"],
   owner: uplink,
 });

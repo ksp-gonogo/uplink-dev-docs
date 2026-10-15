@@ -1,20 +1,20 @@
 import {
   defineUplinkClient,
-  type AdminBuildingScreenEntry,
+  type AdministrationBuildingScreenEntry,
 } from "@ksp-gonogo/sitrep-sdk";
 
 const uplink = defineUplinkClient({
   id: "admintabs",
   version: "1.0.0",
   name: "Admin Tabs",
-  description: "Adds a tab per department to the Admin Building widget.",
+  description: "Adds a tab per department to the Administration Building widget.",
 });
 
 uplink.registerContribution({
   id: "department-tabs",
-  contributes: "admin-building.screens",
+  contributes: "administration-building.screens",
   deps: [],
-  compute: (): AdminBuildingScreenEntry[] => [
+  compute: (): AdministrationBuildingScreenEntry[] => [
     {
       id: "operations",
       label: "Operations",

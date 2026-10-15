@@ -80,13 +80,33 @@ function joinCodeSpanTags(lines) {
  */
 function vueSafe(md) {
   let fenced = false;
-  return joinCodeSpanTags(md.split("\n"))
-    .map((line) => {
-      if (/^\s*```/.test(line)) fenced = !fenced;
-      if (fenced || !line.includes("{{")) return line;
-      return line.replace(/`([^`]*\{\{[^`]*)`/g, (_, inner) => `<code v-pre>${htmlEscape(inner)}</code>`);
-    })
-    .join("\n");
+  const out = [];
+  let paragraph = [];
+  // A code span can wrap across the lines of one paragraph, so the paragraph is rewritten as a whole.
+  const flush = () => {
+    if (paragraph.length === 0) return;
+    const text = paragraph.join("\n");
+    out.push(
+      text.includes("{{")
+        ? text.replace(/`([^`]*\{\{[^`]*)`/g, (_, inner) => `<code v-pre>${htmlEscape(inner)}</code>`)
+        : text,
+    );
+    paragraph = [];
+  };
+  for (const line of joinCodeSpanTags(md.split("\n"))) {
+    if (/^\s*```/.test(line)) {
+      flush();
+      fenced = !fenced;
+      out.push(line);
+    } else if (fenced || line.trim() === "") {
+      flush();
+      out.push(line);
+    } else {
+      paragraph.push(line);
+    }
+  }
+  flush();
+  return out.join("\n");
 }
 
 /** Whether a page shows live examples, which widen its column on a wide screen. */

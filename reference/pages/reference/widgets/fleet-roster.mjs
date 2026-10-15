@@ -8,8 +8,7 @@ export default {
     w: 10,
     h: 10,
     feeds: {
-      "system.vessels": { file: FEED, export: "systemVessels" },
-      "fleet.silence": { file: FEED, export: "fleetSilence" },
+      "trackingStation.catalog": { file: FEED, export: "trackingCatalog" },
     },
   },
   examples: [{ id: "fleet-roster", file: FEED }],

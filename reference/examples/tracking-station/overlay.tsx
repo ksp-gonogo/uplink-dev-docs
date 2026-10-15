@@ -9,12 +9,12 @@ const uplink = defineUplinkClient({
   id: "systemscale",
   version: "1.0.0",
   name: "System Scale",
-  description: "Draws a scale bar over the System View.",
+  description: "Draws a scale bar over the Tracking Station.",
 });
 
 const BAR_METRES = 1_000_000;
 
-function ScaleBar({ width, height, plotScale }: SlotProps<"system-view.overlay">) {
+function ScaleBar({ width, height, plotScale }: SlotProps<"tracking-station.overlay">) {
   const length = BAR_METRES * plotScale;
   const left = -width / 2 + 16;
   const y = height / 2 - 20;
@@ -42,7 +42,7 @@ function ScaleBar({ width, height, plotScale }: SlotProps<"system-view.overlay">
 
 registerAugment({
   id: "systemscale-bar",
-  augments: "system-view.overlay",
+  augments: "tracking-station.overlay",
   component: ScaleBar,
   owner: uplink,
 });

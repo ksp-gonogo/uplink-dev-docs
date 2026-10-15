@@ -17,7 +17,7 @@ uplink.registerContribution({
   deps: ["vessel.crew"],
   compute: (topics): BadgeEntry[] | null => {
     const crew = stillTrue(topics["vessel.crew"], undefined);
-    if (!crew || crew.count.lessThan(crew.capacity)) return null;
+    if (!crew?.count || !crew.capacity || crew.count.lessThan(crew.capacity)) return null;
     return [{ id: "full-cabin", label: "Cabin full", tone: "warn" }];
   },
 });

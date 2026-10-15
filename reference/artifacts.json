@@ -1,16 +1,16 @@
 {
-  "gonogo": "19e425eb2f39fb239ade1ad86c0058ae93e382b6",
+  "gonogo": "44ba9d5a137445d9652159256b471f23dd4b031e",
   "published": {
-    "version": "1.0.0-rc.32",
+    "version": "1.0.0-rc.36",
     "npmTag": "rc",
     "name": "release candidate"
   },
   "npm": {
-    "@ksp-gonogo/ui-kit": "file:../artifacts/ksp-gonogo-ui-kit.tgz",
-    "@ksp-gonogo/sitrep-sdk": "file:../artifacts/ksp-gonogo-sitrep-sdk.tgz",
-    "@ksp-gonogo/uplink-tools": "file:../artifacts/ksp-gonogo-uplink-tools.tgz"
+    "@ksp-gonogo/ui-kit": "1.0.0-rc.36",
+    "@ksp-gonogo/sitrep-sdk": "1.0.0-rc.36",
+    "@ksp-gonogo/uplink-tools": "1.0.0-rc.36"
   },
   "nuget": {
-    "KspGonogo.Sitrep.Contract": "file:../artifacts/KspGonogo.Sitrep.Contract.nupkg"
+    "KspGonogo.Sitrep.Contract": "1.0.0-rc.36"
   }
 }
