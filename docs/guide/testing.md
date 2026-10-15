@@ -110,7 +110,7 @@ npm run check               # the client's own rules, and its types under Node's
 
 ### In a sandbox that blocks local sockets
 
-`dotnet test` binds a port on the local machine to talk to its test host, so a sandbox that blocks local network binding stops it at once, with a `SocketException` for permission denied, until local binding is allowed for the process. In the same kind of sandbox a plain `dotnet build` can appear to hang for minutes; `dotnet build -m:1 --disable-build-servers` avoids the build server's sockets. `uplink-tools release` has its own switch for this ([Releasing and installing](/guide/release#if-release-hangs-in-a-sandbox)).
+`dotnet test` binds a port on the local machine to talk to its test host, so it cannot run where local network binding is blocked: it stops at once with a `SocketException` for permission denied, and no flag changes that. `dotnet build` of the test project still runs there and proves the plugin, the contract and the tests compile; the tests themselves run where binding is allowed, such as CI. In the same kind of sandbox a plain `dotnet build` can appear to hang for minutes; `dotnet build -m:1 --disable-build-servers` avoids the build server's sockets. `uplink-tools release` has its own switch for this ([Releasing and installing](/guide/release#if-release-hangs-in-a-sandbox)).
 
 ## Checking the client
 

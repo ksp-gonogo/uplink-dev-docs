@@ -39,7 +39,7 @@ Nothing before [Releasing and installing](/guide/release) needs either, except t
 
 ## Building against the release candidate
 
-The Guide documents the <Published field="name" />, <Published field="version" />. The three npm packages and the NuGet package are published at that one version and pin each other exactly, so an Uplink builds only against all four at once. `new` writes every pin for you. If you ever add or update one by hand, install the three npm packages together under the `rc` tag, since one beside a release of another fails to resolve:
+The Guide documents the <Published field="name" />. The `rc` dist-tag names the current candidate; `npm view @ksp-gonogo/uplink-tools dist-tags` shows which version it points at. The three npm packages and the NuGet package are published at that one version and pin each other exactly, so an Uplink builds only against all four at once. `new` writes every pin for you. If you ever add or update one by hand, install the three npm packages together under the `rc` tag, since one beside a release of another fails to resolve:
 
 ```bash
 npm install @ksp-gonogo/sitrep-sdk@rc @ksp-gonogo/ui-kit@rc @ksp-gonogo/uplink-tools@rc
