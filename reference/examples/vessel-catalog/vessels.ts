@@ -1,6 +1,6 @@
 import { type TopicPayload, type WireOf } from "@ksp-gonogo/sitrep-sdk";
 
-/** The `trackingStation.catalog` value every Fleet Roster example draws, as the Gonogo mod sends it. */
+/** The `trackingStation.catalog` value every Vessel Catalog example draws, as the Gonogo mod sends it. */
 export const trackingCatalog: WireOf<TopicPayload<"trackingStation.catalog">> = {
   entries: [
     {

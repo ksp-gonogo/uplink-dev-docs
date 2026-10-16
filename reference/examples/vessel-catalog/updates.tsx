@@ -9,10 +9,10 @@ import { Badge, Text } from "@ksp-gonogo/ui-kit";
 
 // In an Uplink this call is `src/uplink.ts`, which exports `uplink`; its `id` is the plugin's own.
 const uplink = defineUplinkClient({
-  id: "fleetsilencenotes",
+  id: "vesselsilencenotes",
   version: "1.0.0",
-  name: "Fleet Silence Notes",
-  description: "Adds a note to the Fleet Roster updates when a vessel has gone silent.",
+  name: "Vessel Silence Notes",
+  description: "Adds a note to the Vessel Catalog updates when a vessel has gone silent.",
 });
 
 const CONTACT_LABEL: Record<CatalogContact, string> = {
@@ -26,7 +26,7 @@ const CONTACT_LABEL: Record<CatalogContact, string> = {
 function SilenceNote({
   vesselId,
   compact,
-}: SlotProps<"fleet-roster.updates">) {
+}: SlotProps<"vessel-catalog.updates">) {
   const catalog = useTelemetry("trackingStation.catalog");
   if (catalog.state !== "observed") return null;
   const entry = catalog.value.entries.find((e) => e.vesselId === vesselId);
@@ -51,7 +51,7 @@ function SilenceNote({
 
 registerAugment({
   id: "fleet-silence-note",
-  augments: "fleet-roster.updates",
+  augments: "vessel-catalog.updates",
   component: SilenceNote,
   channels: ["trackingStation.catalog"],
   owner: uplink,

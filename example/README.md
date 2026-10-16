@@ -9,7 +9,15 @@ The Uplink the Gonogo Uplink Guide builds: a heartbeat it publishes, a command t
 | --- | --- |
 | Uplink id | `example` |
 | Version | `0.0.1` |
-| Built against | contract 44.2, extension API 6.0.0 |
+| Built against | contract 44.8, extension API 6.0.0 |
+
+## Install
+
+Install the Example Uplink with CKAN: search for `GonogoExampleUplink`, tick it and apply. CKAN also installs Gonogo itself.
+
+Without CKAN, download `GonogoExampleUplink.zip` from the releases page, unpack it into your Kerbal Space Program folder so that it lands in `GameData/GonogoExampleUplink`, and install Gonogo the same way.
+
+Releases: https://github.com/ksp-gonogo/uplink-dev-docs/releases?q=example-v
 
 ## Wire
 

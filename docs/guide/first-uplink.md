@@ -45,6 +45,7 @@ A step that fails is reported with the command to run again, and the files stay 
 ```
 example/
 ├── uplink.json                   the Uplink's identity, and where its client is fetched from
+├── README.md                     the generated page
 ├── .gitignore
 ├── Directory.Build.props         where to find KSP's assemblies, if the plugin needs them
 ├── Directory.Build.targets         and the message when it cannot
@@ -69,7 +70,6 @@ example/
     ├── tsconfig.json, tsconfig.nodenext.json  the client's types, checked twice: under the
     │                               bundler's resolution and under Node's (npm run typecheck, then npm run check)
     ├── vitest.config.ts            the test runner's settings
-    ├── README.md                   the generated page
     ├── gonogo-uplink.json          the client's id, version and integrity hash, which the app reads before it loads the bundle
     ├── docs/widgets.json           each widget's registration (name, description, channels, sizes) as data
     ├── docs/spec.json              the Uplink's spec sheet: its Topics, commands and registrations as data
@@ -128,6 +128,6 @@ The heartbeat is a placeholder for your own Topics and widgets, and `new` writes
 grep -rniI heartbeat . --exclude-dir=node_modules --exclude-dir=bin --exclude-dir=obj
 ```
 
-The files under `client/src/__generated__/`, `client/docs/` and `client/README.md` come from the others: `npm run codegen` and `npm run page` rewrite them, so they stop naming it once the rest do. The netkan, the description and `uplink.json` fail nothing when left as they are, so read them over before a release.
+The files under `client/src/__generated__/`, `client/docs/` and `README.md` come from the others: `npm run codegen` and `npm run page` rewrite them, so they stop naming it once the rest do. The netkan, the description and `uplink.json` fail nothing when left as they are, so read them over before a release.
 
 Next: [The plugin class](/guide/plugin).

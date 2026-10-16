@@ -55,7 +55,7 @@ export const ADDED = {
   "client/src/reckoner.ts": "Writing a reckoner",
   "client/src/reckoner.test.ts": "Writing a reckoner: its tests",
   "client/package-lock.json": "npm install",
-  "client/README.md": "npm run page",
+  "README.md": "npm run page",
   "client/gonogo-uplink.json": "npm run page",
   "client/docs/widgets.json": "npm run page",
   "client/docs/spec.json": "npm run page",

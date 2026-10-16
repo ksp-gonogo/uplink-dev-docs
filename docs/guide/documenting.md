@@ -19,7 +19,7 @@ An Uplink is documented in two places, both written next to the code: its genera
 
 Here is the example's, as `npm run page` writes it:
 
-<<< ../../example/client/README.md{md}
+<<< ../../example/README.md{md}
 
 To change the page, change what it is written from and run `npm run page` again. Never edit the four files by hand: `npm test` includes a check that fails when they no longer match what the client registers, and the next `npm run page` would overwrite the edit. Commit them with the change that moved them. `npm run page` refuses an Uplink or a widget with no description.
 

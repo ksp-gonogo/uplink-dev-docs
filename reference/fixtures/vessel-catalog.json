@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "notes": "The scene every Fleet Roster example renders on. Its trackingStation.catalog value comes from reference/examples/fleet-roster/vessels.ts, which the top example shows."
+    "notes": "The scene every Vessel Catalog example renders on. Its trackingStation.catalog value comes from reference/examples/vessel-catalog/vessels.ts, which the top example shows."
   },
   "_stream": {
     "pinnedUt": 0,

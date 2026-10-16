@@ -62,7 +62,7 @@ const manifest = {
   integrity: `sha256-${createHash("sha256").update(bundle).digest("hex")}`,
 };
 const spec = readFileSync(join(CLIENT, "docs/spec.json"));
-const readme = readFileSync(join(CLIENT, "README.md"));
+const readme = readFileSync(join(ROOT, "example/README.md"));
 const secondSpec = JSON.stringify({
   ...JSON.parse(spec.toString()),
   uplink: { ...JSON.parse(spec.toString()).uplink, id: "second", name: "Second Uplink", description: "A second Uplink that ships only a spec sheet." },
