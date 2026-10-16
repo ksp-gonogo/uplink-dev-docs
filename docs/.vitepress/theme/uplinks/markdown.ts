@@ -1,21 +1,8 @@
 import MarkdownIt from "markdown-it";
 
-/** One docs file of an Uplink: where it was read from and how it is titled in the sidebar. */
-export interface UplinkDoc {
-  /** Path from the Uplink's client folder, e.g. `README.md`. */
-  path: string;
-  title: string;
-}
-
 export interface RenderContext {
   /** The URL the file was read from, which its relative links and images resolve against. */
   fileUrl: string;
-  /** The Uplink's client folder URL. */
-  root: string;
-  /** The docs files this Uplink is known to carry, for links between them. */
-  docs: readonly UplinkDoc[];
-  /** The address of one of those docs files on this site. */
-  hrefFor(path: string): string;
 }
 
 /*
@@ -75,13 +62,6 @@ function resolveWeb(target: string, fileUrl: string): URL | null {
   }
 }
 
-/** The path of `url` under `root`, or null when it is somewhere else. */
-function underRoot(url: URL, root: string): string | null {
-  const prefix = `${root}/`;
-  const href = url.origin + url.pathname;
-  return href.startsWith(prefix) ? decodeURI(href.slice(prefix.length)) : null;
-}
-
 function setAttr(token: Token, name: string, value: string | null): void {
   const at = token.attrIndex(name);
   if (value === null) {
@@ -107,11 +87,6 @@ function rewrite(tokens: Token[], context: RenderContext): void {
         setAttr(token, "href", null);
         continue;
       }
-      const path = underRoot(url, context.root);
-      if (path !== null && context.docs.some((doc) => doc.path === path)) {
-        setAttr(token, "href", context.hrefFor(path));
-        continue;
-      }
       setAttr(token, "href", url.href);
       setAttr(token, "target", "_blank");
       setAttr(token, "rel", "noopener noreferrer");
@@ -127,9 +102,8 @@ function rewrite(tokens: Token[], context: RenderContext): void {
 
 /**
  * Renders one Markdown file from an Uplink's folder to HTML that is safe to
- * insert: raw HTML in it appears as text, relative links and images resolve
- * against the folder the file was read from, and a link to another of the
- * Uplink's docs files opens that page on this site.
+ * insert: raw HTML in it appears as text, and relative links and images resolve
+ * against the folder the file was read from.
  */
 export function renderMarkdown(text: string, context: RenderContext): string {
   const tokens = md.parse(withoutHtmlComments(text), {});

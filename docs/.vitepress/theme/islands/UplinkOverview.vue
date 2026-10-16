@@ -1,10 +1,14 @@
 <script setup lang="ts">
 /**
- * A custom Uplink's overview: its spec sheet, as the Uplink's own folder
- * describes it, and each widget its released client registers, drawn as the
- * app draws it before the first sample arrives.
+ * A custom Uplink's one page: what it is in its own words, its spec sheet as
+ * the Uplink's folder describes it, each widget its released client registers
+ * drawn as the app draws it before the first sample arrives, and the pictures
+ * the folder commits.
  */
+import { computed } from "vue";
+import { renderMarkdown } from "../uplinks/markdown";
 import type { Entry } from "../uplinks/registry";
+import type { SpecField } from "../uplinks/spec";
 import UplinkWidget from "./UplinkWidget.vue";
 
 const props = defineProps<{ entry: Entry }>();
@@ -17,6 +21,38 @@ function size(value: { w: number; h: number } | null): string {
   return value ? `${value.w} × ${value.h}` : "–";
 }
 
+const intro = computed(() => {
+  const file = props.entry.loaded?.intro;
+  return file ? renderMarkdown(file.text, { fileUrl: file.url }) : "";
+});
+
+const payloads = computed(() => {
+  const spec = props.entry.loaded?.spec;
+  return spec ? [...spec.commandArgs, ...spec.nestedPayloads, ...spec.otherPayloads] : [];
+});
+
+const readme = computed(() => {
+  const file = props.entry.loaded?.readme;
+  return file ? renderMarkdown(file.text, { fileUrl: file.url }) : "";
+});
+
+function reads(widget: { channels: string[]; optionalChannels: string[]; dataRequirements: string[] }): string {
+  const own = new Set([...widget.channels, ...widget.optionalChannels]);
+  return dash([
+    ...widget.channels,
+    ...widget.optionalChannels.map((c) => `${c} (optional)`),
+    ...widget.dataRequirements.filter((r) => !own.has(r)),
+  ]);
+}
+
+function fields(items: readonly SpecField[]): string {
+  return dash(items.map((f) => (f.unit ? `${f.name} (${f.unit})` : f.name)));
+}
+
+function present(requires: string | undefined): string {
+  return requires ? `only while ${requires}` : "always";
+}
+
 function dash(items: readonly string[]): string {
   return items.length > 0 ? items.join(", ") : "–";
 }
@@ -24,7 +60,11 @@ function dash(items: readonly string[]): string {
 
 <template>
   <div v-if="entry.loaded">
-    <p>{{ entry.loaded.spec.uplink.description }}</p>
+    <!-- eslint-disable-next-line vue/no-v-html -->
+    <div v-if="intro" v-html="intro"></div>
+    <p v-else>{{ entry.loaded.spec.uplink.description }}</p>
+    <!-- eslint-disable-next-line vue/no-v-html -->
+    <div v-if="readme" v-html="readme"></div>
     <table>
       <tbody>
         <tr><th scope="row">Uplink id</th><td><code>{{ entry.loaded.spec.uplink.id }}</code></td></tr>
@@ -36,6 +76,16 @@ function dash(items: readonly string[]): string {
             <template v-if="entry.loaded.spec.uplink.wraps.builtAgainst">{{ entry.loaded.spec.uplink.wraps.builtAgainst }}</template>
             <template v-if="entry.loaded.spec.uplink.wraps.tier">({{ entry.loaded.spec.uplink.wraps.tier }})</template>
           </td>
+        </tr>
+        <tr v-if="entry.loaded.install?.gamedata">
+          <th scope="row">Installs into</th><td><code>GameData/{{ entry.loaded.install.gamedata }}</code></td>
+        </tr>
+        <tr v-if="entry.loaded.install?.ckan">
+          <th scope="row">Needs</th>
+          <td>{{ entry.loaded.spec.uplink.wraps?.name ?? "the mod it wraps" }} installed in the same game (CKAN: <code>{{ entry.loaded.install.ckan }}</code>)</td>
+        </tr>
+        <tr v-if="entry.loaded.install?.repo">
+          <th scope="row">Source</th><td><a :href="entry.loaded.install.repo" target="_blank" rel="noopener noreferrer">{{ entry.loaded.install.repo }}</a></td>
         </tr>
         <tr v-if="entry.loaded.manifest && entry.loaded.manifest.contractMajor !== undefined">
           <th scope="row">Built against</th>
@@ -52,13 +102,28 @@ function dash(items: readonly string[]): string {
     <template v-if="entry.loaded.spec.widgets.length > 0">
       <h2>Widgets</h2>
       <table>
-        <thead><tr><th>Widget</th><th>Reads</th><th>Sends</th><th>Size</th></tr></thead>
+        <thead><tr><th>Widget</th><th>Reads</th><th>Sends</th><th>Slots of its own</th><th>Size</th></tr></thead>
         <tbody>
           <tr v-for="widget in entry.loaded.spec.widgets" :key="widget.id">
             <td><strong>{{ widget.name }}</strong><br /><code>{{ widget.id }}</code><br />{{ widget.description }}</td>
-            <td>{{ dash([...widget.channels, ...widget.optionalChannels.map((c) => `${c} (optional)`)]) }}</td>
+            <td>{{ reads(widget) }}</td>
             <td>{{ dash(widget.commands) }}</td>
+            <td>{{ dash([...widget.augmentSlots, ...widget.contributionSlots]) }}</td>
             <td>{{ size(widget.defaultSize) }}<br />min {{ size(widget.minSize) }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </template>
+
+    <template v-for="widget in entry.loaded.spec.widgets.filter((w) => w.actions.length > 0)" :key="`actions-${widget.id}`">
+      <h3>{{ widget.name }}: inputs</h3>
+      <p class="cu-hint">What a key, button or axis can be bound to on this widget.</p>
+      <table>
+        <thead><tr><th>Action</th><th>Does</th></tr></thead>
+        <tbody>
+          <tr v-for="action in widget.actions" :key="action.id">
+            <td><strong>{{ action.label }}</strong><br /><code>{{ action.id }}</code></td>
+            <td>{{ action.description }}</td>
           </tr>
         </tbody>
       </table>
@@ -87,7 +152,7 @@ function dash(items: readonly string[]): string {
             <td><code v-if="topic.payload">{{ topic.payload }}{{ topic.array ? "[]" : "" }}</code><template v-else>–</template></td>
             <td>{{ topic.delivery ?? "–" }}</td>
             <td>{{ topic.delay ?? "–" }}</td>
-            <td>{{ dash(topic.fields.map((f) => (f.unit ? `${f.name} (${f.unit})` : f.name))) }}</td>
+            <td>{{ fields(topic.fields) }}</td>
           </tr>
         </tbody>
       </table>
@@ -107,18 +172,31 @@ function dash(items: readonly string[]): string {
       </table>
     </template>
 
+    <template v-if="payloads.length > 0">
+      <h2>Payload shapes</h2>
+      <table>
+        <thead><tr><th>Type</th><th>Fields</th></tr></thead>
+        <tbody>
+          <tr v-for="payload in payloads" :key="payload.name">
+            <td><code>{{ payload.name }}</code></td>
+            <td>{{ fields(payload.fields) }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </template>
+
     <template v-if="entry.loaded.spec.augments.length + entry.loaded.spec.contributions.length > 0">
       <h2>Slots it fills</h2>
       <table>
-        <thead><tr><th>Kind</th><th>Id</th><th>Into</th><th>Reads</th></tr></thead>
+        <thead><tr><th>Kind</th><th>Id</th><th>Into</th><th>Reads</th><th>Present</th></tr></thead>
         <tbody>
           <tr v-for="augment in entry.loaded.spec.augments" :key="`a-${augment.id}`">
             <td>augment</td><td><code>{{ augment.id }}</code></td><td><code>{{ augment.augments }}</code></td>
-            <td>{{ dash(augment.channels) }}</td>
+            <td>{{ dash(augment.channels) }}</td><td>{{ present(augment.requires) }}</td>
           </tr>
           <tr v-for="contribution in entry.loaded.spec.contributions" :key="`c-${contribution.id}`">
             <td>contribution</td><td><code>{{ contribution.id }}</code></td><td><code>{{ contribution.contributes }}</code></td>
-            <td>{{ dash(contribution.deps) }}</td>
+            <td>{{ dash(contribution.deps) }}</td><td>{{ present(contribution.requires) }}</td>
           </tr>
         </tbody>
       </table>
@@ -138,15 +216,10 @@ function dash(items: readonly string[]): string {
 
     <template v-if="entry.loaded.pictures.length > 0">
       <h2>Pictures</h2>
-      <div class="cu-pictures">
-        <img
-          v-for="picture in entry.loaded.pictures"
-          :key="picture.name"
-          :src="picture.url"
-          :alt="picture.name"
-          loading="lazy"
-        />
-      </div>
+      <figure v-for="picture in entry.loaded.pictures" :key="picture.name" class="cu-picture">
+        <img :src="picture.url" :alt="picture.caption" loading="lazy" referrerpolicy="no-referrer" />
+        <figcaption>{{ picture.caption }}</figcaption>
+      </figure>
     </template>
   </div>
 </template>
@@ -155,6 +228,7 @@ function dash(items: readonly string[]): string {
 .cu-problem { color: var(--vp-c-danger-1); }
 .cu-hint { color: var(--vp-c-text-2); font-size: 0.9em; }
 .cu-drawn { margin: 12px 0; }
-.cu-pictures { display: flex; flex-wrap: wrap; gap: 12px; }
-.cu-pictures img { max-width: 100%; height: auto; border: 1px solid var(--vp-c-divider); border-radius: 4px; }
+.cu-picture { margin: 16px 0; }
+.cu-picture img { max-width: 100%; height: auto; border: 1px solid var(--vp-c-divider); border-radius: 4px; }
+.cu-picture figcaption { color: var(--vp-c-text-2); font-size: 0.9em; margin-top: 4px; }
 </style>

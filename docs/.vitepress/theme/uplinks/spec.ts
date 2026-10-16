@@ -32,6 +32,12 @@ export interface SpecCommand {
   result: string;
 }
 
+export interface SpecAction {
+  id: string;
+  label: string;
+  description: string;
+}
+
 export interface SpecWidget {
   id: string;
   name: string;
@@ -40,6 +46,10 @@ export interface SpecWidget {
   channels: string[];
   optionalChannels: string[];
   commands: string[];
+  /** The Topics and fields the widget reads that are not declared as channels, as dotted paths. */
+  dataRequirements: string[];
+  /** What an input device can be bound to on the widget. */
+  actions: SpecAction[];
   augmentSlots: string[];
   contributionSlots: string[];
   defaultSize: { w: number; h: number } | null;
@@ -187,6 +197,11 @@ export function readSpec(value: unknown): Spec {
         channels: strings(o.channels, `${at}.channels`),
         optionalChannels: strings(o.optionalChannels, `${at}.optionalChannels`),
         commands: strings(o.commands, `${at}.commands`),
+        dataRequirements: strings(o.dataRequirements, `${at}.dataRequirements`),
+        actions: list(o.actions, `${at}.actions`, (action, where) => {
+          const a = obj(action, where);
+          return { id: str(a.id, `${where}.id`), label: str(a.label, `${where}.label`), description: optStr(a.description, `${where}.description`) ?? "" };
+        }),
         augmentSlots: strings(o.augmentSlots, `${at}.augmentSlots`),
         contributionSlots: strings(o.contributionSlots, `${at}.contributionSlots`),
         defaultSize: size(o.defaultSize, `${at}.defaultSize`),

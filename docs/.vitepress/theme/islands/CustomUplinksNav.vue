@@ -1,9 +1,9 @@
 <script setup lang="ts">
 /**
  * The sidebar's "Custom Uplinks" section: each Uplink added in this browser,
- * with its overview and its docs files beneath it. It appears on every page that
- * has a sidebar once there is one to list, and reads the name and docs files
- * saved on the last visit, so it needs no network. On the Uplinks page the
+ * linking to its one page. It appears on every page that has a sidebar once
+ * there is one to list, and reads the name saved on the last visit, so it needs
+ * no network. On the Uplinks page the
  * heading is the page's own sidebar group, and the section opens with the link
  * back to the form.
  */
@@ -46,15 +46,6 @@ function current(route: Parameters<typeof routeHash>[0]): "page" | undefined {
             <span aria-hidden="true">!</span><span class="cu-nav__sr"> could not be read</span>
           </span>
         </a>
-        <ul v-if="entry.saved.docs?.length" class="cu-nav__docs">
-          <li v-for="doc in entry.saved.docs" :key="doc.path">
-            <a
-              :href="hrefOf({ kind: 'doc', base: entry.saved.base, path: doc.path })"
-              :aria-current="current({ kind: 'doc', base: entry.saved.base, path: doc.path })"
-              >{{ doc.title }}</a
-            >
-          </li>
-        </ul>
       </li>
     </ul>
   </nav>
@@ -70,7 +61,6 @@ function current(route: Parameters<typeof routeHash>[0]): "page" | undefined {
 .cu-nav a[aria-current="page"] { color: var(--vp-c-brand-1); font-weight: 600; }
 .cu-nav a:focus-visible { outline: 2px solid var(--vp-c-brand-1); outline-offset: 2px; border-radius: 2px; }
 .cu-nav__name { font-weight: 500; }
-.cu-nav__docs { padding-left: 14px; border-left: 1px solid var(--vp-c-divider); margin-left: 2px; }
 .cu-nav__failed { margin-left: 4px; color: var(--vp-c-danger-1); font-weight: 700; }
 .cu-nav__sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 </style>

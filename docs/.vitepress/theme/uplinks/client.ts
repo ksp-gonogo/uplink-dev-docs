@@ -63,6 +63,11 @@ function startHost(): Promise<{ host: ViewerHost; identity: AppCompatIdentity }>
  */
 export async function loadClient(manifestUrl: string, fetcher: typeof fetch = fetch): Promise<LoadedClient> {
   const response = await fetcher(manifestUrl);
+  if (response.status === 404) {
+    throw new Error(
+      `No client is published at ${manifestUrl} (404). The Uplink's \`client.url\` in uplink.json has to name a bundle that has been released with \`uplink-tools release --push\`.`,
+    );
+  }
   if (!response.ok) throw new Error(`The manifest ${manifestUrl} could not be read (${response.status}).`);
   const manifest = parseUplinkManifest(await response.json());
   const { host, identity } = await startHost();

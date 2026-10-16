@@ -64,7 +64,7 @@ export async function ensureLoaded(entry: Entry): Promise<void> {
   await reload(entry);
 }
 
-/** Reads the Uplink's folder again, from the top: its spec sheet, its docs files and, when it is a release, its client. */
+/** Reads the Uplink's folder again, from the top: its spec sheet, its prose and its client. */
 export async function reload(entry: Entry): Promise<void> {
   entry.state = "loading";
   entry.error = undefined;
@@ -79,18 +79,14 @@ export async function reload(entry: Entry): Promise<void> {
     return;
   }
   entry.state = "ready";
-  entry.saved = {
-    ...entry.saved,
-    name: entry.loaded.spec.uplink.name,
-    docs: entry.loaded.docs.map(({ path, title }) => ({ path, title })),
-  };
+  entry.saved = { ...entry.saved, name: entry.loaded.spec.uplink.name };
   persist();
   await loadClientOf(entry);
 }
 
-/** Runs the Uplink's released client the way the app does, when the folder carries a manifest. */
+/** Runs the Uplink's released client the way the app does, from the manifest published beside its bundle. */
 async function loadClientOf(entry: Entry): Promise<void> {
-  const manifestUrl = entry.loaded?.manifestUrl;
+  const manifestUrl = entry.loaded?.clientManifestUrl;
   if (!manifestUrl) return;
   entry.clientState = "loading";
   try {

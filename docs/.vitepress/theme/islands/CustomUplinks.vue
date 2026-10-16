@@ -1,15 +1,14 @@
 <script setup lang="ts">
 /**
  * The page behind the "Custom Uplinks" sidebar section. The address, in the
- * hash, picks what it shows: the form and the list, an Uplink's overview, or
- * one of its docs files. An address naming an Uplink this browser has not added
+ * hash, picks what it shows: the form and the list, or an Uplink's overview,
+ * the one page that carries everything the Uplink publishes. An address naming an Uplink this browser has not added
  * offers to add it. Everything is read by the browser straight from the
  * Uplink's folder; nothing is sent anywhere.
  */
 import { computed, nextTick, onMounted, ref, watch } from "vue";
 import { hrefOf } from "../uplinks/address";
 import { resolveUplinkLink } from "../uplinks/link";
-import { renderMarkdown } from "../uplinks/markdown";
 import { add, ensureLoaded, find, reload, remove, start, state } from "../uplinks/registry";
 import { routeHash } from "../uplinks/route";
 import UplinkOverview from "./UplinkOverview.vue";
@@ -22,30 +21,11 @@ const route = computed(() => state.route);
 const entry = computed(() => (route.value.kind === "home" ? undefined : find(route.value.base)));
 const offered = computed(() => (route.value.kind === "home" || entry.value ? null : resolveUplinkLink(route.value.base)));
 
-const doc = computed(() => {
-  const current = route.value;
-  if (current.kind !== "doc") return undefined;
-  return entry.value?.loaded?.docs.find((file) => file.path === current.path);
-});
-
-const rendered = computed(() => {
-  const loaded = entry.value?.loaded;
-  const file = doc.value;
-  if (!loaded || !file || route.value.kind !== "doc") return "";
-  const base = route.value.base;
-  return renderMarkdown(file.text, {
-    fileUrl: file.url,
-    root: loaded.root,
-    docs: loaded.docs,
-    hrefFor: (path) => hrefOf({ kind: "doc", base, path }),
-  });
-});
-
 const title = computed(() => {
   if (route.value.kind === "home") return "Custom Uplinks";
   const name = entry.value?.saved.name ?? entry.value?.saved.label;
   if (!entry.value) return offered.value && "label" in offered.value ? offered.value.label : "Custom Uplink";
-  return route.value.kind === "doc" ? `${name}: ${doc.value?.title ?? route.value.path}` : (name ?? "");
+  return name ?? "";
 });
 
 function go(hash: string): void {
@@ -121,7 +101,7 @@ function status(item: (typeof state.entries)[number]): string {
       <h1 ref="heading" tabindex="-1">Custom Uplinks</h1>
       <p>
         Paste a link to an Uplink's folder to read what it publishes, accepts and draws. It is listed under Custom Uplinks in
-        the sidebar, with its overview and its docs files, and stays there in this browser. The page is static: the Uplink is
+        the sidebar, and stays there in this browser. The page is static: the Uplink is
         read straight from its folder, and nothing is sent to a server.
       </p>
       <form class="cu-add" @submit.prevent="submit">
@@ -139,8 +119,8 @@ function status(item: (typeof state.entries)[number]): string {
         </div>
         <p v-if="problem" id="uplink-problem" class="cu-problem" role="alert">{{ problem }}</p>
         <p id="uplink-hint" class="cu-hint">
-          A GitHub folder link, a jsDelivr link, or the URL of a released bundle. A source folder shows its README; a release
-          shows its spec sheet and draws its widgets.
+          A GitHub folder link, a jsDelivr link, or the URL of a released bundle. A source folder shows its overview, its spec
+          sheet and its pictures; a published client also draws its widgets.
         </p>
       </form>
 
@@ -175,13 +155,9 @@ function status(item: (typeof state.entries)[number]): string {
     <template v-else>
       <p class="cu-crumb">
         <a :href="hrefOf({ kind: 'home' })">Custom Uplinks</a>
-        <template v-if="route.kind === 'doc'">
-          /
-          <a :href="hrefOf({ kind: 'overview', base: route.base })">{{ entry.saved.name ?? entry.saved.label }}</a>
-        </template>
       </p>
       <header class="cu-head">
-        <h1 ref="heading" tabindex="-1">{{ route.kind === "doc" ? (doc?.title ?? route.path) : (entry.saved.name ?? entry.saved.label) }}</h1>
+        <h1 ref="heading" tabindex="-1">{{ entry.saved.name ?? entry.saved.label }}</h1>
         <div class="cu-actions">
           <button v-if="entry.state === 'failed'" type="button" @click="reload(entry)">Try again</button>
           <button type="button" :aria-label="`Remove ${entry.saved.name ?? entry.saved.label}`" @click="removeEntry(entry.saved.base)">
@@ -195,15 +171,6 @@ function status(item: (typeof state.entries)[number]): string {
       <template v-else-if="entry.state === 'failed'">
         <p class="cu-problem" role="alert">{{ entry.error }}</p>
         <p class="cu-hint">The Uplink stays listed. Fix the folder or the link and try again.</p>
-      </template>
-
-      <template v-else-if="route.kind === 'doc'">
-        <!-- eslint-disable-next-line vue/no-v-html -->
-        <div v-if="doc" class="cu-doc" v-html="rendered"></div>
-        <p v-else class="cu-problem" role="alert">
-          This Uplink's folder has no <code>{{ route.path }}</code>. A released version carries its bundle, manifest and
-          spec sheet; the README sits in the source folder.
-        </p>
       </template>
 
       <UplinkOverview v-else :entry="entry" />
@@ -226,5 +193,4 @@ function status(item: (typeof state.entries)[number]): string {
 .cu-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
 .cu-head h1 { margin: 0; }
 .cu-actions { display: flex; gap: 8px; }
-.cu-doc :deep(img) { max-width: 100%; height: auto; }
 </style>
