@@ -1,16 +1,16 @@
 {
-  "gonogo": "8b3f97fb25288e8ba7e85dae26e07e5048de4acb",
+  "gonogo": "77a9c24952f63697fbc8807ede554026f4b0061e",
   "published": {
-    "version": "1.0.0-rc.45",
+    "version": "1.0.0-rc.38",
     "npmTag": "rc",
     "name": "release candidate"
   },
   "npm": {
-    "@ksp-gonogo/ui-kit": "1.0.0-rc.45",
-    "@ksp-gonogo/sitrep-sdk": "1.0.0-rc.45",
-    "@ksp-gonogo/uplink-tools": "1.0.0-rc.45"
+    "@ksp-gonogo/ui-kit": "1.0.0-rc.38",
+    "@ksp-gonogo/sitrep-sdk": "1.0.0-rc.38",
+    "@ksp-gonogo/uplink-tools": "1.0.0-rc.38"
   },
   "nuget": {
-    "KspGonogo.Sitrep.Contract": "1.0.0-rc.45"
+    "KspGonogo.Sitrep.Contract": "1.0.0-rc.38"
   }
 }
