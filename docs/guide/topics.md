@@ -101,6 +101,38 @@ A vector field is a `Vec3`, which carries x, y and z and nothing about what they
 
 `Units.Id` is drawn as its plain number, as the table shows. `Units.Text`, `Units.Flag`, `Units.Enumeration` and `Units.NotApplicable` name a field that is not a quantity at all (`"text"`, `"flag"`, `"enum"`, `"n/a"`), so `Unit` does not draw them: a string, a boolean or an enum is read from the reading and drawn by the widget.
 
+## Naming the Topic and its fields
+
+An operator picks a value by name, in the graph's series picker and again in the graph's title and legend. Two attributes in the contract slice set those names, both from `Sitrep.Contract`:
+
+- **`DisplayName`**, a named argument of `SitrepTopicAttribute`, names the Topic by what it describes, such as "Active vessel" for `vessel.flight`
+- **`SitrepDisplayNameAttribute`** names one property, such as "Altitude (sea level)" for `altitudeAsl`
+
+`new` writes both on the heartbeat. This is the scaffold's own payload, for an Uplink whose name is `Example`:
+
+```cs
+[SitrepContract]
+[SitrepTopic("example.heartbeat", DisplayName = "Example heartbeat")]
+#if SITREP_CODEGEN
+[TsInterface]
+#endif
+public sealed class ExampleHeartbeat
+{
+    /// <summary>How many samples this Uplink has published since the game started, this one included. It starts again from 1 when the game restarts.</summary>
+    [SitrepUnit(Units.Count)]
+    [SitrepDisplayName("Samples published")]
+    public double? Ticks { get; set; }
+}
+```
+
+The picker lists the heartbeat's count as "Example heartbeat › Samples published", and the graph's title and legend use the same two names. Write each name in the game's own nouns, as what the value measures, since it is read without the C# beside it.
+
+Neither attribute is required. A property with no `SitrepDisplayNameAttribute` is listed under its name split into words, so `Ut` reads "Ut" and `Ticks` reads "Ticks", and a Topic with no `DisplayName` is listed under its id, tidied by the client. Both read correctly for a plain name and badly for an abbreviation, which is the case to name. A name on a property that belongs to a type used by several Topics names it wherever that type is published.
+
+Names reach the client through codegen: `npm run codegen` writes them into `GENERATED_CONTRACT_TAGS` in `src/__generated__/units.ts`, and `defineUplinkClient` registers that table when `src/uplink.ts` passes it as `tags`, so there is nothing else to wire. The same text becomes the title of each property in the generated page's contract reference. The SDK reads them back with `topicDisplayNameOf(topic)` and `fieldDisplayNameOf(topic, path)`, each returning `undefined` where the contract names none, and `contractTagsGeneration()` is a number that changes whenever a table is registered, for a cache built from them. A widget that lists values for the operator to choose from can use all three.
+
+Display names are in the SDK and contract packages after `1.0.0-rc.45`; the worked Uplink above is built against an earlier candidate and does not carry them yet.
+
 ## Generating the client's types
 
 `mod-contract/ExampleRtConfig.cs` lists the wire types codegen exports, in the array its `Configure` method hands to Reinforced.Typings. Add every new payload type here; `new` writes only the `typeof(ExampleHeartbeat)` entry. The `ExampleResetArgs` entry below is the command [Accepting a command](/guide/commands) adds:
