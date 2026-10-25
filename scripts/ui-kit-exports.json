@@ -1,7 +1,7 @@
 {
   "_": "Generated. Do not edit: node scripts/check-doc-symbols.mjs --sync",
   "source": "@ksp-gonogo/ui-kit packages/ui-kit/src/index.ts",
-  "count": 648,
+  "count": 647,
   "exports": [
     "ARM_TIMEOUT_MS",
     "ActionMenu",
@@ -520,7 +520,6 @@
     "WheelGestureOptions",
     "WheelOwner",
     "WheelZoomHandler",
-    "WidgetBody",
     "WidgetMetaContext",
     "WidgetMetaContextValue",
     "WidgetScope",

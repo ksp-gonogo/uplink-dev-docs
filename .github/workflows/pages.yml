@@ -21,7 +21,7 @@ jobs:
   # Do the pages name the candidate `new` pins? A separate job, so a new
   # candidate is a red check and not a held deploy.
   current:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -31,7 +31,7 @@ jobs:
       - run: node scripts/check-published-current.mjs
 
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     # A hung step fails the run instead of holding the deploy.
     timeout-minutes: 45
     steps:
@@ -84,7 +84,7 @@ jobs:
   deploy:
     needs: build
     if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
