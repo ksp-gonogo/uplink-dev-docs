@@ -12,7 +12,7 @@ npm run release
 
 `release` runs five steps, in an order that matters:
 
-1. **Bundle** (`uplink-tools bundle`) the client into `client/dist/example/example.client.js` (the `dist/` inside `client/`; the command runs from `client/`), with `gonogo-uplink.json` beside it
+1. **Bundle** (`uplink-tools bundle`) the client into `client/dist/example/example.client.js` (the `dist/` inside `client/`; the command runs from `client/`), with `example.gonogo-uplink.json` and `gonogo-uplink.json` beside it
 2. **Bake** (`uplink-tools bake`) two things into the plugin's generated files: the URL the bundle will be hosted at, and the bundle's hash, a SHA-256 written `sha256-<hex>`
 3. **Compile** the plugin in Release
 4. **Check** that the compiled plugin carries the URL and hash that were baked
@@ -72,7 +72,7 @@ cd ../example-releases
 git add releases && git commit -m "Release example 0.0.1" && git push -u origin releases
 ```
 
-`git worktree add --orphan` makes a worktree on a new branch with no history, so the bundles stay off your source branch, and `../example-releases` is any folder beside the Uplink's. Outside WSL, in PowerShell, `mkdir -p` and `cp` are `New-Item -ItemType Directory -Force` and `Copy-Item` ([Known limits](/guide/limits#the-tools)). For a later version, `git worktree add ../example-releases releases` checks the branch out again, and the files go in that version's folder. Keep `gonogo-uplink.json` beside the bundle under exactly that name: the app finds it from the bundle's own URL.
+`git worktree add --orphan` makes a worktree on a new branch with no history, so the bundles stay off your source branch, and `../example-releases` is any folder beside the Uplink's. Outside WSL, in PowerShell, `mkdir -p` and `cp` are `New-Item -ItemType Directory -Force` and `Copy-Item` ([Known limits](/guide/limits#the-tools)). For a later version, `git worktree add ../example-releases releases` checks the branch out again, and the files go in that version's folder. Keep the manifest beside the bundle under exactly its name: the app looks for `example.gonogo-uplink.json` first, then `gonogo-uplink.json`, from the bundle's own URL. Copy `example.gonogo-uplink.json` too when it is in `client/dist/example/`.
 
 `new` writes this URL only when it knows the repository, from `--repo` or this directory's GitHub remote. With `--no-repo`, it writes a placeholder (the owner `your-github-owner`), and `release` refuses to run until you set `repo` and `client.url` in `uplink.json` to where the bundle will really be published ([uplink.json](/guide/uplink-json#what-release-refuses)). To dry-run the whole of `release` before you have a repository, set them to any owner and name other than the placeholder: `release` contacts nothing, it builds, bakes, compiles and zips, so the run proves every step works. The zip it writes names a URL that serves nothing, so do not install or share it; set the real values and run `release` again when the repository exists.
 
@@ -127,7 +127,7 @@ npx uplink-tools bundle --serve 5173
 
 It rebuilds the bundle on every save and serves it at the URL you baked. Edit, save, and reload the app's page to load the new client.
 
-A plugin with a development URL and no hash vouches for nothing, so the app loads its client unchecked, and only from `localhost`: each of its widgets says "Unvouched development client" on its panel, and the Uplink's tab in the app's **Settings**, **Uplinks** says why. A station (another screen that takes its data from the main screen, the one connected to the game) takes its clients from the main screen, which never passes on an unvouched one. Before releasing, rebuild with `npm run release`, which bakes the released URL and the bundle's hash: a plugin built for development is never one to install anywhere but your own machine. `release --dev-path <url>` is a different command from the loop above: it builds a whole release with the development URL baked in place of the released one, still bakes the bundle's hash, and does not zip what it builds unless you also pass `--allow-dev-package`, which is for handing a development build to one machine.
+Each Uplink's manifest is named after it (`example.gonogo-uplink.json`), so several Uplinks can be served from one host and port with their files in one folder, and each is checked against its own. A plugin with a development URL and no hash vouches for nothing, so the app loads its client unchecked, and only from `localhost`: each of its widgets says "Unvouched development client" on its panel, and the Uplink's tab in the app's **Settings**, **Uplinks** says why. A station (another screen that takes its data from the main screen, the one connected to the game) takes its clients from the main screen, which never passes on an unvouched one. Before releasing, rebuild with `npm run release`, which bakes the released URL and the bundle's hash: a plugin built for development is never one to install anywhere but your own machine. `release --dev-path <url>` is a different command from the loop above: it builds a whole release with the development URL baked in place of the released one, still bakes the bundle's hash, and does not zip what it builds unless you also pass `--allow-dev-package`, which is for handing a development build to one machine.
 
 ## CKAN and SpaceDock
 
