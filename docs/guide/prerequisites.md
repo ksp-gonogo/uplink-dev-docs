@@ -17,7 +17,7 @@ No clone of any repository is needed to build, test and release an Uplink (only 
 
 ## The packages
 
-`new` writes every dependency into the Uplink's own files, each pinned to the one release candidate the `rc` dist-tag names when you run it (`npm view @ksp-gonogo/uplink-tools dist-tags` shows which). You install nothing by hand.
+`new` writes every dependency into the Uplink's own files, each pinned to the one release candidate the `rc` dist-tag names when you run it (`npm view @ksp-gonogo/uplink-tools dist-tags` shows which). For an Uplink `new` wrote, you install nothing by hand.
 
 | Package | Where | What it is |
 | --- | --- | --- |

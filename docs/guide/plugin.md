@@ -35,7 +35,7 @@ The class implements `ISitrepUplink`, which is three members: `Manifest`, `Regis
 There are three ways to tell the app an Uplink cannot work, and each has its own job:
 
 - **`host.SetAvailability(Availability.Unavailable(reason))` and an early return** is for a condition you expect and can test for in `Register`, such as the wrapped mod not being installed. Nothing after it is registered (a wrapping Uplink registers its `<id>.available` source before it, as [Wrapping a mod](/guide/wrapping-a-mod#saying-the-mod-is-missing) shows), and the operator reads your reason in place of the Uplink's widgets. It only works while `Register` is running: called anywhere else, it is ignored and the mod logs that
-- **An exception thrown out of `Register`** is for a fault you did not expect. The Uplink is marked unavailable in the same way, the exception's message is the reason, and the mod writes a line marked `[ChannelEngine]`, the part of the mod that registers Uplinks, to `KSP.log` ([Releasing and installing](/guide/release#checking-it-loaded))
+- **An exception thrown out of `Register`** is for a fault you did not expect. The Uplink is marked unavailable in the same way, the exception's message is the reason, and the mod writes a line marked `[ChannelEngine]`, the part of the mod that registers Uplinks, to `KSP.log` in the KSP install folder ([Releasing and installing](/guide/release#checking-it-loaded))
 - **`Health()` returning `UplinkHealth.Unavailable(detail)` or `UplinkHealth.Degraded(detail)`** is for a state that changes after load, such as the mod stopping its updates. The mod polls it, so it can recover. `Degraded` says the Uplink works but something it needs is missing or wrong; `Unavailable` says none of its Topics will carry anything
 
 There is no matching teardown: the Uplink lives as long as the game does, so anything `Register` installs stays installed.
@@ -62,7 +62,7 @@ When the mod you integrate is missing at load, `Register` also calls [`IUplinkHo
 
 <<< ../../example/mod/ExampleUplink.cs#sample{cs}
 
-`AddChannelSource` takes a function from the tick's `KspSnapshot` to the Topic's payload. A **tick** is one round of the Courier's sampling; the snapshot holds what the Gonogo mod read from the game for it, such as the game time. The function runs on the Courier thread, so it may read the snapshot and its own fields and nothing in the game. Returning `null` publishes nothing for that tick, which a widget shows as still waiting. Never substitute a zero: downstream a made-up zero cannot be told from a real reading.
+`AddChannelSource` takes a function from the tick's `KspSnapshot` to the Topic's payload. A **tick** is one round of the Courier's sampling; the snapshot holds what the Gonogo mod read from the game for it, such as the game time. [`KspSnapshot`](/reference/mod/channels-and-emission#KspSnapshot) lists the rest. The function runs on the Courier thread, so it may read the snapshot and its own fields and nothing in the game. Returning `null` publishes nothing for that tick, which a widget shows as still waiting. Never substitute a zero: downstream a made-up zero cannot be told from a real reading.
 
 ## Calling the game
 
@@ -110,6 +110,8 @@ Two cautions about what you read:
 - **A field is only as true as whatever writes it.** Some mods recompute a field only while one of their windows is open, so a field nobody has written yet still holds its starting value and looks like real data. For those, read the value at the moment the mod writes it, by patching that method with [Harmony](https://harmony.pardeike.net/), and publish it with the game time it was true at
 
 ## The whole file
+
+The `#region` and `#endregion` lines mark the parts this site includes on its pages. They do nothing and you can delete them.
 
 ::: details ExampleUplink.cs
 <<< ../../example/mod/ExampleUplink.cs{cs}

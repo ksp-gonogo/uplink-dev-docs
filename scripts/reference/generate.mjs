@@ -558,8 +558,17 @@ function widgetPage(page, record, sdk, kit, index) {
     const label = story.scene ? `The ${record.name} widget on the ${story.scene} scene` : `The ${record.name} widget, ${story.title}`;
     return [`### ${story.title} {#${story.id}}`, story.description ?? "", demoMd(page, story.id, undefined, { label })].filter(Boolean).join("\n\n");
   };
-  const statesIntro =
-    "Each state is the widget drawn from one recorded situation. In a state whose link is lost, the connection to the vessel has dropped, so the widget keeps each reading at its last value and marks it as [held](/reference/concepts/held), or shows it empty where it keeps no last value; each description says which. LKO is low Kerbin orbit and KSC is the Kerbin Space Center.";
+  const statesText = stories.states.map((story) => `${story.title} ${story.description ?? ""}`).join(" ");
+  const statesIntro = [
+    "Each state is the widget drawn from one recorded situation.",
+    /link lost|link is lost|lost link/i.test(statesText)
+      ? "In a state whose link is lost, the connection to the vessel has dropped, so the widget keeps each reading at its last value and marks it as [held](/reference/concepts/held), or shows it empty where it keeps no last value; each description says which."
+      : "",
+    /\bLKO\b/.test(statesText) ? "LKO is low Kerbin orbit." : "",
+    /\bKSC\b/.test(statesText) ? "KSC is the Kerbin Space Center." : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
   const states = stories.states.length === 0 ? [] : ["## States {#states}", [statesIntro, page.statesNote].filter(Boolean).join(" "), ...stories.states.map(stateMd)];
   const out = [
     widgetHeaderMd(record),
@@ -580,7 +589,7 @@ function widgetPage(page, record, sdk, kit, index) {
     }
     const story = stories.extensions.get(point.id);
     if (story) {
-      out.push(`#### Where it renders {#${story.id}}`, `The ${record.name} widget with ${point.id} filled, as the example above fills it:`, demoMd(page, story.id, undefined, { label: `Where ${point.id} renders on the ${record.name} widget` }));
+      out.push(`#### Where it renders {#${story.id}}`, `The ${record.name} widget with ${point.id} filled${file ? ", as the example above fills it" : ""}:`, demoMd(page, story.id, undefined, { label: `Where ${point.id} renders on the ${record.name} widget` }));
     }
     const name = point.type?.type === "reference" && !noProps(point.type) ? point.type.name : null;
     // A standard slot's type is the same on every widget, so it is linked to its one definition rather than printed again.

@@ -78,7 +78,7 @@ Its payload is a bare boolean, so it needs no wire type in the contract slice: t
 
 ## Reading on the main thread
 
-Every read of a mod's state goes in the first function of `IUplinkHost.AddSampledSource`, which runs on the main thread and returns plain data; the second runs on the Courier thread and publishes it. Pass the Topic prefixes the source publishes after the two functions (an exact Topic is its own prefix, as `UtTopic` above), and neither runs while no client is watching those Topics, so an unwatched mod costs nothing. [The plugin class](/guide/plugin#calling-the-game) covers the two halves.
+Every read of a mod's state goes in the first function of `IUplinkHost.AddSampledSource`, which runs on the main thread and returns plain data; the second runs on the Courier thread and publishes it. Pass the Topic prefixes the source publishes after the two functions (an exact Topic is its own prefix, as `UtTopic` above), and the first function is skipped while no client is watching those Topics, so an unwatched mod costs nothing. [The plugin class](/guide/plugin#calling-the-game) covers the two halves.
 
 ## What the save has not unlocked
 

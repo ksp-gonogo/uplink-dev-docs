@@ -4,7 +4,7 @@ import { Readout, ReadoutCaption, Unit } from "@ksp-gonogo/ui-kit";
 export function HeroReadout() {
   const flight = useTelemetry("vessel.flight");
   return (
-    <Readout size="hero" tone="go">
+    <Readout size="hero">
       <Unit value={flight.altitudeAsl} />
       <ReadoutCaption>Altitude</ReadoutCaption>
     </Readout>

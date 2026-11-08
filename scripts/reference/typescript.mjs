@@ -559,7 +559,7 @@ export const cellSafe = (md) => md.replace(/`[^`]*`/g, (span) => span.replace(/(
 export function propertiesMd(reflection, index) {
   const { own, dropped } = ownMembers(reflection);
   if (own.length === 0) return "";
-  const rest = dropped > 0 ? `\n\nEvery other prop is passed to the element it renders, as React's ${code(heritageOf(reflection))}.` : "";
+  const rest = dropped > 0 ? `\n\nEvery other prop is passed to the element it renders${/Attributes/.test(heritageOf(reflection)) ? `, as React's ${code(heritageOf(reflection))}` : ""}.` : "";
   return `${memberTable(own, index)}${rest}`;
 }
 

@@ -28,7 +28,7 @@ In the widget, `client/src/Heartbeat/index.tsx`, with the `useCommand` line besi
 
 <<< ../../example/client/src/Heartbeat/index.tsx#button
 
-The widget passes it to its `Panel` as `panelAside={resetButton}`, a control in the panel's header, and imports `useCommand` from `@ksp-gonogo/sitrep-sdk` and `CommandButton` from `@ksp-gonogo/ui-kit` ([the whole widget](/guide/client-widget#reading-a-topic)). `useCommand("example.reset")`, above it in the widget, returns a handle for one command, a `UseCommandResult`. Its `send` takes the arguments and resolves with the reply once the command has run: a delayed command to a distant craft can take minutes. When the plugin refuses it, `send` rejects with an error carrying the `CommandErrorCode` the handler returned, which `classifyCommandRejection` reads, and when no reply comes back it rejects too. Both are also recorded on the handle, so a `send` you do not wait on loses nothing.
+The widget passes it to its `Panel` as `panelAside={resetButton}`, a control in the panel's header, and imports `useCommand` from `@ksp-gonogo/sitrep-sdk` and `CommandButton` from `@ksp-gonogo/ui-kit` ([the whole widget](/guide/client-widget#reading-a-topic)). `useCommand("example.reset")`, above it in the widget, returns a handle for one command, a `UseCommandResult`. Its `send` takes the arguments and resolves with the reply once the command has run: a delayed command to a distant craft can take minutes. When the plugin refuses it, `send` rejects with an error carrying the `CommandErrorCode` the handler returned, which `classifyCommandRejection` turns into a `kind` such as `"refused"` with its `errorCode`, and when no reply comes back it rejects too. Both are also recorded on the handle, so a `send` you do not wait on loses nothing.
 
 Hand the handle to a `CommandButton` rather than wiring a plain button's click to `send`. The button shows where the command is, as its [`CommandButtonPhase`](/reference/ui-kit/CommandButton#CommandButtonPhase): `"idle"` at rest, `"armed"`, `"pending"` while it travels, `"refused"` with the reason, `"lost"` when no reply came, `"found"` when a lost command replies after all, or `"blocked"` by a requirement the mod checks before sending. It announces each outcome to a screen reader. `commandLabel` is what a refusal is named after.
 
@@ -40,11 +40,15 @@ The reset command takes none. A command that does is sent by passing its argumen
 
 The plugin's side of a command with arguments, a class and a handler that reads `args.Mode`, is on [Accepting a command](/guide/commands#a-command-about-a-craft).
 
-A handler that replies with data, such as that page's `example.setMode`, answers `send` with a reply whose `payload` holds the data, typed from the handler's `CommandResult<T>`. This sketch is not part of the worked Uplink:
+A handler that replies with data, such as that page's `example.setMode`, answers `send` with a reply whose `payload` holds the data, typed from the handler's `CommandResult<T>`. This sketch is not part of the worked Uplink, and calls `send` from a function such as a click handler:
 
 ```tsx
 const setMode = useCommand("example.setMode");
-const reply = await setMode.send({ mode: 1 });
+
+async function chooseMode() {
+  const reply = await setMode.send({ mode: 1 });
+  // reply.payload holds the data
+}
 const mode = reply.payload; // the number the handler returned, or null when it returned none
 ```
 

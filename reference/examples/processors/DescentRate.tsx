@@ -1,3 +1,4 @@
+// npm install @ksp-gonogo/sitrep-sdk @ksp-gonogo/ui-kit
 import { defineUplinkClient, useProcessor, value } from "@ksp-gonogo/sitrep-sdk";
 import { Stat, Unit } from "@ksp-gonogo/ui-kit";
 

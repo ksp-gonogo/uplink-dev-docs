@@ -32,7 +32,7 @@ The first half of `client/src/reckoner.ts`:
 
 - **`modelled`** lists the parts of the payload the model moves, each a path into the payload and a [`ReckoningBasis`](/reference/client/reckoners#ReckoningBasis) naming the kind of model (`"rate-integration"` here: a rate, carried forward. The others are `"combination"` for arithmetic over several readings, `"kepler-propagation"` for an orbit carried forward under gravity, `"linear-dead-reckoning"` for a position carried at its last velocity and `"powered-integration"` for a craft under thrust). A path of `""` means the whole payload, which is what an Uplink's own model moves
 - **`reckon(viewUt)`** returns the payload as the model says it is at `viewUt`. It must be pure, the same inputs always giving the same result, because the app runs it for every frame that reads the Topic
-- **A decline** names its reason, one of those `ReckoningDecline` lists: `"insufficient-history"` for too few samples to take a rate from, `"model-inapplicable"` when the model does not fit this sample, as after a reset, and `"beyond-horizon"` when the sample is too old to carry this far. The others are set by the app, not by your model: `"input-absent"` when a Topic named in `deps` has not arrived, `"under-physics"` when the game's full physics is moving the craft, as under thrust, so a closed-form model does not apply, and `"contested"` when two Uplinks registered a model for one Topic
+- **A decline** names its reason, one of those `ReckoningDecline` lists: `"insufficient-history"` for too few samples to take a rate from, `"model-inapplicable"` when the model does not fit this sample, as after a reset, and `"beyond-horizon"` when the sample is too old to carry this far. The others are set by the app, not by your model: `"input-absent"` when a Topic named in `deps` has not arrived, `"under-physics"` when the game's full physics is moving the craft, as under thrust, so a closed-form model does not apply, `"contested"` when two Uplinks registered a model for one Topic, and `"frame-unavailable"` when the frame a figure was asked for cannot be built yet, such as a body not yet received. A decline's `resolvesByWaiting` says whether the figure comes back by itself
 
 Keep `reckonTicks` cheap. The work belongs in the `reckon` it returns, which runs only when a widget reads the value.
 
@@ -62,6 +62,8 @@ In the widget:
 `reckoning.status` is `"available"` with the modelled `value`, `"declined"` with the reason, or `"none"` when no model is registered. The widget hands the modelled count to `ModelledAlongside`, which draws it with the modelled mark beside the count received, and only where the two differ at the precision drawn. Never draw a modelled value in place of the received one without the modelled mark: a plain `Unit` given the model's number would pass it off as observed. `ModelledAlongside` draws both with the mark, and `Unit` with its `reckoned` prop draws the model's figure, which it always marks as modelled.
 
 ## Testing it
+
+The test's `sample` helper builds a `TimelinePoint`. The model reads only `validAt`, the moment the sample was true at, and `payload`, so `meta` and `epoch` are filled with empty values and the object is cast to the type.
 
 `reckonTicks` is a plain function, so test it directly, a case per answer, in `client/src/reckoner.test.ts`:
 

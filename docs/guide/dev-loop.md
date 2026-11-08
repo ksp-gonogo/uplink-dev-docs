@@ -2,7 +2,7 @@
 
 You can watch a client you are building inside the app, with a rebuild on every save, without releasing anything. There are two ways, depending on whether you have a checkout of the Gonogo app: [with a checkout](#with-a-checkout-of-the-app) you run the app from its source and it loads your build directly, and [without one](#without-a-checkout) you use the hosted app and serve your client from your own computer. Either way, the app's page reloads on its own (with a checkout) or you reload it yourself (without).
 
-Both ways need the Gonogo mod in KSP and a plugin built for development ([Start here](/guide/#what-else-you-need) says where to get the mod); the app is the only part that differs.
+Live data needs the Gonogo mod in KSP and your plugin installed there ([Start here](/guide/#what-else-you-need) says where to get the mod), whichever way you run the app. Without a checkout the plugin is also built for development, with a URL that `bake --dev-path` sets; with a checkout the plugin as `new` builds it is enough.
 
 The loop in short, with a checkout: start the watch build, leave it running, start the app with your Uplink named, and read the **Local builds** tab in Settings to see what became of it. Edit, save, and the page reloads with the new build.
 
@@ -33,9 +33,9 @@ In the app checkout, start the app and name your Uplink:
 pnpm dev --uplink ~/projects/example
 ```
 
-The path is your Uplink's directory, the one holding `uplink.json`, and a relative path is read from where you typed the command. Repeat `--uplink` for more than one Uplink, and `pnpm dev --help` prints the options. Everything else `pnpm dev` starts starts as it does without the flag, including the relay, the small server in the app's source that the app uses to set up connections between the main screen and its stations. An Uplink without an `uplink.json` is refused, and so is a path that is not a directory.
+The path is your Uplink's directory, the one holding `uplink.json`, and a relative path is read from where you typed the command. Repeat `--uplink` for more than one Uplink, and `pnpm dev --help` prints the options. Everything else `pnpm dev` starts starts as it does without the flag, including the relay, the small server in the app's source that the app uses to set up connections between the [main screen and its stations](/guide/concepts). An Uplink without an `uplink.json` is refused, and so is a path that is not a directory.
 
-The app loads each one's build output from `client/dist/<id>/`, without waiting for the mod to list your Uplink, with no hash comparison and no consent prompt. It still checks the bundle's contract (the SDK and ui-kit versions it was built against) and the bytes it fetched, and it reloads the page on every rebuild.
+The app loads each one's build output from `client/dist/<id>/`, without waiting for the mod to list your Uplink, with no hash comparison and no consent prompt. It still checks the bundle's contract version and extension API version and the bytes it fetched, and it reloads the page on every rebuild.
 
 If you name an Uplink whose id is also one that ships inside the app, yours replaces that copy in the app's index and in Settings, so the build you are working on is the one that loads.
 

@@ -79,7 +79,7 @@ public void EveryHandlerAndPublisherIsDeclared()
 }
 ```
 
-The other helpers are used the same way, from a test in `mod-tests/`. Run the tests with `dotnet test ../mod-tests` from `client/`.
+`UnitCoverageAssertion.AssertExhaustive` and `ReckonabilityAssertion.Problems` are called the same way, from a test in `mod-tests/`. `WirePayload` and `ClockedUplinkHost` are a helper and a host rather than checks, and their doc comments in the package say how to use them. Run the tests with `dotnet test ../mod-tests` from `client/`.
 
 A plugin that references KSP's or a mod's assemblies has code the test project cannot compile, since it has no KSP. Keep that code in a file of its own, and leave that file out in `mod-tests/GonogoExampleUplink.Tests.csproj`, beside the line that compiles the plugin's sources:
 
@@ -116,7 +116,7 @@ npm run check               # the client's own rules, and its types under Node's
 
 `npx uplink-tools check` reads the client with the TypeScript compiler and reports what is wrong with it, with the one command that heals each finding. It exits 0 when nothing is found, 1 when findings remain, and 2 when it could not run. `--fix` writes the files `check` owns and then verifies again, and is refused when `CI` is set. `--only` and `--skip` take a comma-separated list of groups, and `--json` prints the findings and nothing else.
 
-A read `check` cannot name, such as a Topic chosen at runtime, takes a `// gonogo:reads <topic or family>` comment above the call, where a family is a pattern for a set of Topic ids with whole-segment `<name>` placeholders, such as one Topic per body: `// gonogo:reads scansat.coverage.<body>.<type>` stands for every body and every type. The groups are `declarations`, `page`, `manifest`, `bake`, `codegen`, `imports`, `plugin`, `actions` and `docs-prose`, one per part of the Uplink the rules read, and `docs-prose` has no rules yet so it is reported skipped. Three more groups start a process, so they run only when `--only` names them:
+The `declarations` group compares the Topics a widget reads with the ones it declares. A read `check` cannot name, such as a Topic chosen at runtime, takes a `// gonogo:reads <topic or family>` comment above the call, where a family is a pattern for a set of Topic ids with whole-segment `<name>` placeholders, such as one Topic per body: `// gonogo:reads scansat.coverage.<body>.<type>` stands for every body and every type. The groups are `declarations`, `page`, `manifest`, `bake`, `codegen`, `imports`, `plugin`, `actions` and `docs-prose`, one per part of the Uplink the rules read, and `docs-prose` is reported skipped. Three more groups start a process, so they run only when `--only` names them:
 
 - `npx uplink-tools check --only loadable` imports, in a bare `node`, every entry point of the `@ksp-gonogo` packages the client depends on that gonogo publishes, the way anything outside a bundler would. A test run does not answer it, because the test runner inlines those packages and finds files Node refuses to. The kit's root barrel and the entry points that reach it cannot be imported by a bare Node, so they are listed as exempt, and `check` warns when one starts to load
 - `npx uplink-tools check --only nodenext` typechecks the client under Node's module resolution, from `tsconfig.nodenext.json`, which a bundler-only typecheck cannot see. `npm run check` names it

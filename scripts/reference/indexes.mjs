@@ -88,7 +88,7 @@ function installMd(name) {
   const optional = manifest.peerDependenciesMeta ?? {};
   const peers = Object.entries(manifest.peerDependencies ?? {})
     .filter(([peer]) => !optional[peer]?.optional)
-    .map(([peer, range]) => (range === "*" ? peer : /[\s|]/.test(range) ? `"${peer}@${range}"` : `${peer}@${range}`));
+    .map(([peer, range]) => (peer.startsWith("@ksp-gonogo/") ? `${peer}@${PUBLISHED.npmTag}` : range === "*" ? peer : /[\s|]/.test(range) ? `"${peer}@${range}"` : `${peer}@${range}`));
   return `\`\`\`bash\nnpm install ${[`${name}@${PUBLISHED.npmTag}`, ...peers].join(" ")}\n\`\`\`\n\n${publishedMd(name)}`;
 }
 
@@ -243,7 +243,7 @@ export function topicsPageMd(page, { sdk, index, version, leadOf }) {
   const link = (name) => `[${code(name)}](${index.url(name)})`;
   return [
     `# ${page.title}`,
-    `Every Topic the SDK declares, by prefix, with the type of its payload and what it carries. The ids are the members of ${link("TOPIC_IDS")} and the payload types are in ${link("TopicPayloadMap")}.`,
+    `Every Topic the SDK declares, by prefix (a channel in these descriptions is a Topic), with the type of its payload and what it carries. The ids are the members of ${link("TOPIC_IDS")} and the payload types are in ${link("TopicPayloadMap")}.`,
     leadOf(page),
     `${code(page.package)} · ${version(page.package)}`,
     topicListMd(sdk, index),

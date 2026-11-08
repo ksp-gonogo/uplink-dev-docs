@@ -38,7 +38,7 @@ When the catalog lacks a unit your Uplink needs, tag the property with a plain s
 
 <<< ../../reference/examples/guide/snackUnit.ts
 
-`ladder` and `rungs` are optional: a unit with no ladder is always drawn as itself, and a `ladder` with `rungs` lets `Unit` move it between steps as it does metres and kilometres ([`UnitDeclaration`](/reference/client/units-and-values#UnitDeclaration) and [`registerUnit`](/reference/client/units-and-values#registerUnit) list them). From then on `Unit`, `Meter` and `Band` take it like a built-in.
+`kind` says what the unit measures, `dimension` (`dim` in the declaration) its base units and their powers, and `ratio` how many of the base unit one of this unit is. `ladder` and `rungs` are optional: a unit with no ladder is always drawn as itself, and a `ladder` with `rungs` lets `Unit` move it between steps as it does metres and kilometres ([`UnitDeclaration`](/reference/client/units-and-values#UnitDeclaration) and [`registerUnit`](/reference/client/units-and-values#registerUnit) list them). From then on `Unit`, `Meter` and `Band` take it like a built-in.
 
 A string meant to be read by a person, such as a name or a status message, takes `Units.Text`; a string that identifies something and is never read as prose takes `Units.Id`. A property that holds a list of a nested payload type, such as `List<Alarm>`, is supported: codegen writes `Alarm[]`, the nested type needs its own entry in the wire types below, and the units on its fields do the describing, so the list property itself carries no `SitrepUnitAttribute`.
 
@@ -99,6 +99,8 @@ A vector field is a `Vec3`, which carries x, y and z and nothing about what they
 | `Units.ResourceUnits` | `"units"` | `1234.5` | 1234.5 units |
 | `Units.ResourceUnitsPerSecond` | `"units/s"` | `1.5` | 1.50 units/s |
 
+A Mit is the unit KSP measures science data in.
+
 `Units.Id` is drawn as its plain number, as the table shows. `Units.Text`, `Units.Flag`, `Units.Enumeration` and `Units.NotApplicable` name a field that is not a quantity at all (`"text"`, `"flag"`, `"enum"`, `"n/a"`), so `Unit` does not draw them: a string, a boolean or an enum is read from the reading and drawn by the widget.
 
 ## Naming the Topic and its fields
@@ -108,7 +110,7 @@ An operator picks a value by name, in the graph's series picker and again in the
 - **`DisplayName`**, a named argument of `SitrepTopicAttribute`, names the Topic by what it describes, such as "Active vessel" for `vessel.flight`
 - **`SitrepDisplayNameAttribute`** names one property, such as "Altitude (sea level)" for `altitudeAsl`
 
-`new` writes both on the heartbeat. This is the scaffold's own payload, for an Uplink whose name is `Example`:
+A release of `uplink-tools` after `1.0.0-rc.45` writes both on the heartbeat. This is the scaffold's own payload, for an Uplink whose name is `Example`:
 
 ```cs
 [SitrepContract]
@@ -118,6 +120,10 @@ An operator picks a value by name, in the graph's series picker and again in the
 #endif
 public sealed class ExampleHeartbeat
 {
+    /// <summary>The game's universal time when the sample was taken. Never null in a published sample.</summary>
+    [SitrepUnit(Units.UniversalTime)]
+    public double? Ut { get; set; }
+
     /// <summary>How many samples this Uplink has published since the game started, this one included. It starts again from 1 when the game restarts.</summary>
     [SitrepUnit(Units.Count)]
     [SitrepDisplayName("Samples published")]
@@ -131,7 +137,7 @@ Neither attribute is required. A property with no `SitrepDisplayNameAttribute` i
 
 Names reach the client through codegen: `npm run codegen` writes them into `GENERATED_CONTRACT_TAGS` in `src/__generated__/units.ts`, and `defineUplinkClient` registers that table when `src/uplink.ts` passes it as `tags`, so there is nothing else to wire. The same text becomes the title of each property in the generated page's contract reference. The SDK reads them back with `topicDisplayNameOf(topic)` and `fieldDisplayNameOf(topic, path)`, each returning `undefined` where the contract names none, and `contractTagsGeneration()` is a number that changes whenever a table is registered, for a cache built from them. A widget that lists values for the operator to choose from can use all three.
 
-Display names are in the SDK and contract packages after `1.0.0-rc.45`; the worked Uplink above is built against an earlier candidate and does not carry them yet.
+Display names need the SDK and contract packages after `1.0.0-rc.45`. On `1.0.0-rc.45`, `SitrepDisplayNameAttribute` does not exist and the worked Uplink above does not use it.
 
 ## Generating the client's types
 
@@ -181,7 +187,7 @@ Emission = new EmissionPolicy(
 
 That sends a changed list at most once per game second. A value skipped by the limit is not lost: the first sample after the interval is compared with the last one sent, so it goes out with the value it has then. Because the interval is game time, one game second passes in less real time under warp, so the sample rate in real time rises with the warp factor. Where a field counts down, publishing the moment it ends (a `Units.UniversalTime` property) instead of the time left keeps the payload unchanged between real changes, and the client works out the time left from the clock.
 
-The other members of `ChannelDeclaration` cover less common cases, such as [`AbsenceIsData`](/reference/mod/channels-and-emission#ChannelDeclaration.AbsenceIsData) for a Topic whose empty value is itself information. [Channels and emission](/reference/mod/channels-and-emission) documents them all.
+The other members of `ChannelDeclaration` cover less common cases, such as [`AbsenceIsData`](/reference/mod/channels-and-emission#ChannelDeclaration.AbsenceIsData) for a Topic where having no value is itself news, such as no target being set. [Channels and emission](/reference/mod/channels-and-emission) documents them all.
 
 ### A Topic with no payload class
 

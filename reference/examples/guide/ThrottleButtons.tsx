@@ -5,7 +5,7 @@ import { Cluster, CommandButton } from "@ksp-gonogo/ui-kit";
 export function ThrottleButtons() {
   const setThrottle = useCommand("vessel.control.setThrottle");
   return (
-    <Cluster gap="related">
+    <Cluster gap="related" justify="start">
       <CommandButton handle={setThrottle} commandLabel="Throttle" label="Cut" args={{ value: 0 }} />
       <CommandButton handle={setThrottle} commandLabel="Throttle" label="Full" args={{ value: 1 }} />
     </Cluster>

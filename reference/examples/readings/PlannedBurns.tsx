@@ -4,8 +4,8 @@ import { Text } from "@ksp-gonogo/ui-kit";
 
 export function PlannedBurns() {
   // A Reading: the latest value and how current it is. Its `state` is "observed" (current now),
-  // "held" (the last value received before updates stopped), "pending", "unowned" or "absent";
-  // only the first two carry a `value`. This draws only a current value, so a held one draws nothing,
+  // "held" (the last value received before updates stopped), "pending" (nothing has arrived yet), "unowned" (no installed Uplink publishes it) or
+  // "absent" (the game confirmed there is no value); only the first two carry a `value`. This draws only a current value, so a held one draws nothing,
   // by choice. Check for "observed" or "held" before reading `maneuver.value` to draw it anyway.
   const maneuver = useTelemetry("vessel.maneuver");
   if (maneuver.state !== "observed") return null;

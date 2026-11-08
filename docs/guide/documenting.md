@@ -4,9 +4,9 @@ An Uplink is documented in two places, both written next to the code: its genera
 
 ## The generated page
 
-`npm run page`, from `client/`, writes three files: `README.md`, `gonogo-uplink.json` (what the app reads about the client before it loads it) and `docs/widgets.json` (each widget's registration, as a record).
+`npm run page`, from `client/`, writes four files: `README.md`, `gonogo-uplink.json` (what the app reads about the client before it loads it), `docs/widgets.json` (each widget's registration, as a record) and `docs/spec.json` (what the page was written from, used to tell whether it is current).
 
-The page is written for a player first. It opens with what the Uplink does, a sentence saying it is an Uplink for Gonogo, the mod it was built against and how to install it. Each widget follows with its pictures. Everything an Uplink author needs sits under a final "For developers" heading, in collapsed `<details>` blocks: the Uplink's id and version, the Topics, the Commands, the Augments and Contributions, the Models and the error codes. Each widget's facts are collapsed under its picture the same way. GitHub shows the text inside a block as markdown; SpaceDock has not been checked.
+The page is written for a player first. It opens with what the Uplink does, a sentence saying it is an Uplink for Gonogo, the mod it was built against and how to install it. Each widget follows with its pictures. Everything an Uplink author needs sits under a final "For developers" heading, in collapsed `<details>` blocks: the Uplink's id and version, the Topics, the Commands, the Augments and Contributions, the Models and the error codes. Each widget's facts are collapsed under its picture the same way.
 
 Every picture is shown at most 400 pixels wide, and no wider than the size it was drawn at, so a small widget is not enlarged. It links to the full-size file. The pictures of what the Uplink adds to other widgets (augments and contributions) appear as a small gallery under "What it adds to other widgets", each caption naming the augment and the widget it adds to; their tables stay collapsed.
 
@@ -16,7 +16,7 @@ Each part of the page comes from one place:
 | --- | --- |
 | The opening paragraph | `description` in `defineUplinkClient`, in `src/uplink.ts` |
 | The id and version | `id` and `version` in `defineUplinkClient` |
-| Built against | The packages the client was built with: the contract version (the `Major.Minor` of `KspGonogo.Sitrep.Contract`) and the extension API version of the sdk and kit, the two versions Gonogo checks an Uplink against when it loads one |
+| Built against | The packages the client was built with: the contract version (the `Major.Minor` of `KspGonogo.Sitrep.Contract`) and the extension API version of the sdk and kit, the two versions Gonogo checks an Uplink against when it loads one. Both come from the packages your Uplink pins |
 | The mod it supports | The mod the Uplink declares in its manifest |
 | The Topics table | The plugin's manifest: each channel's Topic, payload type, delivery and delay |
 | The Commands tables | The contract slice's `SitrepCommandAttribute` classes, through the command map `codegen` writes: each command, its arguments type and its result, then each arguments type's fields |
@@ -24,7 +24,7 @@ Each part of the page comes from one place:
 | Each widget's pictures | Its fixtures, with `_scene.caption` as the picture's description |
 | The Models table | Every reckoner the client registers |
 
-Here is the example's, as `npm run page` writes it (the example is regenerated with each release of `uplink-tools`):
+Here is the example's, as `npm run page` writes it:
 
 <<< ../../example/README.md{md}
 

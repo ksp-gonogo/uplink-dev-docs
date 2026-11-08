@@ -9,7 +9,7 @@ const uplink = defineUplinkClient({
   id: "padturnaround",
   version: "1.0.0",
   name: "Pad Turnaround",
-  description: "Adds a turnaround note to each pad in the Launch Director.",
+  description: "Adds a turnaround note to each pad in the Launch & Recovery widget.",
 });
 
 function Turnaround({

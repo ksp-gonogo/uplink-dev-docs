@@ -14,6 +14,7 @@ const EXAMPLE_ERROR_CODES: readonly UplinkErrorCodeDeclaration[] = [
     id: "example.countFrozen",
     kind: "refusal",
     refines: "modeUnavailable",
+    // Only a fault has an origin; an Uplink's codes are refusals.
     origin: null,
     sentence: "the count is frozen while the game is paused",
     meaning: "The heartbeat does not count while the game is paused, so a reset has nothing to start again.",

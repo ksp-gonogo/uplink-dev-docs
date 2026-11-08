@@ -30,6 +30,7 @@ function sampleFrame(): Uint8Array {
         seq: 1204,
         deliveredAt: 41853.5,
         vantage: "ground:Kerbal Space Center",
+        // quality, staleness and timelineEpoch say how good and how fresh the sample is, and which game timeline it belongs to.
         quality: 1,
         active: true,
         staleness: 0,

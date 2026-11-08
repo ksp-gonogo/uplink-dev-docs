@@ -1,3 +1,4 @@
+// npm install @ksp-gonogo/sitrep-sdk @ksp-gonogo/ui-kit
 import { useTelemetry } from "@ksp-gonogo/sitrep-sdk";
 import { Grid, NullValue, Stat, Unit } from "@ksp-gonogo/ui-kit";
 

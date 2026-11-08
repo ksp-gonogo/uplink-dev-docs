@@ -17,8 +17,8 @@ how the widget declares which places exist.
 An Uplink needs none of this to show its own widgets. Use it to put your
 mod's information inside one of the app's widgets, such as a badge on a crew
 row or a section in the Ground Track. The second half of the page is the
-reference for every type it names; the Reference's Client SDK pages do not
-repeat them.
+reference for the augment and contribution types; the props a slot passes are
+on that widget's reference page.
 
 ## Augments
 
@@ -102,7 +102,8 @@ A widget of your own can take its terms from a segment of its own instead of `fi
 
 Some slots are on every widget, whatever the widget. A standard slot's id is
 the widget's id and the segment, such as `crew-status.badges`, and every
-widget's reference page lists them beside its own.
+widget's reference page lists them beside its own. They are typed by
+`ComponentSlotRegistry`, not `SlotRegistry`, so look for them there.
 
 Other slots belong to one widget, or to a component a widget chooses to show,
 such as a meter list or a filter bar. Those appear on a widget's page only

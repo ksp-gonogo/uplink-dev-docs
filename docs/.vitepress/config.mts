@@ -47,6 +47,8 @@ export default defineConfig({
   vite: islandVite(),
   markdown: {
     config: (md) => {
+      // A signature such as `${string}:${ProcessorId}` holds `:$`, an emoji shortcut.
+      md.disable("emoji");
       symbolLinks(md);
       conceptLinks(md);
     },
