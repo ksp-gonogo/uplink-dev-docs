@@ -8,7 +8,7 @@
   "release_status": "development",
   "depends": [
     {
-      "name": "Gonogo"
+      "name": "GonogoCore"
     }
   ],
   "install": [
