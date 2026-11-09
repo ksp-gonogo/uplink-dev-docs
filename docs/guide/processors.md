@@ -8,7 +8,7 @@ Write a processor when a figure is derived from more than one source and more th
 
 Do not write one for a figure a single widget draws. Compute it in the widget: a processor adds an id, a dependency list and a handle to carry around, and buys nothing with one reader.
 
-A processor is not a Topic. It has no wire form and no history, and a widget reads it with `useProcessor` rather than `useTelemetry`. When the derived value needs a history, or a reader that takes a Topic id, register a derived channel instead ([`DerivedChannelDefinition`](/reference/client/processors#DerivedChannelDefinition)).
+On its own a processor has no wire form and no history, and a widget reads it with `useProcessor` rather than `useTelemetry`. When the value needs a history, or a reader that takes a Topic id, [publish it as a Topic](#publishing-it-as-a-topic).
 
 ## Registering one
 
@@ -31,6 +31,21 @@ The reader checks the state before it draws, the same as for a Topic:
 <<< ../../reference/examples/guide/processors.tsx#read-carried
 
 A processor can also depend on another processor, by listing its handle in `deps`. Currency carries through that link in the same way.
+
+## Publishing it as a Topic
+
+Give a processor a `topic` and it is also a Topic the app computes. Anything that takes a Topic id reads it the way it reads a Topic the mod sends: `useStream`, a plot of its history, an alarm. The handle still works, and a `useProcessor` read and a Topic read of one processor in one frame are one evaluation. With `fields: true`, each field of the result is a Topic of its own, so this one is also `descent.state.descending`:
+
+<<< ../../reference/examples/guide/processors.tsx#published
+
+A published processor follows the rules of a Topic:
+
+- `compute` returns `undefined` while an input has not arrived and `null` when the value is confirmed absent, so a reader can tell "waiting" from "there is none". A Topic id in `deps` gives `compute` `undefined` before the first sample and `null` once the game confirms there is none
+- It reads every input at one instant, in the delay lane of the least current one, so a value is never put together from two instants a signal delay apart
+- Its status is the worst of its inputs' statuses, and its age is that of the oldest input
+- Its history is built by running `compute` again at each instant an input changed, so a chart can plot it and a replay shows it. The same inputs must give the same result. No status is recorded for a past instant, so a `{ reading }` dep is handed to a past instant as observed
+
+Your Uplink cannot publish over a Topic Gonogo already publishes. When two Uplinks publish the same Topic, neither is used and reads of it stay `pending`.
 
 ## A processor the SDK ships
 
