@@ -131,7 +131,7 @@ Each Uplink's manifest is named after it (`example.gonogo-uplink.json`), so seve
 
 ## CKAN and SpaceDock
 
-`release` writes `dist/GonogoExampleUplink.netkan` beside the zip, a copy of `mod/GonogoExampleUplink.netkan`: the metadata CKAN indexes a mod from, naming `GonogoCore`, the Gonogo mod's CKAN identifier, as a dependency, and installing the zip's `GameData/GonogoExampleUplink` folder. If your Uplink integrates another mod, add that mod to `mod/GonogoExampleUplink.netkan`'s `depends` (or `recommends`, when the Uplink is useful without it).
+`release` writes `dist/GonogoExampleUplink.netkan` beside the zip, a copy of `mod/GonogoExampleUplink.netkan`: the metadata CKAN indexes a mod from, naming `Gonogo`, the Gonogo mod's CKAN identifier, as a dependency, and installing the zip's `GameData/GonogoExampleUplink` folder. If your Uplink integrates another mod, add that mod to `mod/GonogoExampleUplink.netkan`'s `depends` (or `recommends`, when the Uplink is useful without it).
 
 The netkan `new` writes, and so the copy `release` makes of it, has no `$kref`, the line telling CKAN where each release's zip is downloaded from, and CKAN needs one. Add it to `mod/GonogoExampleUplink.netkan`. Attach the zip to a release on your repository and add `"$kref": "#/ckan/github/<owner>/<repo>"`, or upload it to SpaceDock and add `"$kref": "#/ckan/spacedock/<mod id>"`. `dist/` is never committed, so the netkan and the zip are not in your repository: attach the zip to the release by hand (a GitHub release, or SpaceDock), and the netkan you submit to CKAN is the copy in `mod/`, which is committed. Submitting follows CKAN's own process:
 
