@@ -10,8 +10,6 @@ the augment, and the ids of contribution slots as the entries of
 `ContributionRegistry`, each with the type of entry the widget draws. A
 widget's own page says which kind each of its slots is.
 
-A third kind of client code, a processor, is not a slot: it is a value computed once and shared, which a contribution lists in its `deps` like a Topic. [Writing a processor](/guide/processors) covers it.
-
 A widget names its slots in its registration, in `augmentSlots` for augments
 and `contributionSlots` for contributions. You do not write either: they are
 how the widget declares which places exist.
@@ -113,4 +111,4 @@ when that widget has them.
 
 <!-- rest -->
 
-Next: [Writing a processor](/guide/processors).
+Next: [See your Uplink in the app](/guide/dev-loop).
