@@ -1,13 +1,13 @@
 import { useCommand } from "@ksp-gonogo/sitrep-sdk";
-import { Cluster, CommandButton } from "@ksp-gonogo/ui-kit";
+import { Button, Cluster } from "@ksp-gonogo/ui-kit";
 
 /** Two buttons sharing one command handle, each sending its own arguments. */
 export function ThrottleButtons() {
   const setThrottle = useCommand("vessel.control.setThrottle");
   return (
     <Cluster gap="related" justify="start">
-      <CommandButton handle={setThrottle} commandLabel="Throttle" label="Cut" args={{ value: 0 }} />
-      <CommandButton handle={setThrottle} commandLabel="Throttle" label="Full" args={{ value: 1 }} />
+      <Button command={setThrottle.with({ value: 0 }, { label: "Throttle" })}>Cut</Button>
+      <Button command={setThrottle.with({ value: 1 }, { label: "Throttle" })}>Full</Button>
     </Cluster>
   );
 }

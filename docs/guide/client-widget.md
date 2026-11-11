@@ -106,4 +106,6 @@ The kit's components carry their own roles and states, and honour a reader's red
 
 `npm test` renders the widget in its tests. To see it drawn, `npm run render` draws each of the widget's fixtures, the scenes under `__fixtures__/`, to `client/renders/` in a real browser, which needs Chromium installed once with `npx playwright install chromium`. [Testing](/guide/testing) covers fixtures. To see the widget in the running app with a rebuild on every save, follow [See your Uplink in the app](/guide/dev-loop); [Releasing and installing](/guide/release) covers installing a released one.
 
+To add another widget, run `uplink-tools add widget <name>` from the Uplink: it writes the widget, its test and a render fixture from the same templates `new` uses, imports it from `client/src/index.ts` and never overwrites a file. `add` also takes `augment`, `contribution`, `command`, `processor`, `setting` and `unit`.
+
 Next: [Sending a command](/guide/client-commands).

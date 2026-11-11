@@ -18,7 +18,7 @@ namespace GonogoExampleUplink;
 /// </internal>
 /// </summary>
 [SitrepContract]
-[SitrepTopic("example.heartbeat")]
+[SitrepTopic("example.heartbeat", DisplayName = "Example heartbeat")]
 #if SITREP_CODEGEN
 [TsInterface]
 #endif
@@ -30,6 +30,7 @@ public sealed class ExampleHeartbeat
 
     /// <summary>How many samples this Uplink has published since the game started, this one included. It starts again from 1 when the game restarts or <c>example.reset</c> runs.</summary>
     [SitrepUnit(Units.Count)]
+    [SitrepDisplayName("Samples published")]
     [SitrepReckonable(ReckoningBases.RateIntegration, "ut")]
     public double? Ticks { get; set; }
 }

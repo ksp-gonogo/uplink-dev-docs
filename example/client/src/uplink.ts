@@ -3,7 +3,7 @@ import { defineUplinkClient } from "@ksp-gonogo/sitrep-sdk";
 import { GENERATED_CONTRACT_TAGS } from "./__generated__/units.js";
 
 /** Must equal package.json's version. `npm run page` writes gonogo-uplink.json from this. */
-const UPLINK_VERSION = "0.0.1";
+const UPLINK_VERSION = "0.0.0-development";
 
 /**
  * This Uplink's client, as the dashboard lists it. Every widget names it as its
@@ -16,7 +16,7 @@ export const EXAMPLE = defineUplinkClient({
   name: "Example",
   description:
     "The Uplink the Gonogo Uplink Guide builds: a heartbeat it publishes, a command that starts its count again, and a forward model that carries the count between samples.",
-  // What the contract slice declares about its values: how each relates in time, and any value a model of yours carries forward.
+  // What the contract slice declares about its values: how each relates in time, the names a picker lists them under, and any value a model of yours carries forward.
   tags: GENERATED_CONTRACT_TAGS,
 });
 // #endregion client

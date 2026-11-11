@@ -33,7 +33,7 @@ const { version } = JSON.parse(readFileSync(resolve(ROOT, "reference/artifacts.j
 /** What `new` is run with: the same answers the example was made with. */
 const NEW_ARGS = [
   "new", "example", "--name", "Example", "--author", "Uplink docs", "--repo", "ksp-gonogo/uplink-dev-docs",
-  "--topics", "own", "--no-workflows", "--no-ksp", "--no-install", "--no-generate",
+  "--topics", "own", "--no-workflows", "--no-ksp", "--no-install", "--no-generate", "--client",
 ];
 
 /** Files the Guide changes from what `new` writes, and the page that changes each. */

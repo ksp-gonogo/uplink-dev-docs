@@ -37,8 +37,8 @@ function CruiseButton() {
   const cruising = warp.value.warpMode === WarpMode.High && warp.value.warpRateIndex === index;
   return (
     <Button
-      disabled={cruising || (needsAlarm && index > current)}
-      onClick={() => void setWarpIndex.send({ index })}
+      command={setWarpIndex.with({ index }, { label: "Cruise warp" })}
+      unavailable={cruising ? "Already cruising" : needsAlarm && index > current ? "A delay this long needs an alarm first" : null}
     >
       Cruise at {CRUISE_RATE}x
     </Button>

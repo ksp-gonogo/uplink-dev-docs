@@ -110,7 +110,7 @@ An operator picks a value by name, in the graph's series picker and again in the
 - **`DisplayName`**, a named argument of `SitrepTopicAttribute`, names the Topic by what it describes, such as "Active vessel" for `vessel.flight`
 - **`SitrepDisplayNameAttribute`** names one property, such as "Altitude (sea level)" for `altitudeAsl`
 
-A release of `uplink-tools` after `1.0.0-rc.45` writes both on the heartbeat. This is the scaffold's own payload, for an Uplink whose name is `Example`:
+A release of `uplink-tools` after `1.0.0-rc.47` writes both on the heartbeat. This is the scaffold's own payload, for an Uplink whose name is `Example`:
 
 ```cs
 [SitrepContract]
@@ -137,7 +137,7 @@ Neither attribute is required. A property with no `SitrepDisplayNameAttribute` i
 
 Names reach the client through codegen: `npm run codegen` writes them into `GENERATED_CONTRACT_TAGS` in `src/__generated__/units.ts`, and `defineUplinkClient` registers that table when `src/uplink.ts` passes it as `tags`, so there is nothing else to wire. The same text becomes the title of each property in the generated page's contract reference. The SDK reads them back with `topicDisplayNameOf(topic)` and `fieldDisplayNameOf(topic, path)`, each returning `undefined` where the contract names none, and `contractTagsGeneration()` is a number that changes whenever a table is registered, for a cache built from them. A widget that lists values for the operator to choose from can use all three.
 
-Display names need the SDK and contract packages after `1.0.0-rc.45`. On `1.0.0-rc.45`, `SitrepDisplayNameAttribute` does not exist and the worked Uplink above does not use it.
+Display names need the SDK and contract packages after `1.0.0-rc.47`. On `1.0.0-rc.47`, `SitrepDisplayNameAttribute` does not exist and the worked Uplink above does not use it.
 
 ## Generating the client's types
 

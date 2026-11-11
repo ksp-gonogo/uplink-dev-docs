@@ -4,12 +4,12 @@
   "description": "The Uplink the Gonogo Uplink Guide builds: a heartbeat it publishes, a command that starts its count again, and a forward model that carries the count between samples.",
   "author": "Uplink docs",
   "repo": "https://github.com/ksp-gonogo/uplink-dev-docs",
-  "version": "0.0.1",
+  "version": "0.0.0-development",
   "minAppVersion": "0.0.0",
   "apiVersion": "6.0.0",
-  "contractMajor": 44,
-  "contractMinor": 13,
+  "contractMajor": 51,
+  "contractMinor": 1,
   "bundleUrl": "example/example.client.js",
   "integrity": "",
-  "sdkVersion": "1.0.0-rc.45"
+  "sdkVersion": "1.0.0-rc.47"
 }

@@ -19,6 +19,6 @@
   },
   "csharpNamespace": "GonogoExampleUplink",
   "client": {
-    "url": "https://cdn.jsdelivr.net/gh/ksp-gonogo/uplink-dev-docs@releases/releases/example/0.0.1/example.client.js"
+    "url": "https://cdn.jsdelivr.net/gh/ksp-gonogo/uplink-dev-docs@releases/releases/example/0.0.0-development/example.client.js"
   }
 }

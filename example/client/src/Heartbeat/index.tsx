@@ -1,6 +1,6 @@
 // #region widget
 import { registerComponent, useCommand, useTelemetry } from "@ksp-gonogo/sitrep-sdk";
-import { CommandButton, EmptyState, ModelledAlongside, Panel, Section, Text, Unit } from "@ksp-gonogo/ui-kit";
+import { Button, EmptyState, ModelledAlongside, Panel, Section, Text, Unit } from "@ksp-gonogo/ui-kit";
 import { EXAMPLE } from "../uplink.js";
 
 /** Why there is no count to draw. Each is a different thing for an operator to do something about, so each has its own words. */
@@ -44,7 +44,11 @@ function HeartbeatWidget() {
   // #endregion reckoning
 
   // #region button
-  const resetButton = <CommandButton handle={reset} commandLabel="Reset the count" label="Reset" size="sm" />;
+  const resetButton = (
+    <Button command={reset.with(undefined, { label: "Reset the count" })} size="sm">
+      Reset
+    </Button>
+  );
   // #endregion button
 
   // heartbeat.ticks and heartbeat.ut are readings of one field each, and <Unit> marks a held one. heartbeat.value.ticks is the bare number: the same figure with nothing to say it has gone stale.

@@ -1,9 +1,9 @@
 export default {
   kind: "category",
-  title: "Command button",
+  title: "Command controls",
   package: "@ksp-gonogo/ui-kit",
   category: "CommandButton",
-  lead: "CommandButton",
+  lead: "CommandedButtonProps",
   examples: [
     {
       id: "command-button--stage",

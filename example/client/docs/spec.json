@@ -3,7 +3,7 @@
   "uplink": {
     "id": "example",
     "name": "Example",
-    "version": "0.0.1",
+    "version": "0.0.0-development",
     "description": "The Uplink the Gonogo Uplink Guide builds: a heartbeat it publishes, a command that starts its count again, and a forward model that carries the count between samples.",
     "wraps": null
   },
@@ -85,7 +85,7 @@
     "forwardModels": [
       "example.heartbeat"
     ],
-    "derivedChannels": [],
+    "publishedTopics": [],
     "inputRuleExemptions": []
   },
   "errorCodes": []

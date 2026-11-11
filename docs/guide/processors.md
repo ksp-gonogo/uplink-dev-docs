@@ -8,7 +8,7 @@ Write a processor when a figure is derived from more than one source and more th
 
 Do not write one for a figure a single widget draws. Compute it in the widget: a processor adds an id, a dependency list and a handle to carry around, and buys nothing with one reader.
 
-A processor is not a Topic. It has no wire form and no history, and a widget reads it with `useProcessor` rather than `useTelemetry`. When the derived value needs a history, or a reader that takes a Topic id, register a derived channel instead ([`DerivedChannelDefinition`](/reference/client/processors#DerivedChannelDefinition)).
+On its own a processor has no wire form and no history, and a widget reads it with `useProcessor` rather than `useTelemetry`. When the derived value needs a history, or a reader that takes a Topic id, give the processor a `topic`: the app then also computes it as a Topic.
 
 ## Registering one
 

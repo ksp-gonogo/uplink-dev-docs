@@ -5,8 +5,8 @@ export function SasSwitch() {
   const setSas = useCommand("vessel.control.setSas");
   return (
     <Cluster gap="related" align="center">
-      <Button onClick={() => void setSas.send({ enabled: true })}>SAS on</Button>
-      <Button onClick={() => void setSas.send({ enabled: false })}>SAS off</Button>
+      <Button command={setSas.with({ enabled: true }, { label: "SAS on" })}>SAS on</Button>
+      <Button command={setSas.with({ enabled: false }, { label: "SAS off" })}>SAS off</Button>
       <CommandDelay handle={setSas} />
     </Cluster>
   );

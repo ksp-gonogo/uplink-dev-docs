@@ -43,10 +43,10 @@ So a player needs only your plugin installed: the client follows from it.
 The order is: set the repository in `uplink.json` (`new --repo`), run `npm run release`, publish the bundle it built at `client.url`, then install the zip. `client.url` in `uplink.json` is where the app fetches the bundle, and it must be set before `release` bakes it, though the file need not exist there until a player's app loads it. With `--repo acme/example` (here `acme/example` stands for the `--repo` you gave `new`, and your own owner and name are in `client.url`), `new` points it at jsDelivr, which serves files from a GitHub repository:
 
 ```
-https://cdn.jsdelivr.net/gh/acme/example@releases/releases/example/0.0.1/example.client.js
+https://cdn.jsdelivr.net/gh/acme/example@releases/releases/example/0.0.0-development/example.client.js
 ```
 
-That is the file `releases/example/0.0.1/example.client.js` on your repository's `releases` branch.
+That is the file `releases/example/0.0.0-development/example.client.js` on your repository's `releases` branch.
 
 ### Publishing with `publish`
 
@@ -56,7 +56,7 @@ For a jsDelivr URL, `publish` does the whole job; the by-hand steps further down
 npx uplink-tools publish
 ```
 
-It copies the built bundle and its `gonogo-uplink.json` into a worktree of the ref the URL names (by default `.releases/` in the Uplink, which it creates from the remote's branch, or as a new orphan branch when the remote has none) and prints the links. A published version is never overwritten: a bundle that differs from the one already there is a new version with its own URL. `--push` commits what changed, pushes it to the ref and checks the remote holds the commit, `--purge` asks jsDelivr to drop its cached copy of both URLs, and `--tag <tag>` refuses unless the tag is `example-v0.0.1`, which is `<id>-v<version>`. `release --tag <tag>` applies the same rule, so a release workflow triggered by a tag can stop on a tag that does not match the version it builds. For any other host, `--to <dir>` names the folder that is served at the URL's root.
+It copies the built bundle and its `gonogo-uplink.json` into a worktree of the ref the URL names (by default `.releases/` in the Uplink, which it creates from the remote's branch, or as a new orphan branch when the remote has none) and prints the links. A published version is never overwritten: a bundle that differs from the one already there is a new version with its own URL. `--push` commits what changed, pushes it to the ref and checks the remote holds the commit, `--purge` asks jsDelivr to drop its cached copy of both URLs, and `--tag <tag>` refuses unless the tag is `example-v0.0.0-development`, which is `<id>-v<version>`. `release --tag <tag>` applies the same rule, so a release workflow triggered by a tag can stop on a tag that does not match the version it builds. For any other host, `--to <dir>` names the folder that is served at the URL's root.
 
 `publish` without `--push` is its dry run. It needs the folder to be a git repository with at least one commit and an `origin` remote, which need not exist yet: the address only names the links it prints. It copies the files into the worktree and prints the links, and commits and sends nothing. If a `--push` fails (a remote that cannot be reached, a wrong address), the release stays committed in the worktree, and running `publish --push` again sends that commit, and says "already on" the ref only once the remote holds it.
 
@@ -66,10 +66,10 @@ To publish the first version without `publish`, from the Uplink's folder, with g
 
 ```bash
 git worktree add --orphan -b releases ../example-releases
-mkdir -p ../example-releases/releases/example/0.0.1
-cp client/dist/example/example.client.js client/dist/example/gonogo-uplink.json ../example-releases/releases/example/0.0.1/
+mkdir -p ../example-releases/releases/example/0.0.0-development
+cp client/dist/example/example.client.js client/dist/example/gonogo-uplink.json ../example-releases/releases/example/0.0.0-development/
 cd ../example-releases
-git add releases && git commit -m "Release example 0.0.1" && git push -u origin releases
+git add releases && git commit -m "Release example 0.0.0-development" && git push -u origin releases
 ```
 
 `git worktree add --orphan` makes a worktree on a new branch with no history, so the bundles stay off your source branch, and `../example-releases` is any folder beside the Uplink's. Outside WSL, in PowerShell, `mkdir -p` and `cp` are `New-Item -ItemType Directory -Force` and `Copy-Item` ([Known limits](/guide/limits#the-tools)). For a later version, `git worktree add ../example-releases releases` checks the branch out again, and the files go in that version's folder. Keep the manifest beside the bundle under exactly its name: the app looks for `example.gonogo-uplink.json` first, then `gonogo-uplink.json`, from the bundle's own URL. Copy `example.gonogo-uplink.json` too when it is in `client/dist/example/`.
@@ -80,13 +80,15 @@ Never change a published file. The plugin vouches for one exact bundle, and jsDe
 
 ## A new version
 
-The version is in three places, all changed together, and `release` refuses while they disagree:
+The committed files hold the placeholder `0.0.0-development`. `uplink-tools version <version>` (`X.Y.Z` or `X.Y.Z-rc.N`) stamps the real one everywhere it is written, in a checkout that is not committed back:
 
-- `version` in `client/package.json`, which `bake` writes into the plugin
+- `version` in `client/package.json` and `client/package-lock.json`, which `bake` writes into the plugin
 - `UPLINK_VERSION` in `client/src/uplink.ts`
 - The version folder in `client.url` in `uplink.json`
 
-Then run `npm run page`, since the page records the version, and `npm run release`.
+It then writes the page, which carries the version into the README and `gonogo-uplink.json`, and puts every file back if a step fails. `--bump patch`, `minor`, `major` or `auto` with `--from <version>` works the next version out from the last release instead. Then run `npm run release`, which refuses while the three places disagree.
+
+`uplink-tools deps` reads the mod and the packages this Uplink pins against every channel they publish on and says which pins are behind; `uplink-tools deps bump` moves them and runs the checks against the new versions.
 
 ## Installing
 

@@ -8,7 +8,7 @@ export function Throttle() {
   return (
     <Cluster gap="related" align="center">
       {PRESETS.map((args) => (
-        <Button key={args.value} onClick={() => void setThrottle.send(args)}>
+        <Button key={args.value} command={setThrottle.with(args, { label: "Throttle" })}>
           {Math.round(args.value * 100)}%
         </Button>
       ))}

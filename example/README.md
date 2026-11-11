@@ -5,11 +5,7 @@
 
 The Uplink the Gonogo Uplink Guide builds: a heartbeat it publishes, a command that starts its count again, and a forward model that carries the count between samples.
 
-| | |
-| --- | --- |
-| Uplink id | `example` |
-| Version | `0.0.1` |
-| Built against | contract 44.13, extension API 6.0.0 |
+An Uplink for [Gonogo](https://ksp-gonogo.github.io/), the mission-control dashboard for Kerbal Space Program that runs in a web browser on any screen.
 
 ## Install
 
@@ -19,27 +15,14 @@ Without CKAN, download `GonogoExampleUplink.zip` from the releases page, unpack 
 
 Releases: https://github.com/ksp-gonogo/uplink-dev-docs/releases?q=example-v
 
-## Wire
-
-| Topic | Payload | Delivery | Delay |
-| --- | --- | --- | --- |
-| `example.heartbeat` | `ExampleHeartbeat` | lossy-latest | true-now |
-
-## Commands
-
-| Command | Args | Result |
-| --- | --- | --- |
-| `example.reset` | `ExampleResetArgs` | `CommandResult` |
-
-| Args | Fields |
-| --- | --- |
-| `ExampleResetArgs` | – |
-
 ## Widgets
 
 ### Heartbeat
 
 How many samples the Example Uplink has published, and the game time of the latest one, carried forward between samples. Reset starts the count again.
+
+<details>
+<summary>Widget details</summary>
 
 | | |
 | --- | --- |
@@ -49,9 +32,49 @@ How many samples the Example Uplink has published, and the game time of the late
 | Smallest size, in grid units | 5 × 4 |
 | Scenes | 1 |
 
-## Models
+</details>
+
+## For developers
+
+<details>
+<summary>Uplink details</summary>
+
+| | |
+| --- | --- |
+| Uplink id | `example` |
+| Version | `0.0.0-development` |
+| Built against | contract 51.1, extension API 6.0.0 |
+
+</details>
+
+<details>
+<summary>Topics</summary>
+
+| Topic | Payload | Delivery | Delay |
+| --- | --- | --- | --- |
+| `example.heartbeat` | `ExampleHeartbeat` | lossy-latest | true-now |
+
+</details>
+
+<details>
+<summary>Commands</summary>
+
+| Command | Args | Result |
+| --- | --- | --- |
+| `example.reset` | `ExampleResetArgs` | `CommandResult` |
+
+| Args | Fields |
+| --- | --- |
+| `ExampleResetArgs` | – |
+
+</details>
+
+<details>
+<summary>Models</summary>
 
 | Kind | Id |
 | --- | --- |
 | forward model | `example.heartbeat` |
+
+</details>
 

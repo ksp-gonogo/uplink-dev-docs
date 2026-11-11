@@ -81,5 +81,13 @@
   },
   "typeDeterministicWhile": {
 
+  },
+  "typeNames": {
+    "ExampleHeartbeat": {
+      "ticks": "Samples published"
+    }
+  },
+  "topicNames": {
+    "example.heartbeat": "Example heartbeat"
   }
 }
