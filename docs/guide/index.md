@@ -69,6 +69,7 @@ The client:
 - [Sending a command](/guide/client-commands) (`/guide/client-commands`): typing the command, and a button that sends it
 - [Writing a reckoner](/guide/reckoners) (`/guide/reckoners`): a forward model that carries a value between samples
 - [Extensions](/guide/extensions) (`/guide/extensions`): adding to the app's own widgets
+- [Writing a processor](/guide/processors) (`/guide/processors`): a value computed once from several Topics and shared
 - [See your Uplink in the app](/guide/dev-loop) (`/guide/dev-loop`): a rebuild on every save, without releasing
 
 Shipping:
