@@ -3,6 +3,7 @@ import {
   defineProcessorContract,
   defineUplinkClient,
   useProcessor,
+  useStream,
   type Value,
 } from "@ksp-gonogo/sitrep-sdk";
 import { Stat, Unit } from "@ksp-gonogo/ui-kit";
@@ -41,6 +42,26 @@ export function FallRate() {
   );
 }
 // #endregion read-carried
+
+// #region published
+export const DESCENT_STATE = uplink.registerProcessor({
+  id: "state",
+  topic: "descent.state",
+  fields: true,
+  deps: ["vessel.flight"],
+  compute: ([flight]) => {
+    if (flight === undefined) return undefined;
+    if (flight === null) return null;
+    return { descending: flight.verticalSpeed.isNegative() };
+  },
+});
+
+export function DescentState() {
+  const state = useStream<{ descending: boolean }>("descent.state");
+  if (state.state !== "observed" && state.state !== "held") return <Stat label="Descending">Waiting for flight data</Stat>;
+  return <Stat label="Descending">{state.value.descending ? "Yes" : "No"}</Stat>;
+}
+// #endregion published
 
 // #region celestial
 export function MunIndex() {
