@@ -110,7 +110,7 @@ Everything except what `.gitignore` names: `node_modules`, the build outputs, `k
 
 ## The heartbeat
 
-The scaffold's plugin publishes one Topic, `example.heartbeat`, carrying a count of how many times it has published and the game time of the last sample. Its widget shows both. The next four pages take the plugin apart ([The plugin class](/guide/plugin), [Publishing a Topic](/guide/topics), [Accepting a command](/guide/commands) and [Wrapping a mod](/guide/wrapping-a-mod)), and the six after them the client ([A widget](/guide/client-widget), [Sending a command](/guide/client-commands), [Writing a reckoner](/guide/reckoners), [Extensions](/guide/extensions), [Writing a processor](/guide/processors) and [See your Uplink in the app](/guide/dev-loop)).
+The scaffold's plugin publishes one Topic, `example.heartbeat`, carrying a count of how many times it has published and the game time of the last sample. Its widget shows both. The next four pages take the plugin apart ([The plugin class](/guide/plugin), [Publishing a Topic](/guide/topics), [Accepting a command](/guide/commands) and [Wrapping a mod](/guide/wrapping-a-mod)), and the five after them the client ([A widget](/guide/client-widget), [Sending a command](/guide/client-commands), [Writing a reckoner](/guide/reckoners), [Extensions](/guide/extensions) and [See your Uplink in the app](/guide/dev-loop)).
 
 ## What to change by hand
 
