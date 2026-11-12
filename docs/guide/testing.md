@@ -130,7 +130,7 @@ On a new Uplink `check` reports `bake/stale` until the first `npm run release`: 
 
 ## Checking the pictures
 
-`npm run docs:check` regenerates the page and its pictures in memory and fails when the committed ones differ, so it needs Chromium. As it draws each fixture it also checks the picture can be read, and prints a warning for a widget whose text is cut off or whose title is clipped at a size it draws. A warning does not fail the command; it says the widget needs a bigger tile or less text, so raise its `minSize` or give its `Panel` a `compactTitle`. The scaffold's widget draws none.
+`npm run docs:check` regenerates the page and its pictures in memory and fails when the committed ones differ, so it needs Chromium (it compares pictures only in CI: [Prerequisites](/guide/prerequisites#tools)). As it draws each fixture it also checks the picture can be read, and prints a warning for a widget whose text is cut off or whose title is clipped at a size it draws. A warning does not fail the command; it says the widget needs a bigger tile or less text, so raise its `minSize` or give its `Panel` a `compactTitle`. The scaffold's widget draws none.
 
 ## When the page is out of date
 

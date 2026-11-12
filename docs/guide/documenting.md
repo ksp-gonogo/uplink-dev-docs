@@ -22,7 +22,7 @@ Each part of the page comes from one place:
 | The Commands tables | The contract slice's `SitrepCommandAttribute` classes, through the command map `codegen` writes: each command, its arguments type and its result, then each arguments type's fields |
 | Each widget's heading, paragraph and facts | Its `registerComponent` call: `name`, `description`, `channels`, `defaultSize`, and the number of its fixtures as Scenes |
 | Each widget's pictures | Its fixtures, with `_scene.caption` as the picture's description |
-| The Models table | Every reckoner the client registers |
+| The Models table | Every processor and reckoner the client registers, one row each, with its kind |
 
 Here is the example's, as `npm run page` writes it:
 

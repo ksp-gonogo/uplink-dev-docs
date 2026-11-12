@@ -8,7 +8,7 @@ In `mod-contract/ExamplePayloads.cs`:
 
 <<< ../../example/mod-contract/ExamplePayloads.cs#heartbeat{cs}
 
-The file starts with the `using` lines `new` wrote: `using Sitrep.Contract;`, which provides `SitrepContract`, `SitrepTopic`, `SitrepReckonable`, `SitrepUnit` and `Units`, the guarded `using Reinforced.Typings.Attributes;` that provides `TsInterface`, and the file-scoped `namespace GonogoExampleUplink;`. Start any file of your own for payloads the same way.
+The file starts with the `using` lines `new` wrote: `using Sitrep.Contract;`, which provides `SitrepContract`, `SitrepTopic`, `SitrepUnit` and `Units` (and `SitrepReckonable`, once you add it), the guarded `using Reinforced.Typings.Attributes;` that provides `TsInterface`, and the file-scoped `namespace GonogoExampleUplink;`. Start any file of your own for payloads the same way.
 
 Every Topic's payload is a class in the contract slice, carrying three attributes:
 
@@ -110,7 +110,7 @@ An operator picks a value by name, in the graph's series picker and again in the
 - **`DisplayName`**, a named argument of `SitrepTopicAttribute`, names the Topic by what it describes, such as "Active vessel" for `vessel.flight`
 - **`SitrepDisplayNameAttribute`** names one property, such as "Altitude (sea level)" for `altitudeAsl`
 
-A release of `uplink-tools` after `1.0.0-rc.47` writes both on the heartbeat. This is the scaffold's own payload, for an Uplink whose name is `Example`:
+`new` writes both on the heartbeat. This is the scaffold's own payload, for an Uplink whose name is `Example`:
 
 ```cs
 [SitrepContract]
@@ -136,8 +136,6 @@ The picker lists the heartbeat's count as "Example heartbeat › Samples publish
 Neither attribute is required. A property with no `SitrepDisplayNameAttribute` is listed under its name split into words, so `Ut` reads "Ut" and `Ticks` reads "Ticks", and a Topic with no `DisplayName` is listed under its id, tidied by the client. Both read correctly for a plain name and badly for an abbreviation, which is the case to name. A name on a property that belongs to a type used by several Topics names it wherever that type is published.
 
 Names reach the client through codegen: `npm run codegen` writes them into `GENERATED_CONTRACT_TAGS` in `src/__generated__/units.ts`, and `defineUplinkClient` registers that table when `src/uplink.ts` passes it as `tags`, so there is nothing else to wire. The same text becomes the title of each property in the generated page's contract reference. The SDK reads them back with `topicDisplayNameOf(topic)` and `fieldDisplayNameOf(topic, path)`, each returning `undefined` where the contract names none, and `contractTagsGeneration()` is a number that changes whenever a table is registered, for a cache built from them. A widget that lists values for the operator to choose from can use all three.
-
-Display names need the SDK and contract packages after `1.0.0-rc.47`. On `1.0.0-rc.47`, `SitrepDisplayNameAttribute` does not exist and the worked Uplink above does not use it.
 
 ## Generating the client's types
 

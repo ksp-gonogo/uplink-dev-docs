@@ -2,7 +2,7 @@
 
 The plugin is one class in `mod/`, `ExampleUplink.cs`. This page covers what Gonogo needs from it: how it is found, what its manifest declares, where its work is wired up, and how it reports its own health.
 
-The snippets on this page come from the finished example, so they already carry the `example.reset` command (`ResetCommand`, its declaration and its handler) that [Accepting a command](/guide/commands) adds. The file `new` writes is the same without those lines. The Health, unavailable and sampled-source snippets come from a separate file of sketches, compiled against the contract: they are not in the example. Their fields (`_modLoaded`, `_staleSamples`) stand for state your own plugin finds when the game loads, which [Wrapping a mod](/guide/wrapping-a-mod) shows being found; the sketch class takes them as constructor arguments so the snippets compile, while your plugin class keeps a constructor with no parameters.
+The snippets on this page come from the finished example, so they already carry the `example.reset` command (`ResetCommand`, its declaration and its handler) that [Accepting a command](/guide/commands) adds. The file `new` writes is the same without those lines. The second Health snippet, the unavailable one and the sampled-source one come from a separate file of sketches, compiled against the contract: they are not in the example. Their fields (`_modLoaded`, `_staleSamples`) stand for state your own plugin finds when the game loads, which [Wrapping a mod](/guide/wrapping-a-mod) shows being found; the sketch class takes them as constructor arguments so the snippets compile, while your plugin class keeps a constructor with no parameters.
 
 Two threads matter throughout. The **main thread** is the game's own, the only one that may touch KSP. The **Courier thread** is the Gonogo mod's background thread, which samples every Topic and writes the telemetry stream the app reads ([Start here](/guide/#what-an-uplink-is)); code running on it must never touch the game.
 
@@ -54,7 +54,7 @@ The Gonogo mod polls it repeatedly, once per sample of the `system.uplinks` Topi
 
 <<< ../../reference/examples/mod/GuideExamples.cs#health{cs}
 
-When the mod you integrate is missing at load, `Register` also calls [`IUplinkHost.SetAvailability`](/reference/mod/host-and-kernel#IUplinkHost.SetAvailability) with an [`Availability`](/reference/mod/#Availability) saying why, and registers nothing:
+When the mod you integrate is missing at load, `Register` also calls [`IUplinkHost.SetAvailability`](/reference/mod/host-and-kernel#IUplinkHost.SetAvailability) with an [`Availability`](/reference/mod/#Availability) saying why, and registers nothing after it:
 
 <<< ../../reference/examples/mod/GuideExamples.cs#unavailable{cs}
 

@@ -12,7 +12,7 @@ On its own a processor has no wire form and no history, and a widget reads it wi
 
 ## Registering one
 
-Register it on the client handle you already have. The `id` is prefixed with your Uplink's id, so this one is `descent:rate`. A Topic id in `deps` gives `compute` that Topic's payload, or `undefined` before the first sample, and `compute` returns the value every reader will see:
+Register it on the client handle you already have. The `id` is prefixed with your Uplink's id, so this one is `descent:rate`. A Topic id in `deps` gives `compute` that Topic's payload, `undefined` before the first sample, or `null` once the game confirms there is none, and `compute` returns the value every reader will see:
 
 <<< ../../reference/examples/processors/DescentRate.tsx
 
@@ -40,7 +40,7 @@ Give a processor a `topic` and it is also a Topic the app computes. Anything tha
 
 A published processor follows the rules of a Topic:
 
-- `compute` returns `undefined` while an input has not arrived and `null` when the value is confirmed absent, so a reader can tell "waiting" from "there is none". A Topic id in `deps` gives `compute` `undefined` before the first sample and `null` once the game confirms there is none
+- `compute` returns `undefined` while an input has not arrived and `null` when the value is confirmed absent, so a reader can tell "waiting" from "there is none"
 - It reads every input at one instant, in the delay lane of the least current one, so a value is never put together from two instants a signal delay apart
 - Its status is the worst of its inputs' statuses, and its age is that of the oldest input
 - Its history is built by running `compute` again at each instant an input changed, so a chart can plot it and a replay shows it. The same inputs must give the same result. No status is recorded for a past instant, so a `{ reading }` dep is handed to a past instant as observed

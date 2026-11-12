@@ -93,7 +93,7 @@ export interface Spec {
   widgets: SpecWidget[];
   augments: SpecAugment[];
   contributions: SpecContribution[];
-  models: { processors: string[]; forwardModels: string[]; derivedChannels: string[] };
+  models: { processors: string[]; forwardModels: string[]; publishedTopics: string[]; inputRuleExemptions: string[] };
   errorCodes: SpecErrorCode[];
 }
 
@@ -229,7 +229,8 @@ export function readSpec(value: unknown): Spec {
     models: {
       processors: strings(models.processors, "models.processors"),
       forwardModels: strings(models.forwardModels, "models.forwardModels"),
-      derivedChannels: strings(models.derivedChannels, "models.derivedChannels"),
+      publishedTopics: strings(models.publishedTopics, "models.publishedTopics"),
+      inputRuleExemptions: strings(models.inputRuleExemptions, "models.inputRuleExemptions"),
     },
     errorCodes: list(root.errorCodes, "errorCodes", (item, at) => {
       const o = obj(item, at);

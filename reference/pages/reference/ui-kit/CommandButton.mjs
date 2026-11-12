@@ -7,7 +7,7 @@ export default {
   examples: [
     {
       id: "command-button--stage",
-      file: "reference/examples/command-button/StageButton.tsx",
+      file: "reference/examples/guide/StageButton.tsx",
       export: "StageButton",
     },
   ],

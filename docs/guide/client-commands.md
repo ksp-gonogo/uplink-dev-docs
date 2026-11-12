@@ -28,9 +28,9 @@ In the widget, `client/src/Heartbeat/index.tsx`, with the `useCommand` line besi
 
 <<< ../../example/client/src/Heartbeat/index.tsx#button
 
-The widget passes it to its `Panel` as `panelAside={resetButton}`, a control in the panel's header, and imports `useCommand` from `@ksp-gonogo/sitrep-sdk` and `Button` from `@ksp-gonogo/ui-kit` ([the whole widget](/guide/client-widget#reading-a-topic)). `useCommand("example.reset")`, above it in the widget, returns a handle for one command, a `UseCommandResult`. A control the operator presses takes the handle through its `command` prop, as above. For a send that no control starts, its `dangerouslySendWithoutInput` takes the arguments and resolves with the reply once the command has run: a delayed command to a distant craft can take minutes. When the plugin refuses it, it rejects with an error carrying the `CommandErrorCode` the handler returned, which `classifyCommandRejection` turns into a `kind` such as `"refused"` with its `errorCode`, and when no reply comes back it rejects too. Both are also recorded on the handle, so a send you do not wait on loses nothing.
+The widget passes it to its `Panel` as `panelAside={resetButton}`, a control in the panel's header, and imports `useCommand` from `@ksp-gonogo/sitrep-sdk` and `Button` from `@ksp-gonogo/ui-kit` ([the whole widget](/guide/client-widget#reading-a-topic)). `useCommand("example.reset")`, above it in the widget, returns a handle for one command, a `UseCommandResult`. For a send that no control starts, its `dangerouslySendWithoutInput` takes the arguments and resolves with the reply once the command has run: a delayed command to a distant craft can take minutes. When the plugin refuses it, it rejects with an error carrying the `CommandErrorCode` the handler returned, which `classifyCommandRejection` turns into a `kind` such as `"refused"` with its `errorCode`, and when no reply comes back it rejects too. Both are also recorded on the handle, so a send you do not wait on loses nothing.
 
-Give the handle to a `Button` as its `command` rather than wiring a plain button's click to `dangerouslySendWithoutInput`, which draws nothing for the operator. The button shows where the command is, as its [`CommandButtonPhase`](/reference/ui-kit/CommandButton#CommandButtonPhase), and announces each outcome to a screen reader. The `label` in the command's options (`reset.with(undefined, { label: "Reset the count" })`) is what a refusal is named after.
+A `Button` given the handle as its `command` shows where the command is, as its [`CommandButtonPhase`](/reference/ui-kit/CommandButton#CommandButtonPhase), and announces each outcome to a screen reader; a plain button wired to `dangerouslySendWithoutInput` draws nothing. The `label` in the command's options (`reset.with(undefined, { label: "Reset the count" })`) is what a refusal is named after.
 
 ### What the operator sees
 
@@ -51,7 +51,7 @@ Four more things change how a button looks without being a phase:
 - **Unavailable**: when the caller gives an `unavailable` reason (a reading that has not arrived, say), the button is dimmed with a solid edge, the reason is its tip, and a press sends nothing
 - **Offline**: when the stream to the mod is down, the button is dimmed with a dotted edge and a press does nothing until the stream returns. A command already in flight is not affected
 - **Advised**: when the mod expects the game to refuse a command but cannot be sure, the button stays pressable, its tip says why, and its edge shows the command may be refused. A press sends it and the game decides on arrival. A command that takes no signal delay is stopped instead, and shows as blocked
-- **Held and modelled** (on a toggle): while a press waits at a relay the state it will set is drawn marked held, and while it is predicted to have arrived it is marked modelled. The toggle shows "SENT", then the state again with the mark
+- **Held and modelled** (on a `Switch`, whose `command` is `handle.toArgs(...)` where a `Button` takes `handle.with(...)`): while a press waits at a relay the state it will set is drawn marked held, and while it is predicted to have arrived it is marked modelled. The toggle shows "SENT", then the state again with the mark
 
 The words are props: `confirmLabel`, `refusedLabel`, `lostLabel` and `foundLabel`. A button is sized to hold its widest word, so a state change never moves its neighbours.
 
@@ -70,9 +70,8 @@ const setMode = useCommand("example.setMode");
 
 async function chooseMode() {
   const reply = await setMode.dangerouslySendWithoutInput({ mode: 1 });
-  // reply.payload holds the data
+  // reply.payload holds the data: the number the handler returned, or null when it returned none
 }
-const mode = reply.payload; // the number the handler returned, or null when it returned none
 ```
 
 ## Destructive commands

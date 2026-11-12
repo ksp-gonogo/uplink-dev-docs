@@ -67,12 +67,12 @@ To publish the first version without `publish`, from the Uplink's folder, with g
 ```bash
 git worktree add --orphan -b releases ../example-releases
 mkdir -p ../example-releases/releases/example/0.0.0-development
-cp client/dist/example/example.client.js client/dist/example/gonogo-uplink.json ../example-releases/releases/example/0.0.0-development/
+cp client/dist/example/example.client.js client/dist/example/gonogo-uplink.json client/dist/example/example.gonogo-uplink.json ../example-releases/releases/example/0.0.0-development/
 cd ../example-releases
 git add releases && git commit -m "Release example 0.0.0-development" && git push -u origin releases
 ```
 
-`git worktree add --orphan` makes a worktree on a new branch with no history, so the bundles stay off your source branch, and `../example-releases` is any folder beside the Uplink's. Outside WSL, in PowerShell, `mkdir -p` and `cp` are `New-Item -ItemType Directory -Force` and `Copy-Item` ([Known limits](/guide/limits#the-tools)). For a later version, `git worktree add ../example-releases releases` checks the branch out again, and the files go in that version's folder. Keep the manifest beside the bundle under exactly its name: the app looks for `example.gonogo-uplink.json` first, then `gonogo-uplink.json`, from the bundle's own URL. Copy `example.gonogo-uplink.json` too when it is in `client/dist/example/`.
+`git worktree add --orphan` makes a worktree on a new branch with no history, so the bundles stay off your source branch, and `../example-releases` is any folder beside the Uplink's. Outside WSL, in PowerShell, `mkdir -p` and `cp` are `New-Item -ItemType Directory -Force` and `Copy-Item` ([Known limits](/guide/limits#the-tools)). For a later version, `git worktree add ../example-releases releases` checks the branch out again, and the files go in that version's folder. Keep the manifest beside the bundle under exactly its name: the app looks for `example.gonogo-uplink.json` first, then `gonogo-uplink.json`, from the bundle's own URL.
 
 `new` writes this URL only when it knows the repository, from `--repo` or this directory's GitHub remote. With `--no-repo`, it writes a placeholder (the owner `your-github-owner`), and `release` refuses to run until you set `repo` and `client.url` in `uplink.json` to where the bundle will really be published ([uplink.json](/guide/uplink-json#what-release-refuses)). To dry-run the whole of `release` before you have a repository, set them to any owner and name other than the placeholder: `release` contacts nothing, it builds, bakes, compiles and zips, so the run proves every step works. The zip it writes names a URL that serves nothing, so do not install or share it; set the real values and run `release` again when the repository exists.
 
