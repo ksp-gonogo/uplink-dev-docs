@@ -1,6 +1,6 @@
 import { type TopicPayload, type WireOf } from "@ksp-gonogo/sitrep-sdk";
 
-/** The `vessel.parts` value every Ship Map example draws, as the Gonogo mod sends it. */
+/** The `vessel.parts` value every Vessel Schematic example draws, as the Gonogo mod sends it. */
 export const vesselParts: WireOf<TopicPayload<"vessel.parts">> = {
   parts: [
     {

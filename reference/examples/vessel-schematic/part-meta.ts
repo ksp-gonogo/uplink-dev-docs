@@ -1,21 +1,21 @@
 import {
   defineUplinkClient,
   observedValue,
-  type ShipMapPartMetaEntry,
+  type VesselSchematicPartMetaEntry,
 } from "@ksp-gonogo/sitrep-sdk";
 
 const uplink = defineUplinkClient({
   id: "enginestatus",
   version: "1.0.0",
   name: "Engine Status",
-  description: "Marks an engine part on the Ship Map when it has flamed out.",
+  description: "Marks an engine part on the Vessel Schematic when it has flamed out.",
 });
 
 uplink.registerContribution({
   id: "engine-flameout",
-  contributes: "ship-map.part-meta",
+  contributes: "vessel-schematic.part-meta",
   deps: ["vessel.parts"],
-  compute: (topics): ShipMapPartMetaEntry[] => {
+  compute: (topics): VesselSchematicPartMetaEntry[] => {
     const parts = observedValue(topics["vessel.parts"])?.parts ?? [];
     return parts.flatMap((part) => {
       const engine = part.moduleStates.find((module) => module.type === "engine");

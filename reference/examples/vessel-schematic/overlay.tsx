@@ -9,16 +9,16 @@ const uplink = defineUplinkClient({
   id: "enginestages",
   version: "1.0.0",
   name: "Engine Stages",
-  description: "Marks the engines of each stage on the Ship Map.",
+  description: "Marks the engines of each stage on the Vessel Schematic.",
 });
 
 /**
  * One mark for the whole diagram: how many stages still hold an engine, in
  * the corner. The overlay does not follow the operator's zoom or pan, so a
  * mark belongs to the diagram as a whole; one tied to a part is a
- * `ship-map.part-meters` or `ship-map.part-meta` contribution instead.
+ * `vessel-schematic.part-meters` or `vessel-schematic.part-meta` contribution instead.
  */
-function EngineStages({ parts }: SlotProps<"ship-map.overlay">) {
+function EngineStages({ parts }: SlotProps<"vessel-schematic.overlay">) {
   const stages = new Set(parts.filter((part) => part.type === "engine").map((part) => part.stage));
   if (stages.size === 0) return null;
   return (
@@ -32,7 +32,7 @@ function EngineStages({ parts }: SlotProps<"ship-map.overlay">) {
 
 registerAugment({
   id: "enginestages-marks",
-  augments: "ship-map.overlay",
+  augments: "vessel-schematic.overlay",
   component: EngineStages,
   owner: uplink,
 });

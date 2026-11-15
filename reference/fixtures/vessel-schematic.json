@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "notes": "The scene every Ship Map example renders on. Its vessel.parts value comes from reference/examples/ship-map/parts.ts, which the top example shows."
+    "notes": "The scene every Vessel Schematic example renders on. Its vessel.parts value comes from reference/examples/vessel-schematic/parts.ts, which the top example shows."
   },
   "_stream": {
     "emits": [
