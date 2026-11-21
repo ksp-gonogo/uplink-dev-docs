@@ -5,6 +5,7 @@ import Demo from "./islands/Demo.vue";
 import DemoStage from "./islands/DemoStage.vue";
 import CustomUplinks from "./islands/CustomUplinks.vue";
 import CustomUplinksNav from "./islands/CustomUplinksNav.vue";
+import Channel from "./Channel.vue";
 import Published from "./Published.vue";
 import "./custom.css";
 
@@ -15,6 +16,7 @@ export default {
     app.component("Demo", Demo);
     app.component("DemoStage", DemoStage);
     app.component("Published", Published);
+    app.component("Channel", Channel);
     app.component("CustomUplinks", CustomUplinks);
   },
 } satisfies Theme;
