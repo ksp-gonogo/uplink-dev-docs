@@ -17,7 +17,7 @@ No clone of any repository is needed to build, test and release an Uplink (only 
 
 ## The packages
 
-`new` writes every dependency into the Uplink's own files, each pinned to the one release candidate the `rc` dist-tag names when you run it (`npm view @ksp-gonogo/uplink-tools dist-tags` shows which). For an Uplink `new` wrote, you install nothing by hand.
+`new` writes every dependency into the Uplink's own files, each pinned to the one release the `latest` dist-tag names when you run it (`npm view @ksp-gonogo/uplink-tools dist-tags` shows which). For an Uplink `new` wrote, you install nothing by hand.
 
 | Package | Where | What it is |
 | --- | --- | --- |
@@ -28,9 +28,9 @@ No clone of any repository is needed to build, test and release an Uplink (only 
 
 The contract has one name per place you meet it: `KspGonogo.Sitrep.Contract` is the NuGet package, `Sitrep.Contract` the assembly and namespace inside it, and `Sitrep.Contract.dll` the file the Gonogo mod ships in `GameData`.
 
-All four are published at the same version, and the scaffold pins them exactly, so both halves build against one contract. The `rc` in `npx @ksp-gonogo/uplink-tools@rc` is the npm tag of the <Published field="name" />.
+All four are published at the same version, and the scaffold pins them exactly, so both halves build against one contract.
 
-Adding a package by hand, or building against another candidate, is covered in [Building against the release candidate](/guide/#building-against-the-release-candidate).
+Adding a package by hand is covered in [Building against the release](/guide/#building-against-the-release).
 
 ## What an Uplink may reference
 

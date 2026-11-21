@@ -17,7 +17,7 @@ With Node and the .NET SDK installed ([Prerequisites](/guide/prerequisites)), ma
 
 ```bash
 mkdir example && cd example
-npx @ksp-gonogo/uplink-tools@rc new
+npx @ksp-gonogo/uplink-tools new
 cd client
 npm test                     # the client's tests, and the check that the generated page is current
 dotnet test ../mod-tests     # the plugin's tests
@@ -37,12 +37,12 @@ To try the Uplink in the game you need KSP, the Gonogo mod and the Gonogo app:
 
 Nothing before [Releasing and installing](/guide/release) needs either, except trying a client in the app as you build it ([See your Uplink in the app](/guide/dev-loop)).
 
-## Building against the release candidate
+## Building against the release
 
-The Guide documents the <Published field="name" />. The `rc` dist-tag names the current candidate; `npm view @ksp-gonogo/uplink-tools dist-tags` shows which version it points at. The three npm packages and the NuGet package are published at that one version and pin each other exactly, so an Uplink builds only against all four at once. `new` writes every pin for you. If you ever add or update one by hand, install the three npm packages together under the `rc` tag, since one beside a release of another fails to resolve:
+The Guide documents the <Published field="name" />. The `latest` dist-tag names the current release; `npm view @ksp-gonogo/uplink-tools dist-tags` shows which version it points at. The three npm packages and the NuGet package are published at that one version and pin each other exactly, so an Uplink builds only against all four at once. `new` writes every pin for you. If you ever add or update one by hand, install the three npm packages together, since one beside a different version of another fails to resolve:
 
 ```bash
-npm install @ksp-gonogo/sitrep-sdk@rc @ksp-gonogo/ui-kit@rc @ksp-gonogo/uplink-tools@rc
+npm install @ksp-gonogo/sitrep-sdk @ksp-gonogo/ui-kit @ksp-gonogo/uplink-tools
 ```
 
 NuGet has no tags, so a C# project names the exact version in its `PackageReference` to `KspGonogo.Sitrep.Contract`. The [`/rc/` app](https://ksp-gonogo.github.io/rc/) is the one built to load an Uplink made this way. [Prerequisites](/guide/prerequisites#the-packages) lists what each package is.

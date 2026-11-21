@@ -1,9 +1,9 @@
 {
-  "gonogo": "9536a667c6464fc4034fd7c5181149496d5e8c68",
+  "gonogo": "a0f8d780caeaec4a8105290708dc0b4a67ef8b73",
   "published": {
-    "version": "1.0.0-rc.47",
-    "npmTag": "rc",
-    "name": "release candidate"
+    "version": "1.0.0",
+    "npmTag": "latest",
+    "name": "release"
   },
   "npm": {
     "@ksp-gonogo/ui-kit": "file:../artifacts/ksp-gonogo-ui-kit.tgz",
