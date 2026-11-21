@@ -21,7 +21,7 @@
     "reference": "node scripts/reference/generate.mjs",
     "externals": "node scripts/build-uplink-externals.mjs",
     "reference:pack": "node scripts/reference/pack-artifacts.mjs",
-    "test:channels": "node --test scripts/resolve-channel.test.mjs scripts/pin-example.test.mjs scripts/decide-channels.test.mjs"
+    "test:channels": "node --test scripts/resolve-channel.test.mjs scripts/pin-example.test.mjs scripts/decide-channels.test.mjs scripts/channel-tag.test.mjs"
   },
   "devDependencies": {
     "@testing-library/react": "^16.3.3",

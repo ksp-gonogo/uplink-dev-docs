@@ -6,6 +6,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { docsBase } from "../../scripts/base.mjs";
+import { channelTag, tagSuffix } from "../../scripts/channel-tag.mjs";
 
 type SidebarItem = { text: string; link: string; index?: boolean };
 
@@ -32,17 +33,6 @@ const published: { version: string; npmTag: string; name: string; pending?: stri
   readFileSync(resolve(dirname(fileURLToPath(import.meta.url)), "../../reference/artifacts.json"), "utf8"),
 ).published;
 
-/**
- * What the channel's npm tag adds to an install line: nothing for `latest`, which
- * is what an unqualified install gets, and `@<tag>` otherwise. Pages write the
- * plain command and the build adds this after each published package name in an
- * `npx` or `npm install` line of a code block or code span.
- */
-const tagSuffix = published.npmTag === "latest" ? "" : `@${published.npmTag}`;
-
-const installTarget = /@ksp-gonogo\/(?:uplink-tools|sitrep-sdk|ui-kit)(?=[\s`"']|$)/g;
-const installLine = /\b(?:npx|npm install)\b/;
-
 const documents = ["@ksp-gonogo/sitrep-sdk", "@ksp-gonogo/ui-kit"]
   .map((name) => `${name}@${published.version}`)
   .join(" &middot; ");
@@ -61,21 +51,7 @@ export default defineConfig({
     config: (md) => {
       // A signature such as `${string}:${ProcessorId}` holds `:$`, an emoji shortcut.
       md.disable("emoji");
-      md.core.ruler.push("channel_tag", (state) => {
-        if (!tagSuffix) return;
-        const tag = (code: string) =>
-          code
-            .split("\n")
-            .map((line) => (installLine.test(line) ? line.replace(installTarget, (name) => `${name}${tagSuffix}`) : line))
-            .join("\n");
-        const visit = (tokens: typeof state.tokens) => {
-          for (const token of tokens) {
-            if (token.type === "fence" || token.type === "code_inline") token.content = tag(token.content);
-            if (token.children) visit(token.children);
-          }
-        };
-        visit(state.tokens);
-      });
+      channelTag(md, tagSuffix(published.npmTag));
       symbolLinks(md);
       conceptLinks(md);
     },
