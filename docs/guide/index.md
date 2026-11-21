@@ -17,7 +17,7 @@ With Node and the .NET SDK installed ([Prerequisites](/guide/prerequisites)), ma
 
 ```bash
 mkdir example && cd example
-npx @ksp-gonogo/uplink-tools@@tag@@ new
+npx @ksp-gonogo/uplink-tools new
 cd client
 npm test                     # the client's tests, and the check that the generated page is current
 dotnet test ../mod-tests     # the plugin's tests
@@ -42,7 +42,7 @@ Nothing before [Releasing and installing](/guide/release) needs either, except t
 The Guide documents the <Published field="name" />. The <Published field="npmTag" /> dist-tag names the current <Published field="name" />; `npm view @ksp-gonogo/uplink-tools dist-tags` shows which version it points at. The three npm packages and the NuGet package are published at that one version and pin each other exactly, so an Uplink builds only against all four at once. `new` writes every pin for you. If you ever add or update one by hand, install the three npm packages together, since one beside a different version of another fails to resolve:
 
 ```bash
-npm install @ksp-gonogo/sitrep-sdk@@tag@@ @ksp-gonogo/ui-kit@@tag@@ @ksp-gonogo/uplink-tools@@tag@@
+npm install @ksp-gonogo/sitrep-sdk @ksp-gonogo/ui-kit @ksp-gonogo/uplink-tools
 ```
 
 NuGet has no tags, so a C# project names the exact version in its `PackageReference` to `KspGonogo.Sitrep.Contract`. The <Channel is="release">[app](https://ksp-gonogo.github.io/app/)</Channel><Channel is="rc">[`/rc/` app](https://ksp-gonogo.github.io/rc/)</Channel> is the one built to load an Uplink made this way. [Prerequisites](/guide/prerequisites#the-packages) lists what each package is.

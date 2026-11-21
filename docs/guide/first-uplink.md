@@ -8,13 +8,13 @@ In an empty directory named after the Uplink, run `new`. It writes into that dir
 
 ```bash
 mkdir example && cd example
-npx @ksp-gonogo/uplink-tools@@tag@@ new
+npx @ksp-gonogo/uplink-tools new
 ```
 
 On a terminal it asks what it was not told. Each question is also a flag, so this asks nothing:
 
 ```bash
-npx @ksp-gonogo/uplink-tools@@tag@@ new example --name Example --author "Your Name" \
+npx @ksp-gonogo/uplink-tools new example --name Example --author "Your Name" \
   --repo acme/example --topics own --no-workflows --no-ksp
 ```
 
