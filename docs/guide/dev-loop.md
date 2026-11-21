@@ -77,7 +77,7 @@ npx uplink-tools bundle --serve 5173
 
 - **Nothing under Local builds.** The tab appears only when the dev server was started with `--uplink`. Check the path holds an `uplink.json`, and read the server's startup output for the error
 - **`waiting for the first build` that never ends.** The watch build is not running in that client, or it writes somewhere else. The bundle must land in `dist/<id>/` under the client
-- **`quarantined`, and the reason names a version.** The bundle was built against a different SDK or ui-kit than this checkout. Update the one that is behind (`npm install @ksp-gonogo/sitrep-sdk @ksp-gonogo/ui-kit` in `client/`, or `git pull` and `pnpm install` in the checkout) and rebuild
+- **`quarantined`, and the reason names a version.** The bundle was built against a different SDK or ui-kit than this checkout. Update the one that is behind (`npm install @ksp-gonogo/sitrep-sdk@@tag@@ @ksp-gonogo/ui-kit@@tag@@` in `client/`, or `git pull` and `pnpm install` in the checkout) and rebuild
 - **`build failed`.** Fix the error the line quotes. The page keeps running the last good build in the meantime
 - **Loaded, and the widget shows nothing.** Check the `mod:` half of the line: a widget cannot show data from a mod KSP does not list
 

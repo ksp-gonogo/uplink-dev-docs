@@ -5,6 +5,7 @@ import { symbolLinks } from "./symbolLinks.mts";
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { docsBase } from "../../scripts/base.mjs";
 
 type SidebarItem = { text: string; link: string; index?: boolean };
 
@@ -31,6 +32,13 @@ const published: { version: string; npmTag: string; name: string; pending?: stri
   readFileSync(resolve(dirname(fileURLToPath(import.meta.url)), "../../reference/artifacts.json"), "utf8"),
 ).published;
 
+/**
+ * What the channel's npm tag adds to an install line: nothing for `latest`, which
+ * is what an unqualified install gets, and `@<tag>` otherwise. Pages write the
+ * token `@@tag@@` where it goes.
+ */
+const tagSuffix = published.npmTag === "latest" ? "" : `@${published.npmTag}`;
+
 const documents = ["@ksp-gonogo/sitrep-sdk", "@ksp-gonogo/ui-kit"]
   .map((name) => `${name}@${published.version}`)
   .join(" &middot; ");
@@ -38,7 +46,7 @@ const documents = ["@ksp-gonogo/sitrep-sdk", "@ksp-gonogo/ui-kit"]
 export default defineConfig({
   title: "Gonogo Uplink Docs",
   description: "Documentation for creating your own Gonogo Uplink",
-  base: "/uplink-dev-docs/",
+  base: docsBase(),
 
   // The palette is dark-only on purpose (see theme/custom.css), so offering a
   // toggle would hand the reader a half-styled light page built from tokens that
@@ -49,6 +57,15 @@ export default defineConfig({
     config: (md) => {
       // A signature such as `${string}:${ProcessorId}` holds `:$`, an emoji shortcut.
       md.disable("emoji");
+      md.core.ruler.push("channel_tag", (state) => {
+        const visit = (tokens: typeof state.tokens) => {
+          for (const token of tokens) {
+            if (token.content.includes("@@tag@@")) token.content = token.content.replaceAll("@@tag@@", tagSuffix);
+            if (token.children) visit(token.children);
+          }
+        };
+        visit(state.tokens);
+      });
       symbolLinks(md);
       conceptLinks(md);
     },

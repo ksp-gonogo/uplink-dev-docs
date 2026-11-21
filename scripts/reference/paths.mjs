@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { docsBase } from "../base.mjs";
 
 export const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 /** Packed stand-ins for published packages. Not committed. */
@@ -10,7 +11,7 @@ export const ARTIFACTS = resolve(ROOT, "artifacts");
 export const INSTALL = resolve(ROOT, ".reference");
 export const DOCS = resolve(ROOT, "docs");
 /** The path the site is served under, as `base` in `docs/.vitepress/config.mts`. VitePress prefixes it to a Markdown link, never to an `href` written in raw HTML. */
-export const SITE_BASE = "/uplink-dev-docs";
+export const SITE_BASE = docsBase().replace(/\/$/, "");
 /** Each generated page's hash as the generator wrote it, by path from the repo root. Not committed. */
 export const GENERATED_HASHES = resolve(INSTALL, "generated.json");
 

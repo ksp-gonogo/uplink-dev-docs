@@ -17,11 +17,12 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { pageOf } from "./symbol-links.mjs";
+import { docsBase } from "./base.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const DOCS = resolve(ROOT, "docs");
 const DIST = resolve(DOCS, ".vitepress/dist");
-const BASE = "/uplink-dev-docs";
+const BASE = docsBase().replace(/\/$/, "");
 
 function markdownFiles(dir) {
   return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {

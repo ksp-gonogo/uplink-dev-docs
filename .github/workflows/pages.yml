@@ -1,12 +1,14 @@
 name: Deploy docs
 
-# Every push builds and checks the site; only main deploys it.
+# The site has two channels, each built from what the registries name now: the
+# root from npm's `latest` and /rc/ from its `rc`. A gonogo release or package
+# candidate dispatches this workflow once its packages exist, and nightly.yml
+# is the safety net. Every push builds and checks the root; only main deploys,
+# and it deploys both channels together because one Pages artifact holds the
+# whole site.
 on:
   push:
   workflow_dispatch:
-  # Nightly, for the `current` job: a newer release candidate turns it red.
-  schedule:
-    - cron: "17 3 * * *"
 
 permissions:
   contents: read
@@ -18,43 +20,57 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # Do the pages name the candidate `new` pins? A separate job, so a new
-  # candidate is a red check and not a held deploy.
-  current:
+  # Which channels this run builds: both on main, only the root elsewhere.
+  decide:
     runs-on: ubuntu-24.04
+    outputs:
+      channels: ${{ steps.decide.outputs.channels }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-      - run: node --test scripts/check-published-current.test.mjs
-      - run: node scripts/check-published-current.mjs
+      - id: decide
+        env:
+          REF: ${{ github.ref }}
+        run: echo "channels=$(node scripts/decide-channels.mjs)" >> "$GITHUB_OUTPUT"
 
   build:
+    needs: decide
+    strategy:
+      # A red channel holds the deploy, so the other one finishing buys nothing.
+      fail-fast: true
+      matrix:
+        channel: ${{ fromJSON(needs.decide.outputs.channels) }}
     runs-on: ubuntu-24.04
     # A hung step fails the run instead of holding the deploy.
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
-      # The generated reference is build output, written here from packages
-      # packed out of one pinned gonogo commit, so every deploy publishes pages
-      # that match each other. Bump the pin in reference/artifacts.json to move
-      # the site. The Guide's worked Uplink is checked against the published
-      # release candidate instead, as an author installs it.
-      - id: pin
-        run: echo "sha=$(jq -er .gonogo reference/artifacts.json)" >> "$GITHUB_OUTPUT"
-      - uses: actions/checkout@v4
-        with:
-          repository: ksp-gonogo/gonogo
-          ref: ${{ steps.pin.outputs.sha }}
-          path: gonogo
-      - uses: pnpm/action-setup@v6
-        with:
-          package_json_file: gonogo/package.json
       - uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: npm
+      # The reference is packed out of the one gonogo commit the channel's
+      # packages were cut from, so every page of a channel matches the others
+      # and the packages an author installs. This writes the channel's version
+      # and commit into reference/artifacts.json for the rest of the run.
+      - id: resolve
+        run: |
+          node scripts/resolve-channel.mjs "$CHANNEL" --write > resolved.json
+          cat resolved.json
+          echo "version=$(jq -er .version resolved.json)" >> "$GITHUB_OUTPUT"
+          echo "commit=$(jq -er .commit resolved.json)" >> "$GITHUB_OUTPUT"
+        env:
+          CHANNEL: ${{ matrix.channel }}
+      - uses: actions/checkout@v4
+        with:
+          repository: ksp-gonogo/gonogo
+          ref: ${{ steps.resolve.outputs.commit }}
+          path: gonogo
+      - uses: pnpm/action-setup@v6
+        with:
+          package_json_file: gonogo/package.json
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 10.0.x
@@ -67,6 +83,11 @@ jobs:
         working-directory: gonogo
       - run: npm ci
       - run: npx playwright install --with-deps chromium
+      # The worked Uplink follows the channel: its packages, its contract
+      # range, its lockfile and the page that records the version.
+      - run: node scripts/pin-example.mjs "$VERSION"
+        env:
+          VERSION: ${{ steps.resolve.outputs.version }}
       - run: npm run reference:pack
         env:
           GONOGO_REPO: ${{ github.workspace }}/gonogo
@@ -75,11 +96,55 @@ jobs:
       - run: npm run build
         env:
           GONOGO_REPO: ${{ github.workspace }}/gonogo
+          DOCS_BASE: ${{ matrix.channel == 'rc' && '/uplink-dev-docs/rc/' || '/uplink-dev-docs/' }}
           # Live examples graded at once, sized to the runner's four cores.
           DEMO_PAGES: 4
-      - uses: actions/upload-pages-artifact@v3
+      # What a nightly run compares the registries with.
+      - run: cp resolved.json docs/.vitepress/dist/version.json
+      - uses: actions/upload-artifact@v4
         with:
+          name: site-${{ matrix.channel }}
           path: docs/.vitepress/dist
+      # The root's example and reference pin go back to main (see `commit`).
+      - if: matrix.channel == 'latest'
+        run: |
+          git diff --name-only > pinned-files.txt
+          tar -czf pinned.tgz -T pinned-files.txt
+      - if: matrix.channel == 'latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: root-pins
+          path: pinned.tgz
+
+  # The root channel is what main shows, so the pins its build moved are
+  # committed to main with the docs' own token. A push by that token starts no
+  # workflow, which is why the same run goes on to deploy. A refused push (main
+  # moved, a protection rule) warns and leaves the deploy alone: the next
+  # release's run pins again.
+  commit:
+    needs: build
+    if: ${{ github.ref == 'refs/heads/main' && needs.build.result == 'success' }}
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: root-pins
+      - run: tar -xzf pinned.tgz && rm pinned.tgz
+      - name: Commit the pins
+        run: |
+          if git diff --quiet; then
+            echo "The pins already match the root channel."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -qam "docs: the example and the reference follow release $(jq -er .published.version reference/artifacts.json)"
+          git push || {
+            git pull --rebase -q && git push
+          } || echo "::warning::main moved or refused the pin commit; the next release's run pins again"
 
   deploy:
     needs: build
@@ -89,5 +154,18 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: site-*
+      - name: One site from the two channels
+        run: |
+          test -f site-latest/index.html && test -f site-rc/index.html
+          mkdir site
+          cp -R site-latest/. site/
+          mkdir site/rc
+          cp -R site-rc/. site/rc/
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
       - id: deployment
         uses: actions/deploy-pages@v4

@@ -1,0 +1,28 @@
+name: Docs nightly
+
+# The safety net for the release dispatch: asks the registries what each channel
+# should be built from and rebuilds the site only when a deployed channel names
+# something else. Cron runs on the default branch.
+on:
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  stale:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - id: stale
+        run: echo "stale=$(node scripts/decide-channels.mjs --stale)" >> "$GITHUB_OUTPUT"
+      - if: steps.stale.outputs.stale == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run pages.yml --ref main

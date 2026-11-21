@@ -25,10 +25,11 @@ import { dirname, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { AMBIGUOUS_SYMBOLS } from "./ambiguous-symbols.mjs";
 import { GUIDE_LINK_LIST, isSelf, loadSymbolIndex, namedSymbol, pageOf, symbolOf } from "./symbol-links.mjs";
+import { docsBase } from "./base.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const DIST = resolve(ROOT, "docs/.vitepress/dist");
-const BASE = "/uplink-dev-docs";
+const BASE = docsBase().replace(/\/$/, "");
 
 const ENTITIES = { "&lt;": "<", "&gt;": ">", "&amp;": "&", "&quot;": '"', "&#39;": "'" };
 const decode = (html) => html.replace(/<[^>]+>/g, "").replace(/&(lt|gt|amp|quot|#39);/g, (e) => ENTITIES[e]);
@@ -104,8 +105,8 @@ const ambiguous = Object.keys(AMBIGUOUS_SYMBOLS).find((name) => Object.hasOwn(in
 const planted = grade(
   "/planted",
   "<main><p><code>useTelemetry</code> and " +
-    '<a href="/uplink-dev-docs/nowhere#x"><code>useTelemetry</code></a> and ' +
-    '<a href="/uplink-dev-docs/nowhere#x"><code class="member">useTelemetry</code></a>, beside ' +
+    `<a href="${BASE}/nowhere#x"><code>useTelemetry</code></a> and ` +
+    `<a href="${BASE}/nowhere#x"><code class="member">useTelemetry</code></a>, beside ` +
     '<a href="/reference/nowhere">no prefix</a>, and ' +
     `<code class="member">useTelemetry</code> and <code>${ambiguous}</code></p></main>`,
   index,

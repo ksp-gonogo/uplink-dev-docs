@@ -24,9 +24,10 @@ import { pathToFileURL } from "node:url";
 import { build } from "esbuild";
 import { chromium } from "playwright";
 import { INSTALL, ROOT } from "./reference/paths.mjs";
+import { docsBase } from "./base.mjs";
 
 const DIST = resolve(ROOT, "docs/.vitepress/dist");
-const BASE = "/uplink-dev-docs/";
+const BASE = docsBase();
 const CLIENT = resolve(ROOT, "example/client");
 const TYPES = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".json": "application/json", ".svg": "image/svg+xml", ".png": "image/png" };
 

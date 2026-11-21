@@ -216,8 +216,9 @@ everything in the order CI does.
 
 ## Publishing
 
-`docs/.vitepress/config.mts` sets `base: "/uplink-dev-docs/"`, which must match the
-GitHub Pages path. Change it if the repository is named anything else, or set it
+`scripts/base.mjs` defaults the base to `/uplink-dev-docs/`, which must match the
+GitHub Pages path (`DOCS_BASE` overrides it: the release-candidate channel is built with
+`/uplink-dev-docs/rc/`). Change it if the repository is named anything else, or set it
 to `"/"` for a user or custom-domain site. Every internal link is root-relative,
 so the base is the only place the path appears.
 

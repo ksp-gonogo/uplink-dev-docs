@@ -41,11 +41,8 @@ export function unwiredChecks(files, wired) {
 /**
  * Checks that cannot run in the build and run in a job of their own instead.
  * A check here is a promise, and `elsewhereFaults` holds pages.yml to it.
- * check-published-current.mjs asks the npm registry which candidate is current
- * and must not hold a deploy when a new one is published, so a `current` job
- * runs it nightly and on every push; its unit test (no network) is in the build.
  */
-export const RUNS_ELSEWHERE = ["check-published-current.mjs"];
+export const RUNS_ELSEWHERE = [];
 
 /** Files declared as run elsewhere that the workflow does not actually run as a step. */
 export function elsewhereFaults(declared, yml) {

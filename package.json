@@ -4,12 +4,11 @@
   "type": "module",
   "scripts": {
     "dev": "npm run reference && npm run externals && vitepress dev docs",
-    "build": "npm run reference && npm run externals && npm run check && npm run test:uplinks && npm run check:units && npm run test:published-current && npm run test:reference && vitepress build docs && npm run check:rendered && npm run check:links && npm run check:demos && npm run check:uplink-viewer",
+    "build": "npm run reference && npm run externals && npm run check && npm run test:uplinks && npm run check:units && npm run test:reference && npm run test:channels && vitepress build docs && npm run check:rendered && npm run check:links && npm run check:demos && npm run check:uplink-viewer",
     "preview": "vitepress preview docs",
     "check": "node scripts/check-snippets.mjs",
     "test:uplinks": "node --test docs/.vitepress/theme/uplinks/uplinks.test.ts",
     "prepare": "git config core.hooksPath .githooks || true",
-    "test:published-current": "node --test scripts/check-published-current.test.mjs",
     "test:reference": "node --test scripts/reference/topic-descriptions.test.mjs",
     "check:units": "node scripts/check-units-table.mjs",
     "check:symbols": "node scripts/check-doc-symbols.mjs",
@@ -21,7 +20,8 @@
     "sync:ui-kit-exports": "node scripts/check-doc-symbols.mjs --sync",
     "reference": "node scripts/reference/generate.mjs",
     "externals": "node scripts/build-uplink-externals.mjs",
-    "reference:pack": "node scripts/reference/pack-artifacts.mjs"
+    "reference:pack": "node scripts/reference/pack-artifacts.mjs",
+    "test:channels": "node --test scripts/resolve-channel.test.mjs scripts/pin-example.test.mjs scripts/decide-channels.test.mjs"
   },
   "devDependencies": {
     "@testing-library/react": "^16.3.3",
